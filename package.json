@@ -1,0 +1,22 @@
+{
+  "name": "preppt",
+  "version": "1.0.0",
+  "description": "Preppt — Scientific Literature to Presentation Content Generator with PMC and Semantic Scholar dual retrieval, multi-factor ranking, and Word (.docx) export.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "scientific-literature",
+    "presentation-generator",
+    "europe-pmc",
+    "semantic-scholar",
+    "docx-export",
+    "vancouver-style"
+  ],
+  "author": "Dr. Raouf Roshdy",
+  "license": "MIT",
+  "dependencies": {
+    "docx": "^9.14.0"
+  }
+}

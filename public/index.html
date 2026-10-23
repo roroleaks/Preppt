@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preppt – Scientific Literature to Presentation</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="shortcut icon" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- ═══════════════════════════════════════════════════════
+         HEADER — Exact Sysrevai Colors, Photo Size & Arrangement
+    ═══════════════════════════════════════════════════════════ -->
+    <header class="hdr">
+      <div class="hdr-inner">
+        <!-- Left: Logo & App Brand -->
+        <div class="hdr-left">
+          <img src="favicon.png" alt="Preppt" style="width:38px;height:38px;border-radius:10px;box-shadow:0 0 10px rgba(0,255,255,.35);border:1.5px solid rgba(255,255,255,.4);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'"/>
+          <span class="title-main">Preppt <span class="version-badge">v1.0</span></span>
+        </div>
+        <!-- Center: Display Name / Tagline -->
+        <div class="hdr-center">
+          <h1>Preppt – Scientific Literature to Presentation</h1>
+          <p>Evidence-Based Presentation Content Generator • 16:9 Format</p>
+        </div>
+        <!-- Right: Author Profile -->
+        <div class="hdr-right">
+          <span class="author-name">
+            <img src="dr-raouf.jpg" alt="Dr Raouf Roshdy" class="author-photo" onerror="this.style.display='none'"/>
+            Dr Raouf Roshdy
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MAIN CONTAINER (.solo matching Sysrevai layout)
+    ═══════════════════════════════════════════════════════════ -->
+    <main class="solo">
+
+      <!-- Pipeline Stepper (Strict Single-Line Sysrevai Layout) -->
+      <div class="pipeline-stepper" id="pipeline">
+        <div class="pipeline-step-item active" id="step-nav-1" title="Step 1: Input and Validation">
+          <span class="pipeline-step-tag active">Step 1 • Active</span>
+          <div class="pipeline-step-title">1. Mandatory Inputs</div>
+        </div>
+        <div class="pipeline-step-item" id="step-nav-2" title="Step 2: Keyword Proposal">
+          <span class="pipeline-step-tag muted">Step 2</span>
+          <div class="pipeline-step-title">2. Propose Keywords</div>
+        </div>
+        <div class="pipeline-step-item" id="step-nav-3" title="Step 3: Search Strategy">
+          <span class="pipeline-step-tag muted">Step 3</span>
+          <div class="pipeline-step-title">3. Search Strategy</div>
+        </div>
+        <div class="pipeline-step-item" id="step-nav-4" title="Step 4: Literature Retrieval">
+          <span class="pipeline-step-tag muted">Step 4</span>
+          <div class="pipeline-step-title">4. Retrieve &amp; Deduplicate</div>
+        </div>
+        <div class="pipeline-step-item" id="step-nav-6" title="Step 6: Paper Review">
+          <span class="pipeline-step-tag muted">Step 5</span>
+          <div class="pipeline-step-title">5. Review Papers</div>
+        </div>
+        <div class="pipeline-step-item" id="step-nav-8" title="Step 8: Slide Deck &amp; Word Export">
+          <span class="pipeline-step-tag muted">Step 6</span>
+          <div class="pipeline-step-title">6. Slides &amp; Word Export</div>
+        </div>
+      </div>
+
+      <!-- Non-blocking API Failure Warning Banner (Step 4 / 5 rule) -->
+      <div id="api-warning-banner" class="alert-box alert-warn" style="display: none;">
+        <div class="alert-title">
+          <span>⚠️ Multi-Source Literature Notice</span>
+        </div>
+        <div class="alert-reason" id="warning-banner-text">
+          One of the search sources was temporarily unavailable. Retrieval continued with healthy sources; no data was fabricated.
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- STEP 1: Mandatory Inputs & Validation                   -->
+      <!-- ======================================================= -->
+      <section class="card workflow-step-section" id="step-1-section">
+        <span class="pill">📋 Step 1 • Input and Validation</span>
+        <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Configure Scientific Presentation</h2>
+        <p class="hint">Collect and validate the 7 required presentation parameters before generating search terms.</p>
+
+        <form id="inputs-form" class="workflow-form">
+          <!-- 1. Topic (free-text) -->
+          <div class="form-group-full">
+            <label for="topic-input" class="form-label">
+              <span class="label-number">1</span> Topic <span class="required">*</span>
+            </label>
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input 
+                type="text" 
+                id="topic-input" 
+                placeholder="e.g. SGLT2 inhibitors in Heart Failure with preserved ejection fraction" 
+                required
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <!-- Suggested Quick Topics (Chips matching Sysrevai) -->
+          <div class="row" style="margin-top:6px; margin-bottom:18px;">
+            <span style="font-size:.80rem;font-weight:700;color:var(--muted)">Quick Examples:</span>
+            <button type="button" class="chip quick-chip" data-topic="SGLT2 inhibitors in Heart Failure with preserved ejection fraction" data-title="SGLT2i in HFpEF: Clinical Outcomes">🫀 SGLT2i in HFpEF</button>
+            <button type="button" class="chip quick-chip" data-topic="GLP-1 receptor agonists in metabolic dysfunction-associated steatotic liver disease" data-title="GLP-1 Agonists in MASLD Review">🍬 GLP-1 in MASLD</button>
+            <button type="button" class="chip quick-chip" data-topic="Endometriosis medical management and fertility preservation outcomes" data-title="Endometriosis Management &amp; Fertility">🤰 Endometriosis &amp; Fertility</button>
+            <button type="button" class="chip quick-chip" data-topic="CAR-T cell therapy clinical efficacy in refractory hematologic malignancies" data-title="CAR-T Cell Therapy in Malignancies">🧬 CAR-T in Malignancies</button>
+          </div>
+
+          <!-- Mandatory Parameters Grid (Inputs 2 through 7) -->
+          <div class="mandatory-inputs-grid">
+            <!-- 2. Short presentation title (free-text) -->
+            <div class="form-item grid-span-2">
+              <label for="short-title-input" class="form-label">
+                <span class="label-number">2</span> Short presentation title <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="short-title-input" 
+                class="form-input" 
+                placeholder="e.g. SGLT2i in HFpEF: Clinical Evidence" 
+                required
+              />
+              <span class="input-hint">Concise title suitable for title slide and header.</span>
+            </div>
+
+            <!-- 3. Target number of final papers (numeric) -->
+            <div class="form-item">
+              <label for="target-papers-input" class="form-label">
+                <span class="label-number">3</span> Target number of final papers <span class="required">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="target-papers-input" 
+                class="form-input" 
+                value="8" 
+                min="3" 
+                max="50" 
+                required
+              />
+              <span class="input-hint">Literature review selection target (3–50).</span>
+            </div>
+
+            <!-- 4. Publication start year (numeric) -->
+            <div class="form-item">
+              <label for="start-year-input" class="form-label">
+                <span class="label-number">4</span> Publication start year <span class="required">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="start-year-input" 
+                class="form-input" 
+                value="2019" 
+                min="1990" 
+                max="2026" 
+                required
+              />
+              <span class="input-hint">Retrieves papers from that year through current date.</span>
+            </div>
+
+            <!-- 5. Audience (exactly 5 English choices) -->
+            <div class="form-item">
+              <label for="audience-select" class="form-label">
+                <span class="label-number">5</span> Audience <span class="required">*</span>
+              </label>
+              <select id="audience-select" class="form-select" required>
+                <option value="Public audience">Public audience</option>
+                <option value="Undergraduate">Undergraduate</option>
+                <option value="Postgraduate" selected>Postgraduate</option>
+                <option value="Consultants">Consultants</option>
+                <option value="Mixed audience">Mixed audience</option>
+              </select>
+              <span class="input-hint">Calibrates terminology depth and speaker notes.</span>
+            </div>
+
+            <!-- 6. Number of slides (manual numeric input) -->
+            <div class="form-item">
+              <label for="slide-count-input" class="form-label">
+                <span class="label-number">6</span> Number of slides <span class="required">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="slide-count-input" 
+                class="form-input" 
+                value="10" 
+                min="5" 
+                max="30" 
+                required
+              />
+              <span class="input-hint">Exact slide count generated for 15-minute presentation.</span>
+            </div>
+
+            <!-- 7. Slide density (exactly 3 choices) -->
+            <div class="form-item">
+              <label for="density-select" class="form-label">
+                <span class="label-number">7</span> Slide density <span class="required">*</span>
+              </label>
+              <select id="density-select" class="form-select" required>
+                <option value="Detailed">Detailed</option>
+                <option value="Balanced" selected>Balanced</option>
+                <option value="Short bullet points">Short bullet points</option>
+              </select>
+              <span class="input-hint">Controls visible slide text (occupancy 30–40%).</span>
+            </div>
+          </div>
+
+          <div class="form-submit-row">
+            <button type="submit" id="btn-to-keywords" class="primary">
+              <span>Propose Search Keywords</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- STEP 2: Keyword Proposal                                -->
+      <!-- ======================================================= -->
+      <section class="card workflow-step-section" id="step-2-section" style="display: none;">
+        <span class="pill">🔍 Step 2 • Keyword Proposal</span>
+        <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Review &amp; Edit Proposed Keywords</h2>
+        <p class="hint">The AI suggests primary terms, synonyms, and medical terminology (MeSH concepts). Review and edit the terms below before continuing.</p>
+
+        <div class="keyword-editor-container">
+          <div class="kw-group">
+            <label for="kw-primary-input" class="form-label">Primary Keywords &amp; Core Concepts</label>
+            <textarea id="kw-primary-input" class="form-textarea" rows="3" placeholder="Enter one keyword or phrase per line..."></textarea>
+            <span class="input-hint">Enter one keyword or phrase per line (no commas or separators needed).</span>
+          </div>
+
+          <div class="kw-group">
+            <label for="kw-synonyms-input" class="form-label">Synonyms &amp; Related Terms</label>
+            <textarea id="kw-synonyms-input" class="form-textarea" rows="3" placeholder="Enter one synonym or phrase per line..."></textarea>
+            <span class="input-hint">Enter one synonym or phrase per line (no commas or separators needed).</span>
+          </div>
+
+          <div class="kw-group">
+            <label for="kw-mesh-input" class="form-label">Medical Terminology (MeSH Concepts)</label>
+            <textarea id="kw-mesh-input" class="form-textarea" rows="3" placeholder="Enter one MeSH concept per line..."></textarea>
+            <span class="input-hint">Enter one medical concept per line (no commas or separators needed).</span>
+          </div>
+        </div>
+
+        <div class="step-nav-actions">
+          <button type="button" id="btn-back-to-step1" class="secondary">← Back to Inputs</button>
+          <!-- Mandatory Approval Gate (Prompt 05) -->
+          <button type="button" id="btn-approve-keywords" class="primary">Approve Keywords</button>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- STEP 3: Search Strategy Review                          -->
+      <!-- ======================================================= -->
+      <section class="card workflow-step-section" id="step-3-section" style="display: none;">
+        <span class="pill">⚙️ Step 3 • Search Strategy Review</span>
+        <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Review Dual-Engine Search Strategy</h2>
+        <p class="hint">Search queries formulated specifically for Europe PMC and Semantic Scholar. The system will not search until approved.</p>
+
+        <div class="strategy-grid">
+          <!-- Europe PMC Query Card -->
+          <div class="strategy-card">
+            <div class="strategy-header">
+              <span class="source-badge source-epmc">PubMed Central (Europe PMC)</span>
+              <span class="badge" style="background:#e0f2fe; color:#0369a1;">REST API</span>
+            </div>
+            <label for="pmc-query-input" class="form-label" style="margin-top:6px;">Syntax Query String:</label>
+            <textarea id="pmc-query-input" class="form-textarea strategy-query-box" rows="4"></textarea>
+            <div class="strategy-filters">
+              <strong>Active Filters:</strong> <span id="pmc-filters-text" class="filters-tag"></span>
+            </div>
+          </div>
+
+          <!-- Semantic Scholar Query Card -->
+          <div class="strategy-card">
+            <div class="strategy-header">
+              <span class="source-badge source-s2">Semantic Scholar</span>
+              <span class="badge" style="background:#f3e8ff; color:#6b21a8;">Academic Graph API</span>
+            </div>
+            <label for="s2-query-input" class="form-label" style="margin-top:6px;">Natural Keyword Query:</label>
+            <textarea id="s2-query-input" class="form-textarea strategy-query-box" rows="4"></textarea>
+            <div class="strategy-filters">
+              <strong>Active Filters:</strong> <span id="s2-filters-text" class="filters-tag"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-nav-actions">
+          <button type="button" id="btn-back-to-step2" class="secondary">← Edit Keywords</button>
+          <!-- Mandatory Approval Gate (Prompt 06) -->
+          <button type="button" id="btn-approve-strategy" class="primary">Approve Search Strategy</button>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- STEP 4 & 5: Literature Retrieval & Deduplication        -->
+      <!-- ======================================================= -->
+      <section class="card workflow-step-section" id="step-4-section" style="display: none;">
+        <span class="pill">⚡ Step 4 &amp; 5 • Retrieval &amp; Ranking</span>
+        <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Retrieving &amp; Ranking Literature</h2>
+        <p class="hint">Searching PMC and Semantic Scholar, deduplicating records by DOI, PMID, and title similarity, and ranking by semantic topic relevance.</p>
+
+        <!-- Animated Progress Tracker -->
+        <div class="processing-indicator-container">
+          <div class="processing-text-primary" id="retrieval-status-label">Initializing dual-engine retrieval...</div>
+          <div class="prog-bar-bg" style="width: 100%; max-width: 520px; height: 9px;">
+            <div id="retrieval-progress-bar" class="prog-bar" style="width: 10%;"></div>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.84rem; color: var(--muted);" id="retrieval-progress-details">
+            Connecting to Europe PMC REST API &amp; Semantic Scholar Graph API...
+          </div>
+        </div>
+
+        <!-- Zero-Results Alert Box -->
+        <div id="zero-results-alert" class="alert-box alert-warn" style="display: none; margin-top: 20px;">
+          <div style="font-weight: 700; margin-bottom: 6px;">⚠️ No Literature Records Found</div>
+          <div id="zero-results-message">No eligible peer-reviewed papers were retrieved matching the current search strategy and date filter.</div>
+          <div style="margin-top: 12px; display: flex; gap: 10px;">
+            <button type="button" id="btn-retry-search" class="primary" style="padding: 8px 16px;">🔄 Retry Search</button>
+            <button type="button" id="btn-edit-strategy-from-zero" class="secondary" style="padding: 8px 16px;">✏️ Edit Search Strategy</button>
+          </div>
+        </div>
+
+        <!-- Retrieval Statistics Grid -->
+        <div class="metrics-grid" id="retrieval-metrics-grid" style="display: none; margin-top: 24px;">
+          <div class="metric-card">
+            <div class="metric-val text-teal" id="stat-total-found">0</div>
+            <div class="metric-lbl">Total Records Harvested</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="stat-duplicates-removed">0</div>
+            <div class="metric-lbl">Duplicates Pruned</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val text-blue" id="stat-final-ranked">0</div>
+            <div class="metric-lbl">Unique Candidates Ranked</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="stat-epmc-count">0</div>
+            <div class="metric-lbl">PMC Matches</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val text-purple" id="stat-s2-count">0</div>
+            <div class="metric-lbl">Semantic Scholar Matches</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- STEP 6: Paper Review Screen                             -->
+      <!-- ======================================================= -->
+      <section class="card workflow-step-section" id="step-6-section" style="display: none;">
+        <div class="section-header-split">
+          <div>
+            <span class="pill">📚 Step 6 • Paper Review Screen</span>
+            <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Review &amp; Refine Candidate Papers</h2>
+            <p class="hint">Ranked candidate papers displayed with full metadata and relevance scores. Remove or mark studies to tailor your presentation foundation.</p>
+          </div>
+          <div class="actions-right">
+            <!-- Mandatory Approval Gate (Step 6) -->
+            <button type="button" id="btn-approve-papers" class="primary" style="padding:12px 24px; font-size:1rem; box-shadow: var(--shadow-md);">
+              Approve Selected Papers
+            </button>
+          </div>
+        </div>
+
+        <!-- Shortfall Alert (Section 4, Step 5) -->
+        <div id="shortfall-alert" class="alert-box alert-warn" style="display: none; margin-bottom: 16px;">
+        </div>
+
+        <!-- Section 6 Literature Metrics Bar -->
+        <div class="metrics-grid" style="margin-bottom: 16px;">
+          <div class="metric-card">
+            <div class="metric-val text-teal" id="metric-curated">0 / 0</div>
+            <div class="metric-lbl">Curated / Target</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metric-pmc">0</div>
+            <div class="metric-lbl">Europe PMC</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val text-purple" id="metric-s2">0</div>
+            <div class="metric-lbl">Semantic Scholar</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val text-blue" id="metric-overlap">0</div>
+            <div class="metric-lbl">Both Sources</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metric-citations">0</div>
+            <div class="metric-lbl">Total Citations</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <input 
+              type="text" 
+              id="paper-search-filter" 
+              class="form-input" 
+              placeholder="Filter by title, author, journal..." 
+              style="width: 280px;"
+            />
+            <select id="paper-sort-select" class="form-select" style="width: 170px;">
+              <option value="relevance">Sort by Relevance</option>
+              <option value="citations">Sort by Citations</option>
+              <option value="year">Sort by Year (Newest)</option>
+            </select>
+          </div>
+          <div class="toolbar-right">
+            <button type="button" id="btn-select-all" class="secondary" style="min-height:36px; padding:6px 14px;">Select All</button>
+            <button type="button" id="btn-deselect-all" class="secondary" style="min-height:36px; padding:6px 14px;">Deselect All</button>
+            <span class="badge" style="background:var(--accent-light); color:var(--accent); font-size:12px; padding:6px 12px;">
+              Selected: <strong id="selected-papers-count">0</strong> / <span id="target-papers-badge">0</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Papers List Container -->
+        <div id="papers-list" class="papers-list">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- STEP 7 & 8: Slide Deck Studio & Word Export             -->
+      <!-- ======================================================= -->
+      <section class="card workflow-step-section" id="step-8-section" style="display: none;">
+        <div class="section-header-split">
+          <div>
+            <span class="pill pill-good">🎯 Step 7 &amp; 8 • Presentation Synthesis</span>
+            <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;" id="deck-topic-title">Scientific Presentation Deck</h2>
+            <div class="spec-pills-bar" style="margin-top: 8px;">
+              <span class="badge" style="background:#e0f2fe; color:#0369a1;" id="deck-audience-badge">Audience: Postgraduate</span>
+              <span class="badge" style="background:#fef3c7; color:#92400e;" id="deck-density-badge">Density: Balanced</span>
+              <span class="badge" style="background:#dcfce7; color:#15803d;" id="deck-slide-count-badge">10 Slides</span>
+              <span class="badge" style="background:#f3e8ff; color:#6b21a8;" id="deck-paper-count-badge">8 Evidence Papers</span>
+              <span class="badge" style="background:#f1f5f9; color:#475569;">16:9 Slide Ratio</span>
+            </div>
+          </div>
+          <div class="actions-right">
+            <!-- Step 10 Mandatory Export Button -->
+            <button type="button" id="export-docx-btn" class="primary" style="background:#15803d; font-size:1.05rem; padding:13px 26px; box-shadow: 0 4px 14px rgba(21,128,61,.25);">
+              📄 Export to Word
+            </button>
+          </div>
+        </div>
+
+        <!-- Educational Disclaimer Banner -->
+        <div class="disclaimer-callout" style="margin: 18px 0;">
+          <strong>Educational Disclaimer:</strong> This material is intended for educational and presentation-planning purposes. It does not replace critical appraisal of the original sources or professional clinical judgment.
+        </div>
+
+        <!-- Prompt 13: Pre-Export Validation Gate Card -->
+        <div id="validation-gate-card" class="validation-gate-card" style="margin: 18px 0; background: #ffffff; border: 1.5px solid var(--border); border-radius: 10px; padding: 18px 22px; box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+            <div>
+              <span class="pill" style="font-size:11px; background:#dcfce7; color:#15803d; font-weight:700;">PROMPT 13 • PRE-EXPORT INTEGRITY VALIDATION</span>
+              <h3 style="margin:4px 0 0 0; font-size:1.15rem; color:var(--teal-dark);">🛡️ Output Quality &amp; Compliance Validation Gate</h3>
+            </div>
+            <span id="validation-overall-badge" class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:12px; padding:6px 12px; border-radius:999px;">
+              Validating Output...
+            </span>
+          </div>
+          <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">
+            Before enabling Word export, all 9 mandatory specification standards are automatically verified:
+          </p>
+          <div id="validation-checklist-container" class="validation-checklist-grid">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Prompt 10: Concise Evidence-Based Synthesis Plan -->
+        <div class="synthesis-plan-card" id="synthesis-plan-card">
+          <div class="plan-header-row">
+            <div>
+              <span class="pill" style="font-size:11px; background:var(--teal-light); color:var(--teal); font-weight:700;">PROMPT 10 • EVIDENCE-BASED SYNTHESIS</span>
+              <h3 class="plan-title">📋 Concise Evidence-Based Synthesis Plan</h3>
+            </div>
+            <span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px; padding:6px 12px; border-radius:999px;">
+              Narrative Distinction (GRADE / RoB-free)
+            </span>
+          </div>
+          <p id="synthesis-plan-scope" class="plan-scope-text"></p>
+          <div id="synthesis-themes-container" class="synthesis-themes-grid">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Prompt 10: Research Gaps and Unresolved Questions -->
+        <div class="gaps-card" id="gaps-card">
+          <div class="gaps-header-row">
+            <h3 class="gaps-title">🔬 Research Gaps &amp; Unresolved Clinical Questions</h3>
+            <span class="badge" style="background:#fef3c7; color:#92400e; font-size:11px; padding:4px 10px; border-radius:999px;">Unresolved Boundaries</span>
+          </div>
+          <p class="gaps-subtitle">Identified areas where evidence is limited, conflicting, or warrants prospective investigation:</p>
+          <div id="gaps-container" class="gaps-container">
+            <ul id="gaps-list" class="gaps-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Presentation Structure Outline -->
+        <div class="outline-card">
+          <h3 class="outline-title">📑 Presentation Outline &amp; Flow</h3>
+          <div id="outline-chips" class="outline-chips">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Step 8: Full Slide Deck Preview with 10 Mandatory Fields per slide -->
+        <h3 class="sec-h" style="margin-top: 28px; margin-bottom: 12px;">Full Slide Deck (16:9 Presentation Specification)</h3>
+        
+        <!-- Slide Navigation Tabs -->
+        <div id="slide-nav-bar" class="slide-nav-bar">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Slides Container -->
+        <div id="slides-container" class="slides-container">
+          <!-- Dynamically populated with all 10 fields per slide -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODAL & TOAST
+    ═══════════════════════════════════════════════════════ -->
+    <div id="abstract-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-paper-title" class="modal-title">Paper Details</h3>
+          <button id="modal-close-btn" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-meta-grid">
+            <div><strong>Authors:</strong> <span id="modal-paper-authors"></span></div>
+            <div><strong>Journal &amp; Year:</strong> <span id="modal-paper-journal"></span></div>
+            <div><strong>Identifiers:</strong> <span id="modal-paper-ids"></span></div>
+            <div><strong>Citations:</strong> <span id="modal-paper-citations"></span></div>
+          </div>
+          <hr class="modal-divider" />
+          <h4 style="font-weight:700; margin-bottom:6px; color:var(--ink);">Abstract &amp; Study Content</h4>
+          <p id="modal-paper-abstract" class="modal-abstract-text"></p>
+        </div>
+        <div class="modal-footer">
+          <a id="modal-external-link" href="#" target="_blank" rel="noopener noreferrer" class="secondary" style="min-height:38px; padding:6px 14px; text-decoration:none;">Open Paper Online</a>
+          <button id="modal-dismiss-btn" class="primary" style="min-height:38px; padding:6px 18px;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER — Exact Sysrevai Design & Copyright
+    ═══════════════════════════════════════════════════════ -->
+    <footer>
+      Preppt v1.0 – Scientific Literature to Presentation • Powered by <a href="https://europepmc.org/About" target="_blank" rel="noopener noreferrer">Europe PMC</a> &amp; <a href="https://www.semanticscholar.org" target="_blank" rel="noopener noreferrer">Semantic Scholar</a> • Dedicated to Evidence-Based Presentation Synthesis • copyrights@Raouf Roshdy2025.
+      <div style="font-size: 0.78rem; opacity: 0.85; margin-top: 4px;">This material is intended for educational and presentation-planning purposes. It does not replace critical appraisal of the original sources or professional clinical judgment.</div>
+    </footer>
+
+  </div><!-- .wrap -->
+
+  <script src="app.js"></script>
+</body>
+</html>

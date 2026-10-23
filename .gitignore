@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.zip
+scratch/extracted_docx/
+scratch/output_*.docx
+scratch/repo_check.json
