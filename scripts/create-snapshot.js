@@ -11,8 +11,7 @@ const scratchZip = path.join(scratchDir, 'preppt-snapshot.zip');
 const targetPaths = [
   scratchZip,
   path.join(homeDir, 'Downloads', 'preppt-snapshot.zip'),
-  path.join(homeDir, 'preppt-snapshot.zip'),
-  path.join(repoDir, 'preppt-snapshot.zip')
+  path.join(homeDir, 'preppt-snapshot.zip')
 ];
 
 console.log('📦 Creating clean project ZIP snapshot via git archive...');

@@ -1,11 +1,14 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+
+// Serverless API handlers
 const s2Handler = require('./api/s2.js');
-const { proposeKeywords, buildSearchStrategy } = require('./lib/keywords.js');
-const { generatePresentationDocx } = require('./lib/docx-generator.js');
-const { generatePresentationDeck } = require('./lib/synthesize.js');
-const { validatePresentationOutput } = require('./lib/validator.js');
+const proposeKeywordsHandler = require('./api/propose-keywords.js');
+const buildStrategyHandler = require('./api/build-strategy.js');
+const synthesizeHandler = require('./api/synthesize.js');
+const validateHandler = require('./api/validate.js');
+const exportDocxHandler = require('./api/export-docx.js');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -20,173 +23,27 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk;
-      if (body.length > 20 * 1024 * 1024) {
-        reject(new Error('Payload too large'));
-      }
-    });
-    req.on('end', () => {
-      try {
-        resolve(body ? JSON.parse(body) : {});
-      } catch (err) {
-        reject(new Error('Invalid JSON payload: ' + err.message));
-      }
-    });
-    req.on('error', reject);
-  });
-}
-
 async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    return res.end();
-  }
-
   const [reqPath] = req.url.split('?');
 
-  // Semantic Scholar Proxy
+  // Dispatch API routes to serverless modules
   if (reqPath === '/api/s2') {
     return s2Handler(req, res);
   }
-
-  // Step 2: Propose Keywords API
-  if (reqPath === '/api/propose-keywords' && req.method === 'POST') {
-    try {
-      const data = await readBody(req);
-      const result = proposeKeywords(data.topic || '');
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify(result));
-    } catch (err) {
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify({ error: err.message }));
-    }
+  if (reqPath === '/api/propose-keywords') {
+    return proposeKeywordsHandler(req, res);
   }
-
-  // Step 3: Build Search Strategy API
-  if (reqPath === '/api/build-strategy' && req.method === 'POST') {
-    try {
-      const data = await readBody(req);
-      const strategy = buildSearchStrategy(data);
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify(strategy));
-    } catch (err) {
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify({ error: err.message }));
-    }
+  if (reqPath === '/api/build-strategy') {
+    return buildStrategyHandler(req, res);
   }
-
-  // Step 7 & 8: Presentation Synthesis API
-  if (reqPath === '/api/synthesize' && req.method === 'POST') {
-    try {
-      const data = await readBody(req);
-      const deck = generatePresentationDeck({
-        topic: data.topic || 'Scientific Topic',
-        shortTitle: data.shortTitle || '',
-        papers: data.papers || [],
-        targetPapers: data.targetPapers || 10,
-        startYear: data.startYear || 2021,
-        audience: data.audience || 'Postgraduate',
-        slideCount: data.slideCount || 11,
-        density: data.density || 'Balanced',
-        approvedKeywords: data.approvedKeywords || {},
-        approvedStrategy: data.approvedStrategy || {}
-      });
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify(deck));
-    } catch (err) {
-      console.error('Synthesis error:', err);
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify({ error: err.message }));
-    }
+  if (reqPath === '/api/synthesize') {
+    return synthesizeHandler(req, res);
   }
-
-  // Prompt 13: Pre-Export Validation API Endpoint
-  if (reqPath === '/api/validate' && req.method === 'POST') {
-    try {
-      const data = await readBody(req);
-      const validationReport = validatePresentationOutput({
-        deck: data.deck,
-        papers: data.papers || [],
-        removedPapers: data.removedPapers || [],
-        requestedSlideCount: data.slideCount || data.deck?.requestedSlideCount,
-        topic: data.topic || data.deck?.topic
-      });
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify(validationReport));
-    } catch (err) {
-      console.error('Validation error:', err);
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      return res.end(JSON.stringify({ error: err.message }));
-    }
+  if (reqPath === '/api/validate') {
+    return validateHandler(req, res);
   }
-
-  // Step 9 & 10: Word DOCX Export Endpoint (Enforcing Prompt 13 validation gate)
-  if (reqPath === '/api/export-docx' && req.method === 'POST') {
-    try {
-      const data = await readBody(req);
-      const { topic, deck, papers, meta, removedPapers } = data;
-      if (!deck || !papers) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        return res.end(JSON.stringify({ error: 'Missing deck or papers payload' }));
-      }
-
-      // Prompt 13: Validate the output before allowing export
-      const validation = validatePresentationOutput({
-        deck,
-        papers,
-        removedPapers: removedPapers || [],
-        requestedSlideCount: data.slideCount || deck.requestedSlideCount,
-        topic: topic || deck.topic
-      });
-
-      if (!validation.isValid) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        return res.end(JSON.stringify({
-          error: 'Pre-export validation failed: ' + validation.errors.join('; '),
-          validation
-        }));
-      }
-
-      const docxBuffer = await generatePresentationDocx({
-        topic: topic || 'Scientific Topic',
-        deck,
-        papers,
-        meta
-      });
-
-      const safeFilename = (deck.shortTitle || topic || 'presentation')
-        .replace(/[^a-zA-Z0-9_-]/g, '_')
-        .substring(0, 50);
-
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      res.setHeader('Content-Disposition', `attachment; filename="Preppt_${safeFilename}.docx"`);
-      res.setHeader('Content-Length', docxBuffer.length);
-      return res.end(docxBuffer);
-    } catch (err) {
-      console.error('DOCX export error:', err);
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      return res.end(JSON.stringify({ error: 'Failed to generate Word document: ' + err.message }));
-    }
+  if (reqPath === '/api/export-docx') {
+    return exportDocxHandler(req, res);
   }
 
   // Static File Serving
