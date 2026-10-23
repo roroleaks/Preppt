@@ -4,7 +4,9 @@
   "description": "Preppt — Scientific Literature to Presentation Content Generator with PMC and Semantic Scholar dual retrieval, multi-factor ranking, and Word (.docx) export.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node test-e2e.js",
+    "snapshot": "node scripts/create-snapshot.js"
   },
   "keywords": [
     "scientific-literature",

@@ -1,5 +1,7 @@
 # Preppt – Scientific Literature to Presentation
 
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-black?style=flat&logo=vercel)](https://preppt-ai.vercel.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Preppt-181717?style=flat&logo=github)](https://github.com/roroleaks/Preppt)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Europe PMC](https://img.shields.io/badge/Europe_PMC-REST_API-0369a1?style=flat)](https://europepmc.org/)
 [![Semantic Scholar](https://img.shields.io/badge/Semantic_Scholar-Academic_Graph-6b21a8?style=flat)](https://www.semanticscholar.org/)
@@ -7,6 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Preppt** is an evidence-based clinical and scientific presentation generator. It systematically harvests biomedical literature from **Europe PMC / PubMed Central** and **Semantic Scholar**, applies multi-key deduplication and semantic relevance ranking, guides the clinician through rigorous interactive approval gates, and produces a publication-grade, 11-part Microsoft Word (`.docx`) presentation specification.
+
+🔗 **Live Production Application**: [https://preppt-ai.vercel.app](https://preppt-ai.vercel.app)  
+📦 **GitHub Repository**: [https://github.com/roroleaks/Preppt](https://github.com/roroleaks/Preppt)
 
 ---
 
