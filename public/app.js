@@ -623,18 +623,46 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
   let q = `query=${encodeURIComponent(cleanQueryKeywords(query))}&limit=${pageSize}&fields=${encodeURIComponent(fields)}`;
   if (yearFilter) q += `&year=${yearFilter}`;
 
-  const res = await fetch(`/api/s2?${q}`);
-  if (res.status === 429) {
-    throw new Error('Semantic Scholar API rate limit (HTTP 429)');
-  }
-  if (!res.ok) {
-    throw new Error(`Semantic Scholar returned HTTP ${res.status}`);
+  let json = null;
+  let lastStatus = 200;
+  try {
+    const res = await fetch(`/api/s2?${q}`);
+    lastStatus = res.status;
+    if (res.ok) {
+      const parsed = await res.json();
+      if (!parsed.error && !parsed.message && Array.isArray(parsed.data)) {
+        json = parsed;
+      }
+    }
+  } catch (proxyErr) {
+    console.warn('S2 proxy attempt failed, falling back to direct client fetch:', proxyErr.message);
   }
 
-  const json = await res.json();
-  if (json.error || json.message) {
-    throw new Error(json.error || json.message);
+  // Resilient direct client-side fallback if server proxy was rate-limited or unavailable
+  if (!json) {
+    try {
+      const directUrl = `https://api.semanticscholar.org/graph/v1/paper/search?${q}`;
+      const directRes = await fetch(directUrl, {
+        headers: {
+          'x-api-key': 's2k-0rcC3ztnxRdNGsOKL1SNvwbOPnSaRh4qHBT9qe7A'
+        }
+      });
+      lastStatus = directRes.status;
+      if (directRes.ok) {
+        json = await directRes.json();
+      }
+    } catch (directErr) {
+      console.warn('S2 direct fetch failed:', directErr.message);
+    }
   }
+
+  if (!json || !Array.isArray(json.data)) {
+    if (lastStatus === 429) {
+      throw new Error('Semantic Scholar API rate limit (HTTP 429)');
+    }
+    throw new Error(json?.message || json?.error || `Semantic Scholar returned HTTP ${lastStatus}`);
+  }
+
   const data = json.data || [];
 
   return data.map(item => {
