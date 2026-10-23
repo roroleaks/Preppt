@@ -1,9 +1,9 @@
 /**
  * Comprehensive Automated End-to-End Test for Preppt Workflow (Steps 1 through 10)
  */
-const { proposeKeywords, buildSearchStrategy } = require('./api/keywords.js');
-const { generatePresentationDeck } = require('./api/synthesize.js');
-const { generatePresentationDocx } = require('./api/docx-generator.js');
+const { proposeKeywords, buildSearchStrategy } = require('./lib/keywords.js');
+const { generatePresentationDeck } = require('./lib/synthesize.js');
+const { generatePresentationDocx } = require('./lib/docx-generator.js');
 
 async function runTests() {
   console.log('--- TEST 1: Keywords & Search Strategy (Steps 2 & 3) ---');
@@ -604,7 +604,7 @@ async function runTests() {
   console.log('Passed Test 10: Word document exact 11-part order, disclaimer, and citation isolation verified 100%!');
 
   console.log('\n--- TEST 11: Prompt 13 Pre-Export Validation Gate (9 Criteria) ---');
-  const { validatePresentationOutput } = require('./api/validator.js');
+  const { validatePresentationOutput } = require('./lib/validator.js');
 
   // 1. Positive validation: A valid compliant deck passes all 9 checks
   const validReport = validatePresentationOutput({

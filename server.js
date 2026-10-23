@@ -2,10 +2,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const s2Handler = require('./api/s2.js');
-const { proposeKeywords, buildSearchStrategy } = require('./api/keywords.js');
-const { generatePresentationDocx } = require('./api/docx-generator.js');
-const { generatePresentationDeck } = require('./api/synthesize.js');
-const { validatePresentationOutput } = require('./api/validator.js');
+const { proposeKeywords, buildSearchStrategy } = require('./lib/keywords.js');
+const { generatePresentationDocx } = require('./lib/docx-generator.js');
+const { generatePresentationDeck } = require('./lib/synthesize.js');
+const { validatePresentationOutput } = require('./lib/validator.js');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',

@@ -7,3 +7,6 @@ yarn-error.log*
 scratch/extracted_docx/
 scratch/output_*.docx
 scratch/repo_check.json
+
+.vercel
+.env*
