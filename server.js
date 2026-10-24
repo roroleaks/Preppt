@@ -5,6 +5,7 @@ const path = require('path');
 // Serverless API handlers
 const s2Handler = require('./api/s2.js');
 const openalexHandler = require('./api/openalex.js');
+const crossrefHandler = require('./api/crossref.js');
 const proposeKeywordsHandler = require('./api/propose-keywords.js');
 const buildStrategyHandler = require('./api/build-strategy.js');
 const synthesizeHandler = require('./api/synthesize.js');
@@ -33,6 +34,9 @@ async function handler(req, res) {
   }
   if (reqPath === '/api/openalex') {
     return openalexHandler(req, res);
+  }
+  if (reqPath === '/api/crossref') {
+    return crossrefHandler(req, res);
   }
   if (reqPath === '/api/propose-keywords') {
     return proposeKeywordsHandler(req, res);

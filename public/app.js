@@ -402,8 +402,13 @@ async function executeLiteratureRetrieval() {
     const epmcCount = epmcResult.data?.length || 0;
     const s2Count = s2Result.data?.length || 0;
 
-    if (s2Result.data?.some(p => p.source === 'openalex')) {
-      unavailableSourceWarning = `Notice: Semantic Scholar was unavailable (rate-limited). Preppt seamlessly retrieved ${s2Result.data.length} candidate studies from OpenAlex (https://openalex.org) via API key.`;
+    const hasAlex = s2Result.data?.some(p => p.source === 'openalex');
+    const hasCross = s2Result.data?.some(p => p.source === 'crossref');
+    if (hasAlex || hasCross) {
+      const fbList = [];
+      if (hasAlex) fbList.push('OpenAlex');
+      if (hasCross) fbList.push('Crossref');
+      unavailableSourceWarning = `Notice: Semantic Scholar was unavailable (rate-limited). Preppt seamlessly retrieved ${s2Result.data.length} candidate studies via ${fbList.join(' & ')} fallback.`;
     } else if (!epmcResult.success && s2Result.success) {
       unavailableSourceWarning = `Europe PMC was temporarily unavailable after automatic retries (${epmcResult.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Semantic Scholar.`;
     } else if (epmcResult.success && !s2Result.success) {
@@ -715,6 +720,120 @@ async function fetchOpenAlex(query, pageSize, startYear) {
   }));
 }
 
+async function fetchCrossref(query, pageSize, startYear) {
+  const currentYear = new Date().getFullYear();
+  const cleanQ = cleanQueryKeywords(query);
+
+  let results = [];
+  // 1. Try server proxy
+  try {
+    const res = await fetch(`/api/crossref?query=${encodeURIComponent(cleanQ)}&limit=${pageSize}&startYear=${startYear || 2021}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json.data) && json.data.length > 0) {
+        results = json.data;
+      }
+    }
+  } catch (proxyErr) {
+    console.warn('Crossref proxy call failed, falling back to direct client call:', proxyErr.message);
+  }
+
+  // 2. Direct browser CORS fallback to official Crossref works API (Public REST API - No API Key Required)
+  if (results.length === 0) {
+    try {
+      let directUrl = `https://api.crossref.org/works?query=${encodeURIComponent(cleanQ)}&rows=${pageSize}&sort=relevance&order=desc`;
+      if (startYear) {
+        directUrl += `&filter=from-pub-date:${startYear}-01-01`;
+      }
+      const directRes = await fetch(directUrl);
+      if (directRes.ok) {
+        const json = await directRes.json();
+        const items = json.message?.items || [];
+        results = items.map(item => {
+          const rawTitle = Array.isArray(item.title) ? item.title[0] : (item.title || 'Untitled Study');
+          const cleanTitle = (rawTitle || '').replace(/<[^>]+>/g, '').trim();
+
+          let authorsList = ['Unknown Authors'];
+          if (Array.isArray(item.author) && item.author.length > 0) {
+            const parsed = item.author
+              .map(a => [a.given, a.family].filter(Boolean).join(' ') || a.name || '')
+              .filter(Boolean);
+            if (parsed.length > 0) authorsList = parsed;
+          }
+
+          const journal = (Array.isArray(item['container-title']) && item['container-title'][0])
+            || (Array.isArray(item['short-container-title']) && item['short-container-title'][0])
+            || item.publisher
+            || 'Academic Journal';
+
+          const dateParts = item.published?.['date-parts']?.[0]
+            || item['published-print']?.['date-parts']?.[0]
+            || item['published-online']?.['date-parts']?.[0]
+            || item.created?.['date-parts']?.[0];
+          const pubYear = (Array.isArray(dateParts) && dateParts.length > 0 && Number(dateParts[0]) > 1900) ? Number(dateParts[0]) : currentYear;
+
+          const doi = item.DOI || '';
+          let abstract = item.abstract || '';
+          if (abstract) {
+            abstract = abstract
+              .replace(/<jats:[^>]+>/gi, '')
+              .replace(/<\/jats:[^>]+>/gi, '')
+              .replace(/<[^>]+>/g, '')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .replace(/&quot;/g, '"')
+              .replace(/&#39;/g, "'")
+              .trim();
+          }
+          const citations = Number(item['is-referenced-by-count'] || 0);
+
+          return {
+            id: doi || item.URL || Math.random().toString(36).substring(7),
+            paperId: doi || item.URL || '',
+            title: cleanHtmlText(cleanTitle) || 'Untitled Study',
+            authors: authorsList,
+            authorsString: authorsList.join(', '),
+            journal: cleanHtmlText(journal),
+            year: pubYear,
+            pubDate: String(pubYear),
+            publication_date: String(pubYear),
+            abstract: cleanHtmlText(abstract),
+            abstract_summary: cleanHtmlText(abstract),
+            citationCount: citations,
+            citation_count: citations,
+            doi: doi,
+            pmid: '',
+            pmcid: '',
+            semantic_scholar_id: '',
+            study_type: classifyStudyType(cleanTitle, abstract),
+            studyType: classifyStudyType(cleanTitle, abstract),
+            publication_type: item.type ? item.type.replace(/-/g, ' ') : 'Journal Article',
+            pubType: [item.type || 'Journal Article'],
+            source: 'crossref',
+            sources: ['Crossref'],
+            source_url: item.URL || (doi ? `https://doi.org/${doi}` : ''),
+            full_text_url: doi ? `https://doi.org/${doi}` : '',
+            user_status: 'keep',
+            user_note: '',
+            relevance_percentage: 0
+          };
+        });
+      }
+    } catch (directErr) {
+      console.warn('Crossref direct client call failed:', directErr.message);
+    }
+  }
+
+  return results.map(item => ({
+    ...item,
+    authors: Array.isArray(item.authors) ? item.authors : [item.authors || 'Unknown Authors'],
+    study_type: item.study_type || classifyStudyType(item.title, item.abstract_summary),
+    user_status: 'keep',
+    user_note: ''
+  }));
+}
+
 async function fetchSemanticScholar(query, pageSize, yearFilter) {
   const currentYear = new Date().getFullYear();
   const fields = 'paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy';
@@ -769,13 +888,26 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
     }
   }
 
-  // 3. Fallback to OpenAlex if Semantic Scholar failed, rate-limited (HTTP 429), or returned 0 hits
+  // 3. Fallback to OpenAlex and Crossref if Semantic Scholar failed, rate-limited (HTTP 429), or returned 0 hits
   if (!json || !Array.isArray(json.data) || json.data.length === 0) {
-    console.warn(`Semantic Scholar query unavailable (HTTP ${lastStatus}). Triggering OpenAlex fallback with API key...`);
-    const openAlexPapers = await fetchOpenAlex(query, pageSize, state.startYear || 2021);
-    if (openAlexPapers.length > 0) {
-      console.log(`✓ OpenAlex fallback successfully retrieved ${openAlexPapers.length} peer-reviewed studies!`);
-      return openAlexPapers;
+    console.warn(`Semantic Scholar query unavailable (HTTP ${lastStatus}). Triggering OpenAlex & Crossref fallback...`);
+    const [openAlexPapers, crossrefPapers] = await Promise.all([
+      fetchOpenAlex(query, pageSize, state.startYear || 2021).catch(err => {
+        console.warn('OpenAlex fallback error:', err.message);
+        return [];
+      }),
+      fetchCrossref(query, pageSize, state.startYear || 2021).catch(err => {
+        console.warn('Crossref fallback error:', err.message);
+        return [];
+      })
+    ]);
+
+    const combinedFallback = [...openAlexPapers, ...crossrefPapers];
+    const { unique } = deduplicatePapers(combinedFallback);
+
+    if (unique.length > 0) {
+      console.log(`✓ Resilient fallback successfully retrieved ${unique.length} studies (OpenAlex: ${openAlexPapers.length}, Crossref: ${crossrefPapers.length})!`);
+      return unique;
     }
     return [];
   }
@@ -877,7 +1009,10 @@ function deduplicatePapers(rawPapers) {
     }
 
     if (existing) {
-      const srcName = paper.source === 's2' ? 'Semantic Scholar' : 'Europe PMC';
+      const srcName = paper.source === 's2' ? 'Semantic Scholar' 
+        : paper.source === 'openalex' ? 'OpenAlex' 
+        : paper.source === 'crossref' ? 'Crossref' 
+        : 'Europe PMC';
       if (!existing.sources.includes(srcName)) {
         existing.sources.push(srcName);
         existing.source = 'both';
@@ -1075,9 +1210,19 @@ function renderPaperCards() {
 
     // Source badge
     let srcBadge = '';
-    if (paper.source === 'both') srcBadge = '<span class="badge badge-both">PMC + Semantic Scholar</span>';
-    else if (paper.source === 's2') srcBadge = '<span class="badge badge-s2">Semantic Scholar</span>';
-    else srcBadge = '<span class="badge badge-pmc">Europe PMC</span>';
+    if (paper.sources && paper.sources.length > 1) {
+      srcBadge = `<span class="badge badge-both">${paper.sources.join(' + ')}</span>`;
+    } else if (paper.source === 'both') {
+      srcBadge = '<span class="badge badge-both">PMC + Semantic Scholar</span>';
+    } else if (paper.source === 's2' || (paper.sources && paper.sources.includes('Semantic Scholar'))) {
+      srcBadge = '<span class="badge badge-s2">Semantic Scholar</span>';
+    } else if (paper.source === 'openalex' || (paper.sources && paper.sources.includes('OpenAlex'))) {
+      srcBadge = '<span class="badge badge-openalex">OpenAlex</span>';
+    } else if (paper.source === 'crossref' || (paper.sources && paper.sources.includes('Crossref'))) {
+      srcBadge = '<span class="badge badge-crossref">Crossref</span>';
+    } else {
+      srcBadge = '<span class="badge badge-pmc">Europe PMC</span>';
+    }
 
     // Identifiers
     const ids = [];

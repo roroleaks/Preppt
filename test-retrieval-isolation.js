@@ -130,6 +130,65 @@ function fetchOpenAlex(query, pageSize = 5) {
   });
 }
 
+function fetchCrossref(query, limit = 5) {
+  return new Promise((resolve, reject) => {
+    const params = new URLSearchParams({
+      query: query,
+      rows: String(limit),
+      sort: 'relevance',
+      order: 'desc'
+    });
+    const options = {
+      hostname: 'api.crossref.org',
+      path: `/works?${params.toString()}`,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Preppt/1.0 (Scientific Literature to Presentation; mailto:raouf.roshdy@aimed.org)',
+        'Accept': 'application/json'
+      },
+      timeout: 8000
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode !== 200) return reject(new Error(`Crossref HTTP ${res.statusCode}`));
+        try {
+          const json = JSON.parse(data);
+          const items = json.message?.items || [];
+          const results = items.map(item => {
+            const rawTitle = Array.isArray(item.title) ? item.title[0] : (item.title || 'Untitled Study');
+            let authorsStr = 'Unknown Authors';
+            if (Array.isArray(item.author) && item.author.length > 0) {
+              authorsStr = item.author.map(a => [a.given, a.family].filter(Boolean).join(' ') || a.name || '').filter(Boolean).join(', ') || 'Unknown Authors';
+            }
+            const journal = (Array.isArray(item['container-title']) && item['container-title'][0]) || item.publisher || 'Academic Journal';
+            const doi = item.DOI || '';
+            const citations = Number(item['is-referenced-by-count'] || 0);
+            return {
+              id: doi || item.URL || '',
+              doi: doi,
+              pmid: '',
+              title: rawTitle,
+              authors: authorsStr,
+              journal: journal,
+              year: item.published?.['date-parts']?.[0]?.[0] || 2023,
+              citations: citations,
+              source: 'Crossref'
+            };
+          });
+          resolve(results);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Crossref timed out')); });
+    req.end();
+  });
+}
+
 function normalizeTitle(t) {
   return (t || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
@@ -269,12 +328,33 @@ async function runTests() {
     const combined = deduplicate([...epmcPapers, ...alexPapers]);
     console.log(`  ✓ Harvested corpus via OpenAlex: ${combined.length} unique papers`);
     console.log('  ✅ TEST 4 PASSED: OpenAlex operates reliably as standalone engine and primary fallback.\n');
-
-    console.log('================================================================');
-    console.log('🏆 CONCLUSION: Europe PMC, Semantic Scholar, and OpenAlex are all operational!');
-    console.log('================================================================');
   } catch (err) {
     console.error('  ❌ TEST 4 FAILED:', err.message);
+  }
+
+  // Rate-limit spacer
+  await new Promise(r => setTimeout(r, 1000));
+
+  // TEST 5: Crossref ALONE (Public REST API - No API Key Required)
+  console.log('▶️ TEST 5: Testing Crossref ALONE (Public REST API - Standard Public Access)');
+  try {
+    const crossPapers = await fetchCrossref(TOPIC, 5);
+    console.log(`  ✓ Crossref retrieved: ${crossPapers.length} papers`);
+    console.log(`  ✓ Sample Paper: "${crossPapers[0].title.substring(0, 65)}..."`);
+    console.log(`    - Authors: ${crossPapers[0].authors?.substring(0, 45)}...`);
+    console.log(`    - Year: ${crossPapers[0].year} | Citations: ${crossPapers[0].citations} | DOI: ${crossPapers[0].doi}`);
+
+    // Verify dual fallback merging (OpenAlex + Crossref)
+    const alexPapers = await fetchOpenAlex(TOPIC, 3);
+    const combinedFallback = deduplicate([...alexPapers, ...crossPapers]);
+    console.log(`  ✓ Combined resilient fallback corpus (OpenAlex + Crossref): ${combinedFallback.length} unique papers`);
+    console.log('  ✅ TEST 5 PASSED: Crossref operates successfully as public fallback alongside OpenAlex.\n');
+
+    console.log('================================================================');
+    console.log('🏆 CONCLUSION: Europe PMC, Semantic Scholar, OpenAlex, and Crossref are all operational!');
+    console.log('================================================================');
+  } catch (err) {
+    console.error('  ❌ TEST 5 FAILED:', err.message);
   }
 }
 

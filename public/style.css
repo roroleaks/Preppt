@@ -794,6 +794,18 @@ button.secondary:hover, .btn-secondary:hover {
   border: 1px solid #ddd6fe;
 }
 
+.source-openalex, .badge-openalex {
+  background: #fdf2f8;
+  color: #9d174d;
+  border: 1px solid #fbcfe8;
+}
+
+.source-crossref, .badge-crossref {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
 .source-both, .badge-both {
   background: #ecfdf5;
   color: #047857;
