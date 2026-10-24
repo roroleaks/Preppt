@@ -1,3 +1,9 @@
+<div align="center">
+
+<p align="center">
+  <img src="public/icon.jpg" alt="Preppt App Icon" width="160" style="border-radius:28px;box-shadow:0 8px 30px rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.3)"/>
+</p>
+
 # Preppt – Scientific Literature to Presentation
 
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-black?style=flat&logo=vercel)](https://preppt-ai.vercel.app)
@@ -5,10 +11,13 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Europe PMC](https://img.shields.io/badge/Europe_PMC-REST_API-0369a1?style=flat)](https://europepmc.org/)
 [![Semantic Scholar](https://img.shields.io/badge/Semantic_Scholar-Academic_Graph-6b21a8?style=flat)](https://www.semanticscholar.org/)
+[![OpenAlex & Crossref](https://img.shields.io/badge/Fallback-OpenAlex_%26_Crossref-15803d?style=flat)](https://openalex.org/)
 [![Word Export](https://img.shields.io/badge/DOCX_Generator-11--Part_Spec-15803d?style=flat)](https://github.com/doxov/docx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Preppt** is an evidence-based clinical and scientific presentation generator. It systematically harvests biomedical literature from **Europe PMC / PubMed Central** and **Semantic Scholar**, applies multi-key deduplication and semantic relevance ranking, guides the clinician through rigorous interactive approval gates, and produces a publication-grade, 11-part Microsoft Word (`.docx`) presentation specification.
+</div>
+
+**Preppt** is an evidence-based clinical and scientific presentation generator. It systematically harvests biomedical literature from **Europe PMC / PubMed Central** and **Semantic Scholar** (with automated **OpenAlex** and **Crossref** fallbacks), applies multi-key deduplication and semantic relevance ranking, guides the clinician through rigorous interactive approval gates, and produces a publication-grade, 11-part Microsoft Word (`.docx`) presentation specification.
 
 🔗 **Live Production Application**: [https://preppt-ai.vercel.app](https://preppt-ai.vercel.app)  
 📦 **GitHub Repository**: [https://github.com/roroleaks/Preppt](https://github.com/roroleaks/Preppt)
