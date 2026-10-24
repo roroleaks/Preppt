@@ -402,7 +402,9 @@ async function executeLiteratureRetrieval() {
     const epmcCount = epmcResult.data?.length || 0;
     const s2Count = s2Result.data?.length || 0;
 
-    if (!epmcResult.success && s2Result.success) {
+    if (s2Result.data?.some(p => p.source === 'openalex')) {
+      unavailableSourceWarning = `Notice: Semantic Scholar was unavailable (rate-limited). Preppt seamlessly retrieved ${s2Result.data.length} candidate studies from OpenAlex (https://openalex.org) via API key.`;
+    } else if (!epmcResult.success && s2Result.success) {
       unavailableSourceWarning = `Europe PMC was temporarily unavailable after automatic retries (${epmcResult.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Semantic Scholar.`;
     } else if (epmcResult.success && !s2Result.success) {
       unavailableSourceWarning = `Semantic Scholar was temporarily unavailable after automatic retries (${s2Result.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Europe PMC.`;
@@ -623,6 +625,96 @@ function parseAuthors(item) {
   return parseAuthorsArray(item).join(', ');
 }
 
+async function fetchOpenAlex(query, pageSize, startYear) {
+  const currentYear = new Date().getFullYear();
+  const OPENALEX_KEY = 'LCR4PBZ9z5sTV3HuRDicln';
+  const cleanQ = cleanQueryKeywords(query);
+
+  let results = [];
+  // 1. Try server proxy
+  try {
+    const res = await fetch(`/api/openalex?query=${encodeURIComponent(cleanQ)}&limit=${pageSize}&startYear=${startYear || 2021}&endYear=${currentYear}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json.data) && json.data.length > 0) {
+        results = json.data;
+      }
+    }
+  } catch (proxyErr) {
+    console.warn('OpenAlex proxy call failed, falling back to direct client call:', proxyErr.message);
+  }
+
+  // 2. Direct client fallback with API key and CORS if proxy returns 0 or fails
+  if (results.length === 0) {
+    try {
+      const directUrl = `https://api.openalex.org/works?search=${encodeURIComponent(cleanQ)}&filter=publication_year:${startYear || 2021}-${currentYear}&per_page=${pageSize}&api_key=${OPENALEX_KEY}&mailto=raouf.roshdy@aimed.org`;
+      const directRes = await fetch(directUrl);
+      if (directRes.ok) {
+        const json = await directRes.json();
+        results = (json.results || []).map(p => {
+          const rawAuthors = (p.authorships || []).map(a => a.author?.display_name).filter(Boolean);
+          const doi = p.doi ? p.doi.replace(/^https:\/\/doi\.org\//i, '') : '';
+          const pmid = p.ids?.pmid ? p.ids.pmid.replace(/^https:\/\/pubmed\.ncbi\.nlm\.nih\.gov\//i, '').replace(/\/$/, '') : '';
+          const pmcid = p.ids?.pmcid ? p.ids.pmcid.replace(/^https:\/\/www\.ncbi\.nlm\.nih\.gov\/pmc\/articles\//i, '').replace(/\/$/, '') : '';
+          
+          let abstract = '';
+          if (p.abstract_inverted_index) {
+            const words = [];
+            for (const [w, pos] of Object.entries(p.abstract_inverted_index)) {
+              if (Array.isArray(pos)) {
+                for (const i of pos) words[i] = w;
+              }
+            }
+            abstract = words.filter(Boolean).join(' ');
+          }
+
+          return {
+            id: p.id || doi || pmid,
+            paperId: p.id,
+            openalex_id: p.id,
+            title: cleanHtmlText(p.title) || 'Untitled Study',
+            authors: rawAuthors.length > 0 ? rawAuthors : ['Unknown Authors'],
+            authorsString: (rawAuthors.length > 0 ? rawAuthors : ['Unknown Authors']).join(', '),
+            journal: cleanHtmlText(p.primary_location?.source?.display_name || 'Academic Journal'),
+            year: p.publication_year || currentYear,
+            pubDate: String(p.publication_year || currentYear),
+            publication_date: String(p.publication_year || currentYear),
+            abstract: cleanHtmlText(abstract),
+            abstract_summary: cleanHtmlText(abstract),
+            citationCount: Number(p.cited_by_count || 0),
+            citation_count: Number(p.cited_by_count || 0),
+            doi: doi,
+            pmid: pmid,
+            pmcid: pmcid,
+            semantic_scholar_id: '',
+            study_type: classifyStudyType(p.title, abstract),
+            studyType: classifyStudyType(p.title, abstract),
+            publication_type: (p.type ? p.type.replace(/-/g, ' ') : 'Journal Article'),
+            pubType: [p.type || 'Journal Article'],
+            source: 'openalex',
+            sources: ['OpenAlex'],
+            source_url: p.id || (doi ? `https://doi.org/${doi}` : ''),
+            full_text_url: p.open_access?.oa_url || (doi ? `https://doi.org/${doi}` : ''),
+            user_status: 'keep',
+            user_note: '',
+            relevance_percentage: 0
+          };
+        });
+      }
+    } catch (directErr) {
+      console.warn('OpenAlex direct client call failed:', directErr.message);
+    }
+  }
+
+  return results.map(item => ({
+    ...item,
+    authors: Array.isArray(item.authors) ? item.authors : [item.authors || 'Unknown Authors'],
+    study_type: item.study_type || classifyStudyType(item.title, item.abstract_summary),
+    user_status: 'keep',
+    user_note: ''
+  }));
+}
+
 async function fetchSemanticScholar(query, pageSize, yearFilter) {
   const currentYear = new Date().getFullYear();
   const fields = 'paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy';
@@ -677,9 +769,14 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
     }
   }
 
-  if (!json || !Array.isArray(json.data)) {
-    console.warn(`Semantic Scholar query returned HTTP ${lastStatus} (handled gracefully per Sysrevai/SciDraft pattern)`);
-    // Graceful non-fatal fallback: return empty array so Europe PMC carries the workflow seamlessly
+  // 3. Fallback to OpenAlex if Semantic Scholar failed, rate-limited (HTTP 429), or returned 0 hits
+  if (!json || !Array.isArray(json.data) || json.data.length === 0) {
+    console.warn(`Semantic Scholar query unavailable (HTTP ${lastStatus}). Triggering OpenAlex fallback with API key...`);
+    const openAlexPapers = await fetchOpenAlex(query, pageSize, state.startYear || 2021);
+    if (openAlexPapers.length > 0) {
+      console.log(`✓ OpenAlex fallback successfully retrieved ${openAlexPapers.length} peer-reviewed studies!`);
+      return openAlexPapers;
+    }
     return [];
   }
 

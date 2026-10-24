@@ -110,15 +110,20 @@ flowchart LR
     Q --> S2_Req["Academic Graph API Search"]
     S2_Req --> S2_Try{"HTTP Status 200?"}
     S2_Try -- Yes --> S2_Norm["Parse DOI, S2ID, Venue, Year, Citations"]
-    S2_Try -- 429 Rate Limit --> S2_Retry["Exponential Backoff Retry (x2)"]
-    S2_Retry -- Failed --> S2_Fallback["Non-Blocking Banner: PMC Carries Load"]
+    S2_Try -- 429 Rate Limit / Error --> S2_Retry["Exponential Backoff Retry (x2)"]
+    S2_Retry -- Failed --> Alex_Trigger["Trigger OpenAlex Resilient Fallback"]
+  end
+
+  subgraph OpenAlex_Pipeline ["OpenAlex Literature Engine"]
+    Alex_Trigger --> Alex_Req["OpenAlex Works API with API Key"]
+    Alex_Req --> Alex_Norm["Parse Inverted Index Abstract, DOI, Citations"]
   end
 
   subgraph Merging ["Merging & Validation"]
     PMC_Norm --> Merge["Cross-Engine Candidate Pool"]
     S2_Norm --> Merge
     PMC_Warn --> Merge
-    S2_Fallback --> Merge
+    Alex_Norm --> Merge
     Merge --> Dedup["Multi-Key Deduplication Engine"]
   end
 ```
@@ -245,6 +250,9 @@ http://localhost:3080
 ```bash
 # Run comprehensive end-to-end regression tests (12 suites)
 node test-e2e.js
+
+# Run literature retrieval engines audit (Europe PMC, Semantic Scholar & OpenAlex)
+node test-retrieval-isolation.js
 
 # Run live scenario integration test with deep Word document XML inspection
 node scratch/run-random-topic-e2e.js
