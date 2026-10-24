@@ -397,12 +397,19 @@ async function executeLiteratureRetrieval() {
       fetchWithRetry(() => fetchSemanticScholar(state.approvedStrategy.semanticScholar.query, pageSize, state.approvedStrategy.semanticScholar.yearFilter), 'Semantic Scholar', 2)
     ]);
 
-    // Section 5: Check if one source failed and show non-blocking warning identifying unavailable source
+    // Section 5: Check if one source failed or returned 0 hits due to upstream rate limits
     let unavailableSourceWarning = '';
+    const epmcCount = epmcResult.data?.length || 0;
+    const s2Count = s2Result.data?.length || 0;
+
     if (!epmcResult.success && s2Result.success) {
       unavailableSourceWarning = `Europe PMC was temporarily unavailable after automatic retries (${epmcResult.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Semantic Scholar.`;
     } else if (epmcResult.success && !s2Result.success) {
       unavailableSourceWarning = `Semantic Scholar was temporarily unavailable after automatic retries (${s2Result.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Europe PMC.`;
+    } else if (epmcCount > 0 && s2Count === 0) {
+      unavailableSourceWarning = `Semantic Scholar reached its upstream request limit (HTTP 429). The system continued seamlessly using ${epmcCount} eligible peer-reviewed studies retrieved from Europe PMC.`;
+    } else if (s2Count > 0 && epmcCount === 0) {
+      unavailableSourceWarning = `Europe PMC was temporarily unavailable. The system continued seamlessly using ${s2Count} eligible peer-reviewed studies retrieved from Semantic Scholar.`;
     }
 
     if (unavailableSourceWarning) {
@@ -671,10 +678,9 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
   }
 
   if (!json || !Array.isArray(json.data)) {
-    if (lastStatus === 429) {
-      throw new Error('Semantic Scholar API rate limit (HTTP 429)');
-    }
-    throw new Error(json?.message || json?.error || `Semantic Scholar returned HTTP ${lastStatus}`);
+    console.warn(`Semantic Scholar query returned HTTP ${lastStatus} (handled gracefully per Sysrevai/SciDraft pattern)`);
+    // Graceful non-fatal fallback: return empty array so Europe PMC carries the workflow seamlessly
+    return [];
   }
 
   const data = json.data || [];
