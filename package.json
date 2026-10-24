@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test-e2e.js",
+    "test": "node test-e2e.js && node test-step-by-step.js",
+    "test:retrieval": "node test-retrieval-isolation.js",
     "snapshot": "node scripts/create-snapshot.js"
   },
   "keywords": [
