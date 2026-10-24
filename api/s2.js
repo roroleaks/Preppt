@@ -1,15 +1,15 @@
 const https = require('https');
 
-// Pre-configured Semantic Scholar API Key from Antigravity environment
+// Pre-configured Semantic Scholar API Key (Prioritizes environment variable, then fallback key)
 const S2_DEFAULT_KEY = process.env.S2_API_KEY || 's2k-0rcC3ztnxRdNGsOKL1SNvwbOPnSaRh4qHBT9qe7A';
 
-function queryS2(targetPath, apiKey) {
+function queryS2(targetPath, apiKey, attempt = 0) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'api.semanticscholar.org',
       path: targetPath,
       method: 'GET',
-      timeout: 7000,
+      timeout: 8000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
@@ -23,6 +23,16 @@ function queryS2(targetPath, apiKey) {
       let data = '';
       s2Res.on('data', chunk => data += chunk);
       s2Res.on('end', () => {
+        // Automatic exponential backoff retry on 429 rate limit (up to 3 attempts)
+        if (s2Res.statusCode === 429 && attempt < 3) {
+          const backoff = 1500 * (attempt + 1);
+          console.warn(`Semantic Scholar HTTP 429 encountered. Backing off ${backoff}ms (attempt ${attempt + 1}/3)...`);
+          setTimeout(() => {
+            queryS2(targetPath, apiKey, attempt + 1).then(resolve).catch(reject);
+          }, backoff);
+          return;
+        }
+
         resolve({
           statusCode: s2Res.statusCode,
           headers: s2Res.headers,
@@ -33,14 +43,26 @@ function queryS2(targetPath, apiKey) {
 
     s2Req.on('timeout', () => {
       s2Req.destroy();
+      if (attempt < 2) {
+        setTimeout(() => {
+          queryS2(targetPath, apiKey, attempt + 1).then(resolve).catch(reject);
+        }, 1200);
+        return;
+      }
       resolve({
         statusCode: 504,
         headers: {},
-        body: JSON.stringify({ error: 'Semantic Scholar upstream timed out (7s limit reached)' })
+        body: JSON.stringify({ error: 'Semantic Scholar upstream timed out (8s limit reached)' })
       });
     });
 
     s2Req.on('error', (err) => {
+      if (attempt < 2) {
+        setTimeout(() => {
+          queryS2(targetPath, apiKey, attempt + 1).then(resolve).catch(reject);
+        }, 1200);
+        return;
+      }
       reject(err);
     });
 

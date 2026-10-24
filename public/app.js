@@ -350,8 +350,8 @@ async function fetchWithRetry(fetchFn, sourceName, maxRetries = 2) {
     try {
       if (attempt > 0) {
         console.warn(`[Auto-Retry] Retrying ${sourceName} (attempt ${attempt + 1}/${maxRetries + 1})...`);
-        // Exponential backoff wait: 700ms, 1400ms
-        await new Promise(res => setTimeout(res, 700 * attempt));
+        // Backoff wait for rate limits: 1500ms, 3000ms
+        await new Promise(res => setTimeout(res, 1500 * attempt));
       }
       const data = await fetchFn();
       return { success: true, data, sourceName };
@@ -619,14 +619,19 @@ function parseAuthors(item) {
 async function fetchSemanticScholar(query, pageSize, yearFilter) {
   const currentYear = new Date().getFullYear();
   const fields = 'paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy';
+  const S2_KEY = 's2k-0rcC3ztnxRdNGsOKL1SNvwbOPnSaRh4qHBT9qe7A';
 
-  let q = `query=${encodeURIComponent(cleanQueryKeywords(query))}&limit=${pageSize}&fields=${encodeURIComponent(fields)}`;
+  let q = `query=${encodeURIComponent(cleanQueryKeywords(query))}&limit=${pageSize}&fields=${encodeURIComponent(fields)}&key=${encodeURIComponent(S2_KEY)}`;
   if (yearFilter) q += `&year=${yearFilter}`;
 
   let json = null;
   let lastStatus = 200;
+
+  // 1. Try server proxy with API key in header and query param
   try {
-    const res = await fetch(`/api/s2?${q}`);
+    const res = await fetch(`/api/s2?${q}`, {
+      headers: { 'x-api-key': S2_KEY }
+    });
     lastStatus = res.status;
     if (res.ok) {
       const parsed = await res.json();
@@ -638,18 +643,27 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
     console.warn('S2 proxy attempt failed, falling back to direct client fetch:', proxyErr.message);
   }
 
-  // Resilient direct client-side fallback if server proxy was rate-limited or unavailable
+  // 2. Resilient direct client-side fallback if server proxy was rate-limited or unavailable
   if (!json) {
     try {
       const directUrl = `https://api.semanticscholar.org/graph/v1/paper/search?${q}`;
       const directRes = await fetch(directUrl, {
         headers: {
-          'x-api-key': 's2k-0rcC3ztnxRdNGsOKL1SNvwbOPnSaRh4qHBT9qe7A'
+          'x-api-key': S2_KEY
         }
       });
       lastStatus = directRes.status;
       if (directRes.ok) {
         json = await directRes.json();
+      } else if (directRes.status === 429) {
+        // Automatic 1.5s backoff retry on direct 429 burst limit
+        console.warn('Direct S2 returned 429, waiting 1500ms before retrying...');
+        await new Promise(r => setTimeout(r, 1500));
+        const retryRes = await fetch(directUrl, { headers: { 'x-api-key': S2_KEY } });
+        lastStatus = retryRes.status;
+        if (retryRes.ok) {
+          json = await retryRes.json();
+        }
       }
     } catch (directErr) {
       console.warn('S2 direct fetch failed:', directErr.message);
