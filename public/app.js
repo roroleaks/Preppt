@@ -159,10 +159,12 @@ async function handleStep1Submit(e) {
   const audience = document.getElementById('audience-select').value;
   const slideCount = Number(document.getElementById('slide-count-input').value);
   const density = document.getElementById('density-select').value;
+  const visualStyle = (document.getElementById('visual-style-input')?.value || 'Scientific pictorial').trim();
 
   // Strict Validation: Prevent continuation if any required field is missing or invalid
   const allowedAudiences = ['Public audience', 'Undergraduate', 'Postgraduate', 'Consultants', 'Mixed audience'];
   const allowedDensities = ['Detailed', 'Balanced', 'Short bullet points'];
+  const allowedVisualStyles = ['Photographic', 'Illustrative', 'Scientific pictorial', 'Cinematic 3D'];
   const currentYear = new Date().getFullYear();
 
   if (!topic) {
@@ -200,6 +202,10 @@ async function handleStep1Submit(e) {
     document.getElementById('density-select').focus();
     return;
   }
+  if (!allowedVisualStyles.includes(visualStyle)) {
+    showToast('Validation Error: Please select an approved PPT visuals style.');
+    return;
+  }
 
   // Store in state
   state.topic = topic;
@@ -209,6 +215,7 @@ async function handleStep1Submit(e) {
   state.audience = audience;
   state.slideCount = slideCount;
   state.density = density;
+  state.visualStyle = visualStyle;
 
   // Propose keywords via API
   const btn = document.getElementById('btn-to-keywords');
@@ -1436,6 +1443,7 @@ async function handleApproveSelectedPapers() {
         audience: state.audience,
         slideCount: state.slideCount,
         density: state.density,
+        visualStyle: state.visualStyle || 'Scientific pictorial',
         approvedKeywords: state.approvedKeywords,
         approvedStrategy: state.approvedStrategy
       })
@@ -1860,6 +1868,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Step 1 Form
   const inputsForm = document.getElementById('inputs-form');
   inputsForm.addEventListener('submit', handleStep1Submit);
+
+  // PPT Visuals Style Selector Buttons
+  const visualBtns = document.querySelectorAll('.visual-style-btn');
+  visualBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      visualBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const val = btn.dataset.value;
+      const hiddenInput = document.getElementById('visual-style-input');
+      if (hiddenInput) hiddenInput.value = val;
+    });
+  });
 
   // Quick Chips
   document.querySelectorAll('.quick-chip').forEach(chip => {

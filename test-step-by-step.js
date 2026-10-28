@@ -32,15 +32,17 @@ async function runStepByStepValidation() {
   const audience = 'Postgraduate';
   const slideCount = 12;
   const density = 'Balanced';
+  const visualStyle = 'Scientific pictorial';
 
   assert(topic.trim().length >= 5, 'Topic must be at least 5 characters');
   assert(shortTitle.trim().length >= 3, 'Short title must be at least 3 characters');
   assert(targetPapers >= 5 && targetPapers <= 50, 'Target papers must be 5-50');
   assert(startYear >= 1950 && startYear <= new Date().getFullYear(), 'Start year must be valid');
   assert(slideCount >= 8 && slideCount <= 30, 'Slide count must be between 8 and 30');
+  assert(['Photographic', 'Illustrative', 'Scientific pictorial', 'Cinematic 3D'].includes(visualStyle), 'Valid visual style required');
   console.log('  ✓ Topic:', topic);
   console.log('  ✓ Short Title:', shortTitle);
-  console.log(`  ✓ Parameters: Target=${targetPapers}, Year>=${startYear}, Audience="${audience}", Slides=${slideCount}, Density="${density}"`);
+  console.log(`  ✓ Parameters: Target=${targetPapers}, Year>=${startYear}, Audience="${audience}", Slides=${slideCount}, Density="${density}", Visuals="${visualStyle}"`);
   console.log('  ✅ STEP 1 PASSED: Input parameters fully validated.\n');
 
   // STEP 2: Keyword Proposal

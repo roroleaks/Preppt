@@ -216,6 +216,45 @@
               </select>
               <span class="input-hint">Controls visible slide text (occupancy 30–40%).</span>
             </div>
+
+            <!-- 8. PPT Visuals Style (Photographic, Illustrative, Scientific pictorial, Cinematic 3D) -->
+            <div class="form-item form-item-full">
+              <label class="form-label">
+                <span class="label-number">8</span> PPT Visuals Style <span class="required">*</span>
+              </label>
+              <div class="visual-style-btn-group" id="visual-style-group" role="radiogroup" aria-label="PPT Visuals Style">
+                <button type="button" class="visual-style-btn" data-value="Photographic">
+                  <span class="visual-style-icon">📷</span>
+                  <div class="visual-style-content">
+                    <span class="visual-style-title">Photographic</span>
+                    <span class="visual-style-desc">Real-world clinical &amp; lab photography</span>
+                  </div>
+                </button>
+                <button type="button" class="visual-style-btn" data-value="Illustrative">
+                  <span class="visual-style-icon">🎨</span>
+                  <div class="visual-style-content">
+                    <span class="visual-style-title">Illustrative</span>
+                    <span class="visual-style-desc">Clean 2D vector schematics &amp; iconography</span>
+                  </div>
+                </button>
+                <button type="button" class="visual-style-btn active" data-value="Scientific pictorial">
+                  <span class="visual-style-icon">🔬</span>
+                  <div class="visual-style-content">
+                    <span class="visual-style-title">Scientific pictorial</span>
+                    <span class="visual-style-desc">Publication-grade medical &amp; anatomical figures</span>
+                  </div>
+                </button>
+                <button type="button" class="visual-style-btn" data-value="Cinematic 3D">
+                  <span class="visual-style-icon">✨</span>
+                  <div class="visual-style-content">
+                    <span class="visual-style-title">Cinematic 3D</span>
+                    <span class="visual-style-desc">Dynamic volumetric 3D models &amp; lighting</span>
+                  </div>
+                </button>
+              </div>
+              <input type="hidden" id="visual-style-input" name="visualStyle" value="Scientific pictorial" />
+              <span class="input-hint">Directs prompt calibration and visual descriptions across all slide cards in your Word document.</span>
+            </div>
           </div>
 
           <div class="form-submit-row">

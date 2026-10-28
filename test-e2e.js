@@ -258,8 +258,9 @@ async function runTests() {
   console.log('\n--- TEST 6: Prompt 04 Step 1 Inputs & Strict Validation ---');
   const allowedAudiences = ['Public audience', 'Undergraduate', 'Postgraduate', 'Consultants', 'Mixed audience'];
   const allowedDensities = ['Detailed', 'Balanced', 'Short bullet points'];
+  const allowedVisualStyles = ['Photographic', 'Illustrative', 'Scientific pictorial', 'Cinematic 3D'];
 
-  function validateStep1Inputs({ topic, shortTitle, targetPapers, startYear, audience, slideCount, density }) {
+  function validateStep1Inputs({ topic, shortTitle, targetPapers, startYear, audience, slideCount, density, visualStyle = 'Scientific pictorial' }) {
     const currentYear = new Date().getFullYear();
     if (!topic || typeof topic !== 'string' || !topic.trim()) return { valid: false, error: 'Topic is required' };
     if (!shortTitle || typeof shortTitle !== 'string' || !shortTitle.trim()) return { valid: false, error: 'Short presentation title is required' };
@@ -268,6 +269,7 @@ async function runTests() {
     if (!allowedAudiences.includes(audience)) return { valid: false, error: 'Invalid audience choice' };
     if (!slideCount || isNaN(slideCount) || Number(slideCount) < 8) return { valid: false, error: 'Slide count must be at least 8' };
     if (!allowedDensities.includes(density)) return { valid: false, error: 'Invalid slide density' };
+    if (visualStyle && !allowedVisualStyles.includes(visualStyle)) return { valid: false, error: 'Invalid visual style' };
     return { valid: true };
   }
 
@@ -279,7 +281,8 @@ async function runTests() {
     startYear: 2019,
     audience: 'Postgraduate',
     slideCount: 10,
-    density: 'Balanced'
+    density: 'Balanced',
+    visualStyle: 'Scientific pictorial'
   });
   if (!validRes.valid) throw new Error('Valid inputs failed validation');
 
@@ -296,6 +299,11 @@ async function runTests() {
   // 4. Reject unapproved density choice
   if (validateStep1Inputs({ topic: 'Topic', shortTitle: 'Title', targetPapers: 8, startYear: 2019, audience: 'Consultants', slideCount: 10, density: 'Extremely Long' }).valid) {
     throw new Error('Failed to reject unapproved density');
+  }
+
+  // 5. Reject unapproved visual style choice
+  if (validateStep1Inputs({ topic: 'Topic', shortTitle: 'Title', targetPapers: 8, startYear: 2019, audience: 'Consultants', slideCount: 10, density: 'Balanced', visualStyle: 'Anime Cartoon' }).valid) {
+    throw new Error('Failed to reject unapproved visual style');
   }
 
   console.log('Passed Test 6: Prompt 04 Step 1 mandatory input validation verified!');
@@ -481,6 +489,26 @@ async function runTests() {
   if (detailedWords <= shortWords) {
     throw new Error(`Detailed density should have more words than short bullet points! Short: ${shortWords}, Detailed: ${detailedWords}`);
   }
+
+  // 4. Verify PPT Visuals Style Adaptation across all 4 styles
+  const stylesToTest = ['Photographic', 'Illustrative', 'Scientific pictorial', 'Cinematic 3D'];
+  stylesToTest.forEach(style => {
+    const styleDeck = generatePresentationDeck({
+      topic: 'SGLT2 inhibitors in Heart Failure with preserved ejection fraction',
+      shortTitle: 'SGLT2i in HFpEF',
+      papers: dummyPapers,
+      targetPapers: 5,
+      startYear: 2021,
+      audience: 'Postgraduate',
+      slideCount: 8,
+      density: 'Balanced',
+      visualStyle: style
+    });
+
+    if (styleDeck.meta.visualStyle !== style) throw new Error(`Meta visualStyle mismatch for: ${style}`);
+    const slide1Desc = styleDeck.slides[0].detailed_visual_description;
+    if (!slide1Desc.includes(style)) throw new Error(`Visual description for ${style} missing style signature! Got: ${slide1Desc}`);
+  });
 
   console.log('Passed Test 9: Slide content generation, audience adaptation, density calibration, and visual suggestions verified 100%!');
 

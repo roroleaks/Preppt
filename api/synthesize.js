@@ -37,6 +37,7 @@ module.exports = async (req, res) => {
       audience: data.audience || 'Postgraduate',
       slideCount: data.slideCount || 11,
       density: data.density || 'Balanced',
+      visualStyle: data.visualStyle || 'Scientific pictorial',
       approvedKeywords: data.approvedKeywords || {},
       approvedStrategy: data.approvedStrategy || {}
     });
