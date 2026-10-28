@@ -266,7 +266,7 @@ async function runTests() {
     if (!targetPapers || isNaN(targetPapers) || Number(targetPapers) < 1) return { valid: false, error: 'Target number of final papers must be at least 1' };
     if (!startYear || isNaN(startYear) || Number(startYear) < 1900 || Number(startYear) > currentYear) return { valid: false, error: 'Start year out of range' };
     if (!allowedAudiences.includes(audience)) return { valid: false, error: 'Invalid audience choice' };
-    if (!slideCount || isNaN(slideCount) || Number(slideCount) < 3) return { valid: false, error: 'Slide count must be at least 3' };
+    if (!slideCount || isNaN(slideCount) || Number(slideCount) < 8) return { valid: false, error: 'Slide count must be at least 8' };
     if (!allowedDensities.includes(density)) return { valid: false, error: 'Invalid slide density' };
     return { valid: true };
   }
@@ -396,8 +396,8 @@ async function runTests() {
   console.log('Passed Test 8: Synthesis plan & Research gaps generated with clear wording distinction and zero GRADE/Oxford/RoB ratings!');
 
   console.log('\n--- TEST 9: Prompt 11 Slide Content Generation, Audience & Density Adaptation ---');
-  // 1. Verify exact requested slide counts across different targets (e.g. 5, 8, 15, 20)
-  const testCounts = [5, 8, 15, 20];
+  // 1. Verify exact requested slide counts across different targets (e.g. 8, 10, 15, 20)
+  const testCounts = [8, 10, 15, 20];
   for (const count of testCounts) {
     const testDeck = generatePresentationDeck({
       topic: 'SGLT2 inhibitors in Heart Failure with preserved ejection fraction',
@@ -454,11 +454,11 @@ async function runTests() {
       targetPapers: 5,
       startYear: 2021,
       audience: aud,
-      slideCount: 6,
+      slideCount: 8,
       density: 'Balanced'
     });
 
-    if (audDeck.slides.length !== 6) throw new Error(`Failed to generate 6 slides for audience: ${aud}`);
+    if (audDeck.slides.length !== 8) throw new Error(`Failed to generate 8 slides for audience: ${aud}`);
     if (audDeck.meta.audience !== aud) throw new Error(`Meta audience mismatch for: ${aud}`);
 
     const slide1 = audDeck.slides[0];
@@ -472,8 +472,8 @@ async function runTests() {
   });
 
   // 3. Verify Density Adaptation across all 3 density choices
-  const shortDeck = generatePresentationDeck({ topic: 'SGLT2i in HFpEF', shortTitle: 'SGLT2i', papers: dummyPapers, audience: 'Postgraduate', slideCount: 5, density: 'Short bullet points' });
-  const detailedDeck = generatePresentationDeck({ topic: 'SGLT2i in HFpEF', shortTitle: 'SGLT2i', papers: dummyPapers, audience: 'Postgraduate', slideCount: 5, density: 'Detailed' });
+  const shortDeck = generatePresentationDeck({ topic: 'SGLT2i in HFpEF', shortTitle: 'SGLT2i', papers: dummyPapers, audience: 'Postgraduate', slideCount: 8, density: 'Short bullet points' });
+  const detailedDeck = generatePresentationDeck({ topic: 'SGLT2i in HFpEF', shortTitle: 'SGLT2i', papers: dummyPapers, audience: 'Postgraduate', slideCount: 8, density: 'Detailed' });
 
   const shortWords = shortDeck.slides[1].on_slide_text.split(/\s+/).length;
   const detailedWords = detailedDeck.slides[1].on_slide_text.split(/\s+/).length;

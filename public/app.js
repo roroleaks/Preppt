@@ -190,8 +190,8 @@ async function handleStep1Submit(e) {
     document.getElementById('audience-select').focus();
     return;
   }
-  if (!slideCount || slideCount < 3 || isNaN(slideCount)) {
-    showToast('Validation Error: Number of slides must be at least 3.');
+  if (!slideCount || slideCount < 8 || isNaN(slideCount)) {
+    showToast('Validation Error: Number of slides must be at least 8 (required for the 8-stage narrative arc).');
     document.getElementById('slide-count-input').focus();
     return;
   }

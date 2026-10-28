@@ -37,7 +37,7 @@ async function runStepByStepValidation() {
   assert(shortTitle.trim().length >= 3, 'Short title must be at least 3 characters');
   assert(targetPapers >= 5 && targetPapers <= 50, 'Target papers must be 5-50');
   assert(startYear >= 1950 && startYear <= new Date().getFullYear(), 'Start year must be valid');
-  assert([10, 11, 12, 13, 14, 15].includes(slideCount), 'Slide count must be between 10 and 15');
+  assert(slideCount >= 8 && slideCount <= 30, 'Slide count must be between 8 and 30');
   console.log('  ✓ Topic:', topic);
   console.log('  ✓ Short Title:', shortTitle);
   console.log(`  ✓ Parameters: Target=${targetPapers}, Year>=${startYear}, Audience="${audience}", Slides=${slideCount}, Density="${density}"`);
