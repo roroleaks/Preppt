@@ -1587,8 +1587,21 @@ footer a {
     border-right: 1px solid var(--border) !important;
     border-bottom: none !important;
     flex: 0 0 auto;
-    min-width: 145px;
-    padding: 8px 10px;
+    min-width: 105px;
+    max-width: 135px;
+    padding: 6px 8px;
+  }
+
+  .pipeline-step-tag {
+    font-size: .60rem;
+    letter-spacing: .02em;
+  }
+
+  .pipeline-step-title {
+    font-size: .70rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .pipeline-step-item:last-child {
@@ -1607,3 +1620,42 @@ footer a {
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   INLINE NOTE EDITOR & LINK POLISH (BUG-5 & POLISH-8)
+═══════════════════════════════════════════════════ */
+.paper-link-fulltext {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #bfdbfe !important;
+  font-weight: 600 !important;
+}
+
+.inline-note-editor {
+  margin: 10px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.inline-note-input {
+  width: 100%;
+  min-height: 70px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.inline-note-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(15, 107, 107, 0.15);
+}
+

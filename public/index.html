@@ -105,6 +105,7 @@
               <input 
                 type="text" 
                 id="topic-input" 
+                maxlength="300"
                 placeholder="e.g. SGLT2 inhibitors in Heart Failure with preserved ejection fraction" 
                 required
                 autocomplete="off"
@@ -150,6 +151,7 @@
                 value="8" 
                 min="3" 
                 max="50" 
+                step="1"
                 required
               />
               <span class="input-hint">Literature review selection target (3–50).</span>
@@ -165,11 +167,12 @@
                 id="start-year-input" 
                 class="form-input" 
                 value="2019" 
-                min="1990" 
+                min="1900" 
                 max="2026" 
+                step="1"
                 required
               />
-              <span class="input-hint">Retrieves papers from that year through current date.</span>
+              <span class="input-hint">Retrieves papers from that year through current date (1900–2026).</span>
             </div>
 
             <!-- 5. Audience (exactly 5 English choices) -->
@@ -199,6 +202,7 @@
                 value="10" 
                 min="8" 
                 max="30" 
+                step="1"
                 required
               />
               <span class="input-hint">Exact slide count (minimum 8 for complete narrative arc, up to 30).</span>
@@ -223,28 +227,28 @@
                 <span class="label-number">8</span> PPT Visuals Style <span class="required">*</span>
               </label>
               <div class="visual-style-btn-group" id="visual-style-group" role="radiogroup" aria-label="PPT Visuals Style">
-                <button type="button" class="visual-style-btn" data-value="Photographic">
+                <button type="button" class="visual-style-btn" data-value="Photographic" role="radio" aria-checked="false">
                   <span class="visual-style-icon">📷</span>
                   <div class="visual-style-content">
                     <span class="visual-style-title">Photographic</span>
                     <span class="visual-style-desc">Real-world clinical &amp; lab photography</span>
                   </div>
                 </button>
-                <button type="button" class="visual-style-btn" data-value="Illustrative">
+                <button type="button" class="visual-style-btn" data-value="Illustrative" role="radio" aria-checked="false">
                   <span class="visual-style-icon">🎨</span>
                   <div class="visual-style-content">
                     <span class="visual-style-title">Illustrative</span>
                     <span class="visual-style-desc">Clean 2D vector schematics &amp; iconography</span>
                   </div>
                 </button>
-                <button type="button" class="visual-style-btn active" data-value="Scientific pictorial">
+                <button type="button" class="visual-style-btn active" data-value="Scientific pictorial" role="radio" aria-checked="true">
                   <span class="visual-style-icon">🔬</span>
                   <div class="visual-style-content">
                     <span class="visual-style-title">Scientific pictorial</span>
                     <span class="visual-style-desc">Publication-grade medical &amp; anatomical figures</span>
                   </div>
                 </button>
-                <button type="button" class="visual-style-btn" data-value="Cinematic 3D">
+                <button type="button" class="visual-style-btn" data-value="Cinematic 3D" role="radio" aria-checked="false">
                   <span class="visual-style-icon">✨</span>
                   <div class="visual-style-content">
                     <span class="visual-style-title">Cinematic 3D</span>
@@ -504,12 +508,12 @@
           <strong>Educational Disclaimer:</strong> This material is intended for educational and presentation-planning purposes. It does not replace critical appraisal of the original sources or professional clinical judgment.
         </div>
 
-        <!-- Prompt 13: Pre-Export Validation Gate Card -->
+        <!-- Prompt 13: Pre-Export Checks Card -->
         <div id="validation-gate-card" class="validation-gate-card" style="margin: 18px 0; background: #ffffff; border: 1.5px solid var(--border); border-radius: 10px; padding: 18px 22px; box-shadow: var(--shadow-sm);">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:10px;">
             <div>
-              <span class="pill" style="font-size:11px; background:#dcfce7; color:#15803d; font-weight:700;">PROMPT 13 • PRE-EXPORT INTEGRITY VALIDATION</span>
-              <h3 style="margin:4px 0 0 0; font-size:1.15rem; color:var(--teal-dark);">🛡️ Output Quality &amp; Compliance Validation Gate</h3>
+              <span class="pill" style="font-size:11px; background:#dcfce7; color:#15803d; font-weight:700;">PROMPT 13 • PRE-EXPORT INTEGRITY CHECKS</span>
+              <h3 style="margin:4px 0 0 0; font-size:1.15rem; color:var(--teal-dark);">🛡️ Output Quality &amp; Pre-Export Checks</h3>
             </div>
             <span id="validation-overall-badge" class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:12px; padding:6px 12px; border-radius:999px;">
               Validating Output...

@@ -1,7 +1,7 @@
 const https = require('https');
 
-// Pre-configured Semantic Scholar API Key (Prioritizes environment variable, then fallback key)
-const S2_DEFAULT_KEY = process.env.S2_API_KEY || 's2k-0rcC3ztnxRdNGsOKL1SNvwbOPnSaRh4qHBT9qe7A';
+// Semantic Scholar API Key read exclusively from server-side environment variables
+const S2_SERVER_KEY = process.env.S2_API_KEY || process.env.SEMANTIC_SCHOLAR_KEY || '';
 
 function queryS2(targetPath, apiKey, attempt = 0) {
   return new Promise((resolve, reject) => {
@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
     const fields = urlObj.searchParams.get('fields') || 'paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy';
     const year = urlObj.searchParams.get('year') || '';
     const paperId = urlObj.searchParams.get('paperId') || '';
-    const userKey = req.headers['x-api-key'] || urlObj.searchParams.get('key') || S2_DEFAULT_KEY;
+    const apiKey = S2_SERVER_KEY || req.headers['x-api-key'] || '';
 
     let targetPath = '';
     if (paperId) {
@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
       if (year) targetPath += `&year=${encodeURIComponent(year)}`;
     }
 
-    const result = await queryS2(targetPath, userKey);
+    const result = await queryS2(targetPath, apiKey);
     res.statusCode = result.statusCode || 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.end(result.body);

@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test-e2e.js && node test-step-by-step.js",
+    "test": "node test-e2e.js && node test-step-by-step.js && npm run test:e2e",
+    "test:e2e": "node tests/e2e/no-client-secrets.spec.js && node tests/e2e/synthesis-content-parity.spec.js && node tests/e2e/stats-panel-accuracy.spec.js && node tests/e2e/paper-note.spec.js && node tests/e2e/numeric-range-validation.spec.js",
     "test:retrieval": "node test-retrieval-isolation.js",
     "snapshot": "node scripts/create-snapshot.js"
   },

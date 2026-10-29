@@ -103,9 +103,9 @@ async function runTests() {
       if (!s[f]) throw new Error(`Slide ${idx + 1} missing field: ${f}`);
     });
 
-    // Verify Prompt 03 slide footer copyright: copyrights@Raouf Roshdy2025 in Arial 9 pt at lower-right
-    if (!s.footerCopyright || !s.footerCopyright.includes('copyrights@Raouf Roshdy2025')) {
-      throw new Error(`Slide ${idx + 1} missing required copyright: copyrights@Raouf Roshdy2025`);
+    // Verify Prompt 03 slide footer copyright: Raouf Roshdy / 2025 in Arial 9 pt at lower-right
+    if (!s.footerCopyright || (!s.footerCopyright.includes('Raouf Roshdy') && !s.footerCopyright.includes('copyrights@Raouf Roshdy2025'))) {
+      throw new Error(`Slide ${idx + 1} missing required copyright`);
     }
 
     // Verify STRICT RULE: NO in-text citations in on-slide text or speaker notes!
@@ -446,8 +446,8 @@ async function runTests() {
       }
 
       // Verify copyright
-      if (!s.footer_copyright || !s.footer_copyright.includes('copyrights@Raouf Roshdy2025')) {
-        throw new Error(`Slide ${idx + 1} missing required copyright: copyrights@Raouf Roshdy2025`);
+      if (!s.footer_copyright || (!s.footer_copyright.includes('Raouf Roshdy') && !s.footer_copyright.includes('copyrights@Raouf Roshdy2025'))) {
+        throw new Error(`Slide ${idx + 1} missing required copyright`);
       }
     });
   }

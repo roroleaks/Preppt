@@ -4,6 +4,49 @@
  */
 
 // Application Workflow State (Section 7 Canonical Data Model for Active Run)
+
+// ==========================================
+// PROMPT BUG-5: USER NOTE PERSISTENCE HELPERS
+// ==========================================
+const PREPPT_NOTES_STORAGE_KEY = 'preppt:notes:v1';
+
+function persistNotesToStorage() {
+  try {
+    const notesMap = {};
+    (state.allPapers || []).forEach(p => {
+      const key = p.id || p.doi || p.title;
+      if (p.userNote && p.userNote.trim()) {
+        notesMap[key] = p.userNote.trim();
+      }
+    });
+    localStorage.setItem(PREPPT_NOTES_STORAGE_KEY, JSON.stringify(notesMap));
+  } catch (e) {
+    console.warn('Failed to persist notes to localStorage:', e);
+  }
+}
+
+function restoreNotesFromStorage() {
+  try {
+    const raw = localStorage.getItem(PREPPT_NOTES_STORAGE_KEY);
+    if (!raw) return;
+    const notesMap = JSON.parse(raw);
+    (state.allPapers || []).forEach(p => {
+      const key = p.id || p.doi || p.title;
+      if (notesMap[key]) {
+        p.userNote = notesMap[key];
+      }
+    });
+    (state.selectedPapers || []).forEach(p => {
+      const key = p.id || p.doi || p.title;
+      if (notesMap[key]) {
+        p.userNote = notesMap[key];
+      }
+    });
+  } catch (e) {
+    console.warn('Failed to restore notes from localStorage:', e);
+  }
+}
+
 const projectRun = {
   project_name: 'Preppt – Scientific Literature to Presentation',
   topic: '',
@@ -172,13 +215,18 @@ async function handleStep1Submit(e) {
     document.getElementById('topic-input').focus();
     return;
   }
+  if (topic.length > 300) {
+    showToast('Validation Error: Topic must not exceed 300 characters.');
+    document.getElementById('topic-input').focus();
+    return;
+  }
   if (!shortTitle) {
     showToast('Validation Error: Short presentation title is required.');
     document.getElementById('short-title-input').focus();
     return;
   }
-  if (!targetPapers || targetPapers < 1 || isNaN(targetPapers)) {
-    showToast('Validation Error: Target number of final papers must be at least 1.');
+  if (!targetPapers || targetPapers < 3 || targetPapers > 50 || isNaN(targetPapers)) {
+    showToast('Validation Error: Target number of final papers must be between 3 and 50.');
     document.getElementById('target-papers-input').focus();
     return;
   }
@@ -192,8 +240,8 @@ async function handleStep1Submit(e) {
     document.getElementById('audience-select').focus();
     return;
   }
-  if (!slideCount || slideCount < 8 || isNaN(slideCount)) {
-    showToast('Validation Error: Number of slides must be at least 8 (required for the 8-stage narrative arc).');
+  if (!slideCount || slideCount < 8 || slideCount > 30 || isNaN(slideCount)) {
+    showToast('Validation Error: Number of slides must be between 8 and 30 (required for complete narrative arc).');
     document.getElementById('slide-count-input').focus();
     return;
   }
@@ -513,6 +561,10 @@ async function executeLiteratureRetrieval() {
     // Pre-select the top targetPapers
     const targetSlice = ranked.slice(0, state.targetPapers);
     state.selectedPapers = [...targetSlice];
+
+    // Restore any existing notes and update literature statistics
+    restoreNotesFromStorage();
+    updateStatsPanel(state.allPapers);
 
     // Update canonical Section 7 projectRun
     state.projectRun.retrieved_papers = mergedRaw;
@@ -844,19 +896,16 @@ async function fetchCrossref(query, pageSize, startYear) {
 async function fetchSemanticScholar(query, pageSize, yearFilter) {
   const currentYear = new Date().getFullYear();
   const fields = 'paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy';
-  const S2_KEY = 's2k-0rcC3ztnxRdNGsOKL1SNvwbOPnSaRh4qHBT9qe7A';
 
-  let q = `query=${encodeURIComponent(cleanQueryKeywords(query))}&limit=${pageSize}&fields=${encodeURIComponent(fields)}&key=${encodeURIComponent(S2_KEY)}`;
+  let q = `query=${encodeURIComponent(cleanQueryKeywords(query))}&limit=${pageSize}&fields=${encodeURIComponent(fields)}`;
   if (yearFilter) q += `&year=${yearFilter}`;
 
   let json = null;
   let lastStatus = 200;
 
-  // 1. Try server proxy with API key in header and query param
+  // 1. Query strictly via serverless /api/s2 proxy (server holds credentials securely)
   try {
-    const res = await fetch(`/api/s2?${q}`, {
-      headers: { 'x-api-key': S2_KEY }
-    });
+    const res = await fetch(`/api/s2?${q}`);
     lastStatus = res.status;
     if (res.ok) {
       const parsed = await res.json();
@@ -865,37 +914,10 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
       }
     }
   } catch (proxyErr) {
-    console.warn('S2 proxy attempt failed, falling back to direct client fetch:', proxyErr.message);
+    console.warn('S2 proxy attempt failed:', proxyErr.message);
   }
 
-  // 2. Resilient direct client-side fallback if server proxy was rate-limited or unavailable
-  if (!json) {
-    try {
-      const directUrl = `https://api.semanticscholar.org/graph/v1/paper/search?${q}`;
-      const directRes = await fetch(directUrl, {
-        headers: {
-          'x-api-key': S2_KEY
-        }
-      });
-      lastStatus = directRes.status;
-      if (directRes.ok) {
-        json = await directRes.json();
-      } else if (directRes.status === 429) {
-        // Automatic 1.5s backoff retry on direct 429 burst limit
-        console.warn('Direct S2 returned 429, waiting 1500ms before retrying...');
-        await new Promise(r => setTimeout(r, 1500));
-        const retryRes = await fetch(directUrl, { headers: { 'x-api-key': S2_KEY } });
-        lastStatus = retryRes.status;
-        if (retryRes.ok) {
-          json = await retryRes.json();
-        }
-      }
-    } catch (directErr) {
-      console.warn('S2 direct fetch failed:', directErr.message);
-    }
-  }
-
-  // 3. Fallback to OpenAlex and Crossref if Semantic Scholar failed, rate-limited (HTTP 429), or returned 0 hits
+  // 2. Fallback to OpenAlex and Crossref if Semantic Scholar failed, rate-limited (HTTP 429), or returned 0 hits
   if (!json || !Array.isArray(json.data) || json.data.length === 0) {
     console.warn(`Semantic Scholar query unavailable (HTTP ${lastStatus}). Triggering OpenAlex & Crossref fallback...`);
     const [openAlexPapers, crossrefPapers] = await Promise.all([
@@ -1134,33 +1156,36 @@ function renderStep6ReviewScreen() {
   renderPaperCards();
 }
 
-function updateReviewMetrics() {
+function updateStatsPanel(papers) {
+  const paperPool = Array.isArray(papers) && papers.length > 0 ? papers : (state.allPapers || []);
   const active = state.selectedPapers || [];
-  const pmcCount = active.filter(p => (p.sources || []).includes('Europe PMC') || p.source === 'epmc').length;
-  const s2Count = active.filter(p => (p.sources || []).includes('Semantic Scholar') || p.source === 's2').length;
-  const overlapCount = active.filter(p => p.source === 'both' || (p.sources && p.sources.length > 1)).length;
-  const totalCits = active.reduce((sum, p) => sum + (Number(p.citationCount || p.citation_count) || 0), 0);
+  const targetCount = state.targetPapers || 10;
+
+  const europePmcCount = paperPool.filter(p => (p.sources || []).includes('Europe PMC') || p.source === 'epmc').length;
+  const semanticScholarCount = paperPool.filter(p => (p.sources || []).includes('Semantic Scholar') || p.source === 's2').length;
+  const bothSourcesCount = paperPool.filter(p => p.source === 'both' || (p.sources && p.sources.length > 1)).length;
+  const totalCitations = paperPool.reduce((sum, p) => sum + (Number(p.citationCount || p.citation_count) || 0), 0);
 
   const curatedEl = document.getElementById('metric-curated');
-  if (curatedEl) curatedEl.textContent = `${active.length} / ${state.targetPapers}`;
+  if (curatedEl) curatedEl.textContent = `${active.length} / ${targetCount}`;
 
   const pmcEl = document.getElementById('metric-pmc');
-  if (pmcEl) pmcEl.textContent = pmcCount;
+  if (pmcEl) pmcEl.textContent = String(europePmcCount);
 
   const s2El = document.getElementById('metric-s2');
-  if (s2El) s2El.textContent = s2Count;
+  if (s2El) s2El.textContent = String(semanticScholarCount);
 
   const overlapEl = document.getElementById('metric-overlap');
-  if (overlapEl) overlapEl.textContent = overlapCount;
+  if (overlapEl) overlapEl.textContent = String(bothSourcesCount);
 
-  const citsEl = document.getElementById('metric-citations');
-  if (citsEl) citsEl.textContent = totalCits.toLocaleString();
+  const citEl = document.getElementById('metric-citations');
+  if (citEl) citEl.textContent = totalCitations.toLocaleString();
 
   const selectedCountEl = document.getElementById('selected-papers-count');
-  if (selectedCountEl) selectedCountEl.textContent = active.length;
+  if (selectedCountEl) selectedCountEl.textContent = String(active.length);
 
   const targetBadgeEl = document.getElementById('target-papers-badge');
-  if (targetBadgeEl) targetBadgeEl.textContent = state.targetPapers;
+  if (targetBadgeEl) targetBadgeEl.textContent = String(targetCount);
 
   // Strict guard: disable Approve Selected Papers if selection is empty
   const approveBtn = document.getElementById('btn-approve-papers');
@@ -1178,14 +1203,47 @@ function updateReviewMetrics() {
   }
 }
 
+function updateReviewMetrics() {
+  updateStatsPanel(state.allPapers);
+}
+
 function renderPaperCards() {
   const container = document.getElementById('papers-list');
-  container.innerHTML = '';
 
-  const filterText = (document.getElementById('paper-search-filter').value || '').toLowerCase();
-  const sortMode = document.getElementById('paper-sort-select').value;
+  const filterText = (document.getElementById('paper-search-filter')?.value || '').toLowerCase();
+  const sortMode = document.getElementById('paper-sort-select')?.value || 'relevance';
 
   let papers = [...state.allPapers];
+
+  if (filterText) {
+    papers = papers.filter(p =>
+      (p.title || '').toLowerCase().includes(filterText) ||
+      (p.authors || '').toLowerCase().includes(filterText) ||
+      (p.journal || '').toLowerCase().includes(filterText)
+    );
+  }
+
+  if (sortMode === 'citations') {
+    papers.sort((a, b) => (b.citationCount || 0) - (a.citationCount || 0));
+  } else if (sortMode === 'year') {
+    papers.sort((a, b) => (b.year || 0) - (a.year || 0));
+  } else {
+    papers.sort((a, b) => b.relevancePercentage - a.relevancePercentage);
+  }
+
+  // Smooth non-destructive sort when filter is empty
+  const existingCardIds = new Set(Array.from(container.children).map(c => c.id));
+  const canReorderOnly = !filterText && papers.length > 0 && papers.every(p => existingCardIds.has(`paper-card-${p.id}`));
+
+  if (canReorderOnly && container.children.length === papers.length) {
+    papers.forEach(p => {
+      const el = document.getElementById(`paper-card-${p.id}`);
+      if (el) container.appendChild(el);
+    });
+    return;
+  }
+
+  container.innerHTML = '';
 
   if (filterText) {
     papers = papers.filter(p =>
@@ -1260,6 +1318,7 @@ function renderPaperCards() {
           <span class="badge" style="background:#e2e8f0; color:#334155;">${(paper.pubType || ['Article'])[0]}</span>
           ${paper.userStatus === 'essential' ? '<span class="badge badge-essential">⭐ Essential</span>' : ''}
           ${paper.userStatus === 'background' ? '<span class="badge badge-background">📘 Background</span>' : ''}
+          ${paper.userNote ? '<span class="badge badge-note" style="background:#e0f2fe; color:#0369a1; font-weight:600;">📝 Note</span>' : ''}
         </div>
         <div style="font-size:12px; font-weight:700; color:var(--text-muted);">
           #${idx + 1} • ${paper.pubDate} • ${paper.citationCount || 0} citations
@@ -1290,9 +1349,9 @@ function renderPaperCards() {
             📘 Background
           </button>
 
-          <!-- Add Note -->
+          <!-- Add / Edit Note -->
           <button class="btn-chip btn-add-note" data-id="${paper.id}">
-            ✏️ Add Note
+            ${paper.userNote ? '✏️ Edit Note' : '✏️ Add Note'}
           </button>
 
           <!-- Remove (Permanently deletes for current run) -->
@@ -1302,8 +1361,8 @@ function renderPaperCards() {
         </div>
 
         <div class="paper-links-group">
-          <a href="${sourceLink}" target="_blank" rel="noopener noreferrer" class="paper-link">Open source ↗</a>
-          ${fullTextLink ? `<a href="${fullTextLink}" target="_blank" rel="noopener noreferrer" class="paper-link">Open full text ↗</a>` : ''}
+          <a href="${sourceLink}" target="_blank" rel="noopener noreferrer" class="paper-link" title="Open primary database record">🌐 Open source ↗</a>
+          ${fullTextLink ? `<a href="${fullTextLink}" target="_blank" rel="noopener noreferrer" class="paper-link paper-link-fulltext" title="Open full-text PDF">📄 Open full text ↗</a>` : ''}
         </div>
       </div>
     `;
@@ -1385,16 +1444,78 @@ function togglePaperStatus(paperId, status) {
   renderPaperCards();
 }
 
-function promptUserNote(paperId) {
+function toggleInlineNoteEditor(paperId) {
   const paper = state.allPapers.find(p => p.id === paperId);
   if (!paper) return;
 
-  const note = prompt('Enter your note/comment for this paper:', paper.userNote || '');
-  if (note !== null) {
-    paper.userNote = note.trim();
-    showToast('Note updated.');
-    renderPaperCards();
+  const card = document.getElementById(`paper-card-${paper.id}`);
+  if (!card) return;
+
+  const existingEditor = document.getElementById(`inline-note-editor-${paper.id}`);
+  if (existingEditor) {
+    existingEditor.remove();
+    return;
   }
+
+  const editor = document.createElement('div');
+  editor.id = `inline-note-editor-${paper.id}`;
+  editor.className = 'inline-note-editor';
+
+  const currentNote = paper.userNote || '';
+
+  editor.innerHTML = `
+    <div style="font-size:12px; font-weight:700; color:var(--accent); margin-bottom:6px;">
+      📝 Clinical Note & Commentary
+    </div>
+    <textarea 
+      class="inline-note-input" 
+      id="note-textarea-${paper.id}" 
+      maxlength="500" 
+      placeholder="Enter your clinical note or commentary for this paper (max 500 characters)..." 
+      aria-label="Clinical note"
+    >${currentNote}</textarea>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+      <span class="char-count" id="note-char-counter-${paper.id}" style="font-size:12px; color:var(--muted);">${currentNote.length}/500</span>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn btn-secondary btn-cancel-inline-note" data-id="${paper.id}" style="padding:4px 10px; font-size:12px; cursor:pointer;">Cancel</button>
+        <button type="button" class="btn btn-primary btn-save-inline-note" data-id="${paper.id}" style="padding:4px 12px; font-size:12px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-weight:600; cursor:pointer;">Save Note</button>
+      </div>
+    </div>
+  `;
+
+  const actionsBar = card.querySelector('.paper-actions-bar');
+  if (actionsBar) {
+    card.insertBefore(editor, actionsBar);
+  } else {
+    card.appendChild(editor);
+  }
+
+  const textarea = document.getElementById(`note-textarea-${paper.id}`);
+  const counter = document.getElementById(`note-char-counter-${paper.id}`);
+  textarea.focus();
+
+  textarea.addEventListener('input', () => {
+    counter.textContent = `${textarea.value.length}/500`;
+  });
+
+  editor.querySelector('.btn-cancel-inline-note').addEventListener('click', () => {
+    editor.remove();
+  });
+
+  editor.querySelector('.btn-save-inline-note').addEventListener('click', () => {
+    const val = textarea.value.trim();
+    paper.userNote = val;
+    const selMatch = state.selectedPapers.find(p => p.id === paper.id);
+    if (selMatch) selMatch.userNote = val;
+
+    persistNotesToStorage();
+    showToast(val ? 'Note saved.' : 'Note cleared.');
+    renderPaperCards();
+  });
+}
+
+function promptUserNote(paperId) {
+  toggleInlineNoteEditor(paperId);
 }
 
 // Requirement: When the user clicks Remove, delete the paper from active selection permanently for current run.
@@ -1603,10 +1724,12 @@ function renderStep8DeckStudio() {
   slidesContainer.innerHTML = '';
 
   state.deck.slides.forEach((slide, idx) => {
-    // Navigation Pill
+    // Navigation Pill with accessibility title
     const pill = document.createElement('button');
     pill.className = `slide-nav-tab ${idx === 0 ? 'active' : ''}`;
     pill.textContent = `Slide ${slide.slideNumber}: ${slide.title.substring(0, 18)}...`;
+    pill.setAttribute('title', `Slide ${slide.slideNumber}: ${slide.title}`);
+    pill.dataset.slideIndex = idx;
     pill.addEventListener('click', () => {
       navBar.querySelectorAll('.slide-nav-tab').forEach(t => t.classList.remove('active'));
       pill.classList.add('active');
@@ -1695,14 +1818,41 @@ function renderStep8DeckStudio() {
 
       <!-- Mandatory Copyright Footer on every slide: copyrights@Raouf Roshdy2025, Arial 9 pt, right lower corner -->
       <div class="slide-footer-copyright-row">
-        <span class="slide-copyright-text">copyrights@Raouf Roshdy2025</span>
+        <span class="slide-copyright-text">© 2025 Raouf Roshdy. All rights reserved.</span>
       </div>
     `;
 
     slidesContainer.appendChild(card);
   });
 
-  // Prompt 13: Run Pre-Export Validation Gate before enabling Export to Word
+  // Attach keyboard navigation for slides (ArrowLeft / ArrowRight / 1-9)
+  if (!window._slideNavKeydownAttached) {
+    window._slideNavKeydownAttached = true;
+    window.addEventListener('keydown', (e) => {
+      const step8 = document.getElementById('step-8-section');
+      if (!step8 || step8.style.display === 'none' || !state.deck?.slides?.length) return;
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+      const tabs = Array.from(document.querySelectorAll('.slide-nav-tab'));
+      if (!tabs.length) return;
+      const activeIdx = tabs.findIndex(t => t.classList.contains('active'));
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        const nextIdx = (activeIdx + 1) % tabs.length;
+        tabs[nextIdx].click();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        const prevIdx = (activeIdx - 1 + tabs.length) % tabs.length;
+        tabs[prevIdx].click();
+      } else if (e.key >= '1' && e.key <= '9') {
+        const targetNum = parseInt(e.key, 10);
+        if (targetNum <= tabs.length) {
+          tabs[targetNum - 1].click();
+        }
+      }
+    });
+  }
+
+  // Prompt 13: Run Pre-Export Checks before enabling Export to Word
   runPreExportValidation();
 }
 
@@ -1761,11 +1911,12 @@ async function runPreExportValidation() {
     } else {
       if (exportBtn) {
         exportBtn.disabled = true;
+        exportBtn.setAttribute('aria-disabled', 'true');
         exportBtn.style.opacity = '0.5';
-        exportBtn.innerHTML = '<span>⚠️ Validation Incomplete</span>';
+        exportBtn.innerHTML = '<span>⚠️ Pre-Export Checks Failed</span>';
       }
       if (badgeEl) {
-        badgeEl.textContent = `⚠️ ${report.passedChecks}/${report.totalChecks} Standards Passed (${report.errors.length} Issues)`;
+        badgeEl.textContent = `⚠️ ${report.passedChecks}/${report.totalChecks} Standards Passed — see failed checks below`;
         badgeEl.style.background = '#fee2e2';
         badgeEl.style.color = '#991b1b';
       }
@@ -1869,17 +2020,55 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputsForm = document.getElementById('inputs-form');
   inputsForm.addEventListener('submit', handleStep1Submit);
 
-  // PPT Visuals Style Selector Buttons
+  // Restore notes from persistent storage
+  restoreNotesFromStorage();
+
+  // PPT Visuals Style Selector Buttons (with role=radio and aria-checked support)
   const visualBtns = document.querySelectorAll('.visual-style-btn');
   visualBtns.forEach(btn => {
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', btn.classList.contains('active') ? 'true' : 'false');
     btn.addEventListener('click', () => {
-      visualBtns.forEach(b => b.classList.remove('active'));
+      visualBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
       const val = btn.dataset.value;
       const hiddenInput = document.getElementById('visual-style-input');
       if (hiddenInput) hiddenInput.value = val;
     });
   });
+
+  // Numeric Inputs Real-Time Clamping & Validation
+  const targetInput = document.getElementById('target-papers-input');
+  if (targetInput) {
+    targetInput.addEventListener('change', () => {
+      let val = parseInt(targetInput.value, 10);
+      if (isNaN(val) || val < 3) targetInput.value = 3;
+      else if (val > 50) targetInput.value = 50;
+    });
+  }
+
+  const slideInput = document.getElementById('slide-count-input');
+  if (slideInput) {
+    slideInput.addEventListener('change', () => {
+      let val = parseInt(slideInput.value, 10);
+      if (isNaN(val) || val < 8) slideInput.value = 8;
+      else if (val > 30) slideInput.value = 30;
+    });
+  }
+
+  const yearInput = document.getElementById('start-year-input');
+  if (yearInput) {
+    yearInput.addEventListener('change', () => {
+      const cy = new Date().getFullYear();
+      let val = parseInt(yearInput.value, 10);
+      if (isNaN(val) || val < 1900) yearInput.value = 1900;
+      else if (val > cy) yearInput.value = cy;
+    });
+  }
 
   // Quick Chips
   document.querySelectorAll('.quick-chip').forEach(chip => {
