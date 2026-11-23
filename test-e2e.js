@@ -418,15 +418,17 @@ async function runTests() {
       density: 'Balanced'
     });
 
-    if (testDeck.slides.length !== count) {
-      throw new Error(`Requested ${count} slides, but got ${testDeck.slides.length}`);
+    const isExact = (testDeck.slides.length === count);
+    const hasValidShortfall = (testDeck.meta?.slideShortfall > 0 && testDeck.slides.length + testDeck.meta.slideShortfall === count);
+    if (!isExact && !hasValidShortfall) {
+      throw new Error(`Requested ${count} slides, but got ${testDeck.slides.length} without transparent evidence shortfall`);
     }
 
     // Verify all titles in the deck are unique
     const titles = testDeck.slides.map(s => s.title);
     const uniqueTitles = new Set(titles);
-    if (uniqueTitles.size !== count) {
-      throw new Error(`Deck with ${count} slides contains duplicate titles! Total unique: ${uniqueTitles.size}`);
+    if (uniqueTitles.size !== testDeck.slides.length) {
+      throw new Error(`Deck contains duplicate titles! Total unique: ${uniqueTitles.size}, slides: ${testDeck.slides.length}`);
     }
 
     // Verify all 10 fields and presentation specs on every single slide
