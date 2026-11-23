@@ -384,9 +384,9 @@ async function runTests() {
     }
   });
 
-  // Verify Research Gaps section is populated
-  if (!Array.isArray(deck.researchGaps) || deck.researchGaps.length < 3) {
-    throw new Error('Research gaps section must contain at least 3 identified gaps');
+  // Verify Research Gaps section is populated (Prompt 2B: accept >= 1 gap)
+  if (!Array.isArray(deck.researchGaps) || deck.researchGaps.length < 1) {
+    throw new Error('Research gaps section must contain at least 1 identified gap');
   }
 
   // Strict negative validation: No formal GRADE, Oxford evidence levels, or Risk of Bias assessments

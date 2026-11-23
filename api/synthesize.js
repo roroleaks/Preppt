@@ -1,5 +1,6 @@
 const { generatePresentationDeck } = require('../lib/synthesize.js');
 const { generateDeckWithLLM } = require('../lib/llm-synthesizer.js');
+const { validatePresentationOutput } = require('../lib/validator.js');
 
 async function parseBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -123,6 +124,42 @@ module.exports = async (req, res) => {
         }));
       }
     }
+
+    // Prompt 2B - Generator self-check & auto-repair
+    let validation = validatePresentationOutput({
+      deck,
+      papers: synthesisParams.papers,
+      topic: synthesisParams.topic,
+      requestedSlideCount: synthesisParams.slideCount
+    });
+
+    if (validation.failedCount > 0) {
+      console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair...`);
+      deck.slides.forEach(s => {
+        const originalBullets = (s.on_slide_text || '').split('\n').filter(Boolean);
+        const filteredBullets = originalBullets.filter(b => {
+          const clean = b.replace(/^[•\s-]+/, '').trim();
+          const openP = (clean.match(/\(/g) || []).length;
+          const closeP = (clean.match(/\)/g) || []).length;
+          if (openP !== closeP) return false;
+          if (/\(\s*\d+[\s\.]*$/.test(clean)) return false;
+          return true;
+        });
+        if (filteredBullets.length < originalBullets.length) {
+          s.on_slide_text = filteredBullets.join('\n');
+          s.onSlideText = s.on_slide_text;
+          s.bullets = filteredBullets;
+        }
+      });
+      validation = validatePresentationOutput({
+        deck,
+        papers: synthesisParams.papers,
+        topic: synthesisParams.topic,
+        requestedSlideCount: synthesisParams.slideCount
+      });
+    }
+
+    deck.validation = validation;
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');

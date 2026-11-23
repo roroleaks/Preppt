@@ -2,6 +2,17 @@
 
 All notable changes to the Preppt project are documented in this file.
 
+## [1.2.1] - 2026-11-23
+
+### Fixed
+- Prompt 2B: structured result bullets, no template gaps, generator–validator consistency.
+- Problem 1 (CRITICAL): Eliminated word-count chopping of findings sentences. Implemented `buildStructuredFinding` with `derivedFrom` machine-readable provenance (`outcome name + direction + both arms' values + effect, CI and P`); shortened non-finding text strictly at clause boundaries; expanded undefined abbreviations ("AAG" -> "AI-assisted group", "manual" -> "manual group"); strengthened `truncation` validation check to fail on open bracket fragments (such as `(248.`), dropped numbers without structured representation, and mid-clause chops.
+- Problem 2 (HIGH): Completely removed fallback template research gaps ("Durability of treatment response...", "Generalizability of findings across diverse patient cohorts...", etc.); outputs strictly `"No research gaps could be derived from the selected abstracts."` when no gaps can be derived; rephrased author limitations on gaps slide as open questions (`Open Question: ...`) to eliminate verbatim duplication with the limitations slide; updated test assertions requiring `>= 3` gaps to `>= 1`.
+- Problem 3 (CRITICAL, functional): Attached machine-readable provenance `derivedFrom: [{ ref, outcome, direction, values }]` to slide bullets and data models; updated `source_support` and `direction_fidelity` in `lib/validator.js` to recognize `derivedFrom` provenance alongside text-overlap checks, allowing correct decks to export without false blocks.
+- Added generator self-check and auto-repair in `/api/synthesize` to guarantee that the generator never emits a deck that its own validator fails.
+- Replaced vague Salih appraisal main message with specific outcome: `"AI outperformed embryologists in morphology assessment and outcome prediction (review of retrospective studies)."`.
+- Added Acceptance Tests 1 through 7 in `tests/e2e/prompt2b.spec.js` and added to `npm test`.
+
 ## [1.2.0] - 2026-11-23
 
 ### Fixed

@@ -197,7 +197,7 @@ async function runStepByStepValidation() {
   });
 
   assert.strictEqual(deck.slides.length, slideCount, `Slide count must equal requested (${slideCount})`);
-  assert(deck.researchGaps.length >= 3, 'At least 3 research gaps must be synthesized');
+  assert(deck.researchGaps.length >= 1, 'At least 1 research gap must be synthesized (Prompt 2B)');
   assert(deck.synthesisPlan, 'Evidence-based synthesis plan must be present');
 
   // Audit 10 fields per slide and absence of in-text citations
