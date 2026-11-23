@@ -2,7 +2,22 @@
 
 All notable changes to the Preppt project are documented in this file.
 
-## [1.1.1] - 2026-11-23
+## [1.2.0] - 2026-11-23
+
+### Fixed
+- Prompt 2: content-integrity pre-export checks; truthful labels; carry-over synthesis fixes.
+- Remediated audit defects D-04 (validator false assurance, CRITICAL), D-09 (misleading labels, HIGH), and integrity panel D-23.
+- Part A1: Named multi-direction outcomes in study appraisal main messages (e.g. Wang S: higher implantation with AI; no difference in live birth).
+- Part A2: Overhauled "consistent findings" logic to require 2+ records on the same normalized outcome in the same direction; Theme 1 only counts records with actual findings; no generic consistency claims across disparate outcomes.
+- Part A3: Restricted "absent outcome" research gaps strictly to outcomes requested in the topic or approved keywords; removed fixed absent-outcome list; eliminated unprompted survival, QoL, and health-economic gaps.
+- Part A4: Excluded methods, endpoint description, and sample margin sentences from findings bullets.
+- Part A5: Enforced bullet density constraints (Detailed <= 25 words, Balanced <= 15 words, Short <= 8 words) without mid-word cuts or lost numbers/direction.
+- Part A6: Replaced developer jargon on Title slide with "Narrative summary of N selected studies (abstract-based)"; eliminated "Analysis Framework" bullet; pruned content-free bullets from Scope slide.
+- Part B: Rebuilt Pre-Export Checks suite with 13 scientific integrity checks: `source_coverage` (fail), `source_support` (fail), `direction_fidelity` (fail), `unsupported_numbers` (fail), `vocabulary_drift` (fail), `framing_sources` (fail), `truncation` (warning), `no_intext_citations` (fail), `slide_count` (warning), `abstract_only_notice` (warning/pass), `removed_papers_absent` (fail), `no_api_secrets` (fail), `english_only` (warning).
+- Replaced false assurance claims ("100% domain-specific", "freshly synthesized", "Zero generic AI", "Standards Verified") with truthful summary lines and integrity note.
+- Enforced server-side validation blocking on `/api/export-docx` with HTTP 400 naming failing checks.
+- Part C: Updated keyword step to truthfully state rule-based term generation; added conference abstract detection (`isConferenceAbstract`) with UI badges and Word reference markers; removed "peer-reviewed" overclaims in favor of exact counts and source provenance; banned overclaims ("multicenter", "rigorous", "robust", "systematic synthesis", "pivotal", "landmark"); added engine and abstract-only basis banner to deck UI and Word cover.
+- Added comprehensive 9-point acceptance test suite `tests/e2e/prompt2-validation.spec.js`.
 
 ### Fixed
 - Prompt 1B: fixed design labels, finding selection, outcome-level comparison; removed remaining template text.
