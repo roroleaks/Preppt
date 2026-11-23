@@ -227,11 +227,11 @@ async function runAcceptanceTests() {
   console.log('▶️ TEST 5: Illingworth case test (Deep learning IVF RCT, non-inferiority not demonstrated)');
   const illingworthPaper = {
     id: 'illingworth-2024',
-    title: 'Deep learning artificial intelligence versus embryologist clinical evaluation for embryo selection in in vitro fertilization: a randomized clinical trial',
+    title: 'Deep learning versus manual morphology-based embryo selection in in vitro fertilization: a randomized clinical trial',
     authors: 'Illingworth PJ, et al.',
-    journal: 'Lancet Digit Health',
+    journal: 'Nat Med',
     year: 2024,
-    abstract: 'A non-inferiority randomized trial evaluated 1,061 patients. Ongoing pregnancy rate was 36.2% with AI versus 37.1% with embryologist (difference -0.9%, 95% CI -5.5% to 3.7%). The lower bound of the 95% CI exceeded the prespecified non-inferiority margin of -5.0%; therefore, non-inferiority was not demonstrated.'
+    abstract: 'In a double-blind non-inferiority randomized trial of 1,066 patients, clinical pregnancy rate was 46.5% with artificial intelligence versus 48.2% with manual embryologist evaluation (risk difference -1.7%, 95% CI -7.7% to 4.3%). Because the lower bound of the 95% confidence interval crossed the prespecified non-inferiority margin of -5.0%, non-inferiority was not demonstrated.'
   };
 
   const illingworthDeck = generatePresentationDeck({
@@ -333,18 +333,261 @@ async function runAcceptanceTests() {
   console.log(`  ✓ deck.meta.engine correctly labeled: "${ivfDeck.meta.engine}".`);
   console.log('  ✅ TEST 8 PASSED.\n');
 
+  // --------------------------------------------------------------------------
+  // TEST 9: Real three-paper IVF set (Prompt 1B)
+  // --------------------------------------------------------------------------
+  console.log('▶️ TEST 9: Real three-paper IVF set (Salih, Maresca, Wang - 10 slides requested)');
+  const test9Papers = [
+    {
+      authors: 'Salih M, 2023',
+      title: 'Embryo selection through artificial intelligence versus embryologists: a systematic review',
+      journal: 'Hum Reprod Open',
+      year: 2023,
+      abstract: 'STUDY QUESTION: What is the present performance of AI decision support during embryo selection compared to embryologists? SUMMARY ANSWER: AI consistently outperformed the clinical teams in all the studies focused on embryo morphology and clinical outcome prediction during embryo selection assessment. LIMITATIONS: The included studies were retrospective and heterogeneous.'
+    },
+    {
+      authors: 'Maresca L, 2026',
+      title: 'Artificial Intelligence in Embryo Selection: Current Approaches and Clinical Implications',
+      journal: 'Bioengineering',
+      year: 2026,
+      abstract: 'This review summarizes current approaches to artificial intelligence in embryo selection, including models based on static images and time-lapse imaging data.'
+    },
+    {
+      authors: 'Wang S, 2023',
+      title: 'Interpretable artificial intelligence-assisted embryo selection improved single-blastocyst transfer outcomes: a prospective cohort study',
+      journal: 'RBMO',
+      year: 2023,
+      abstract: 'The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
+    }
+  ];
+
+  const deck9 = generatePresentationDeck({
+    topic: 'Artificial Intelligence in IVF Embryo Selection',
+    shortTitle: 'AI in IVF Embryo Selection',
+    papers: test9Papers,
+    slideCount: 10,
+    audience: 'Postgraduate'
+  });
+
+  const fullDeckDump9 = JSON.stringify(deck9);
+  const allSlideText9 = deck9.slides.map(s => `${s.title}\n${s.main_message}\n${s.on_slide_text}\n${s.speaker_notes}`).join('\n\n');
+
+  // (a) The designs are: systematic review, narrative review, cohort study. "Comparative Study" appears nowhere.
+  assert.strictEqual(/comparative study/i.test(fullDeckDump9), false, 'Assertion (a) failed: "Comparative Study" must appear nowhere in the deck');
+  const characteristicsSlide = deck9.slides.find(s => s.stage === 3 || s.title.includes('Characteristics & Design'));
+  assert(characteristicsSlide, 'Characteristics slide must exist');
+  assert(/systematic review/i.test(characteristicsSlide.on_slide_text), 'Characteristics slide must mention Systematic review for Salih');
+  assert(/narrative review|review/i.test(characteristicsSlide.on_slide_text), 'Characteristics slide must mention Review for Maresca');
+  assert(/cohort study/i.test(characteristicsSlide.on_slide_text), 'Characteristics slide must mention Cohort study for Wang');
+
+  // (b) No text contains "statistically significant findings", "rigorous trials", "Trial by Salih", or "Trial by Maresca".
+  const forbiddenPhrases9b = [
+    'statistically significant findings',
+    'rigorous trials',
+    'trial by salih',
+    'trial by maresca'
+  ];
+  forbiddenPhrases9b.forEach(phrase => {
+    assert.strictEqual(
+      allSlideText9.toLowerCase().includes(phrase),
+      false,
+      `Assertion (b) failed: deck must not contain "${phrase}"`
+    );
+  });
+
+  // (c) No finding bullet ends in "?" or starts with "This review summarizes".
+  const findingSlide9 = deck9.slides.find(s => s.stage === 4 || s.title.includes('Primary Outcomes'));
+  assert(findingSlide9, 'Primary Outcomes slide must exist');
+  const findingBullets9 = (findingSlide9.on_slide_text || '').split('\n').filter(Boolean);
+  findingBullets9.forEach((b, bIdx) => {
+    assert.strictEqual(
+      b.trim().endsWith('?'),
+      false,
+      `Assertion (c) failed: Finding bullet ${bIdx + 1} must not end in "?"`
+    );
+    assert.strictEqual(
+      /•?\s*this review summarizes/i.test(b),
+      false,
+      `Assertion (c) failed: Finding bullet ${bIdx + 1} must not start with "This review summarizes"`
+    );
+  });
+
+  // (d) Salih's SUMMARY ANSWER sentence appears as a finding with source [1].
+  assert(
+    findingSlide9.sources && findingSlide9.sources.includes(1),
+    'Assertion (d) failed: Finding slide must include source [1]'
+  );
+  assert(
+    findingSlide9.on_slide_text.includes('AI consistently outperformed the clinical teams'),
+    'Assertion (d) failed: Salih SUMMARY ANSWER sentence must appear on Finding slide'
+  );
+
+  // (e) Wang's implantation and live-birth results appear together, attributed to [3], and are not described as conflicting with each other.
+  assert(
+    findingSlide9.sources && findingSlide9.sources.includes(3),
+    'Assertion (e) failed: Finding slide must include source [3]'
+  );
+  const wangBullet = findingBullets9.find(b => b.includes('Wang S') || b.includes('implantation rate was significantly higher'));
+  assert(wangBullet, 'Assertion (e) failed: Wang bullet must exist on findings slide');
+  assert(
+    wangBullet.includes('implantation') && wangBullet.includes('live birth'),
+    'Assertion (e) failed: Wang implantation and live-birth results must appear together in the same finding bullet'
+  );
+  assert.strictEqual(
+    /wang.*contrast.*wang|wang.*conflict.*wang/i.test(allSlideText9),
+    false,
+    'Assertion (e) failed: Wang outcomes must not be described as conflicting with each other'
+  );
+
+  // (f) None of these strings appear: "Long-Term Follow-Up", "late safety", "comorbid phenotypes", "Candidate Screening", "clinical severity tiers", "prospective registries", "demonstrates clinical benefit across".
+  const forbiddenPhrases9f = [
+    'long-term follow-up',
+    'late safety',
+    'comorbid phenotypes',
+    'candidate screening',
+    'clinical severity tiers',
+    'prospective registries',
+    'demonstrates clinical benefit across'
+  ];
+  forbiddenPhrases9f.forEach(frag => {
+    assert.strictEqual(
+      fullDeckDump9.toLowerCase().includes(frag),
+      false,
+      `Assertion (f) failed: deck must not contain "${frag}"`
+    );
+  });
+
+  // (g) Any slide whose bullets contain no extracted text shows "Evidence sources: none (framing slide)".
+  deck9.slides.forEach((s, idx) => {
+    if (!s.sources || s.sources.length === 0) {
+      assert(
+        s.evidenceSources && s.evidenceSources.includes('none (framing slide)'),
+        `Assertion (g) failed: Slide ${idx + 1} ("${s.title}") has no extracted sources but evidenceSources is "${s.evidenceSources}"`
+      );
+    }
+  });
+
+  // (h) Fewer than 10 slides plus meta.slideShortfall > 0 is acceptable. Padding is not.
+  assert(
+    deck9.slides.length === 10 || (deck9.slides.length < 10 && deck9.meta.slideShortfall > 0),
+    `Assertion (h) failed: Expected 10 slides or transparent shortfall, got ${deck9.slides.length} slides with shortfall ${deck9.meta.slideShortfall}`
+  );
+  console.log(`  ✓ Test 9 assertions (a)-(h) verified across all ${deck9.slides.length} slides.`);
+  console.log('  ✅ TEST 9 PASSED.\n');
+
+  // --------------------------------------------------------------------------
+  // TEST 10: RCT is recognised
+  // --------------------------------------------------------------------------
+  console.log('▶️ TEST 10: RCT is recognised (randomized non-inferiority trial)');
+  const test10Paper = {
+    authors: 'Test Investigator, 2024',
+    title: 'Deep learning versus manual morphology-based embryo selection in IVF: a randomized, double-blind noninferiority trial',
+    journal: 'Nat Med',
+    year: 2024,
+    abstract: 'In a double-blind non-inferiority randomized trial of 1,066 patients, clinical pregnancy rate was 46.5% with AI versus 48.2% with manual evaluation (risk difference -1.7%, 95% CI -7.7% to 4.3%). Non-inferiority was not demonstrated.'
+  };
+
+  const deck10 = generatePresentationDeck({
+    topic: 'Artificial Intelligence in IVF Embryo Selection',
+    shortTitle: 'AI in IVF',
+    papers: [test10Paper],
+    slideCount: 8,
+    audience: 'Postgraduate'
+  });
+
+  const fullDeckDump10 = JSON.stringify(deck10).toLowerCase();
+
+  // 1. Labelled "Randomised controlled trial"
+  const charSlide10 = deck10.slides.find(s => s.stage === 3 || s.title.includes('Characteristics & Design'));
+  assert(charSlide10, 'Characteristics slide must exist for Test 10');
+  assert(
+    charSlide10.on_slide_text.includes('Randomised controlled trial'),
+    'Test 10 failed: Paper must be labelled "Randomised controlled trial"'
+  );
+
+  // 2. No text claims an absence of RCTs
+  assert.strictEqual(
+    fullDeckDump10.includes('absence of prospective randomized') || fullDeckDump10.includes('absence of randomized'),
+    false,
+    'Test 10 failed: Deck must not falsely claim absence of RCTs when an RCT is included'
+  );
+
+  // 3. Deck says non-inferiority was not demonstrated
+  assert(
+    /non-inferiority was not demonstrated|not able to demonstrate non-inferiority/i.test(fullDeckDump10),
+    'Test 10 failed: Deck must state non-inferiority was not demonstrated'
+  );
+  console.log('  ✓ Test 10 verified: RCT recognised, no false absence claim, non-inferiority failure reported.');
+  console.log('  ✅ TEST 10 PASSED.\n');
+
+  // --------------------------------------------------------------------------
+  // TEST 11: No-findings case (background-only abstracts)
+  // --------------------------------------------------------------------------
+  console.log('▶️ TEST 11: No-findings case (two background-only abstracts)');
+  const test11Papers = [
+    {
+      authors: 'Author One, 2023',
+      title: 'Current Perspectives on Artificial Intelligence in Reproductive Medicine',
+      journal: 'Reprod Biomed Online',
+      year: 2023,
+      abstract: 'This review summarizes current approaches to artificial intelligence in embryo selection, including models based on static images and time-lapse imaging data.'
+    },
+    {
+      authors: 'Author Two, 2024',
+      title: 'Methodological Scoping of Machine Learning in Assisted Reproduction',
+      journal: 'Hum Reprod Update',
+      year: 2024,
+      abstract: 'STUDY QUESTION: What is the present state of machine learning applications in clinical embryology? We aimed to scope literature without pooling empirical outcomes.'
+    }
+  ];
+
+  const deck11 = generatePresentationDeck({
+    topic: 'Machine Learning in Assisted Reproduction',
+    shortTitle: 'ML in ART',
+    papers: test11Papers,
+    slideCount: 8,
+    audience: 'Postgraduate'
+  });
+
+  const fullDeckDump11 = JSON.stringify(deck11).toLowerCase();
+
+  // 1. Produces NO benefit statement
+  assert.strictEqual(
+    /demonstrates clinical benefit|significant clinical benefit|confirms clinical benefit/i.test(fullDeckDump11),
+    false,
+    'Test 11 failed: Background-only papers must produce NO benefit statement'
+  );
+
+  // 2. Conclusion says abstracts do not report outcome results sufficient to judge benefit
+  const conclusion11 = deck11.slides[deck11.slides.length - 1];
+  assert(
+    conclusion11.main_message.includes('The selected abstracts do not report outcome results sufficient to judge benefit') ||
+    conclusion11.on_slide_text.includes('The selected abstracts do not report outcome results sufficient to judge benefit'),
+    'Test 11 failed: Conclusion must state that abstracts do not report outcome results sufficient to judge benefit'
+  );
+  console.log('  ✓ Test 11 verified: 0 benefit claims, conclusion explicitly notes lack of empirical results.');
+  console.log('  ✅ TEST 11 PASSED.\n');
+
   console.log('================================================================');
-  console.log('🎉 ALL 8 PROMPT 1 ACCEPTANCE TESTS COMPLETED SUCCESSFULLY!');
+  console.log('🎉 ALL 11 PROMPT 1 & 1B ACCEPTANCE TESTS COMPLETED SUCCESSFULLY!');
   console.log('================================================================');
 
-  return test5Report;
+  return { test5Report, deck9 };
 }
 
 if (require.main === module) {
   runAcceptanceTests()
-    .then(report => {
+    .then(({ test5Report, deck9 }) => {
       console.log('\n--- ACCEPTANCE TEST 5 VERIFICATION OUTPUT ---');
-      console.log(JSON.stringify(report, null, 2));
+      console.log(JSON.stringify(test5Report, null, 2));
+
+      console.log('\n--- ACCEPTANCE TEST 9 FULL ON-SLIDE TEXT ---');
+      deck9.slides.forEach(s => {
+        console.log(`\n=== SLIDE ${s.slide_number}: ${s.title} ===`);
+        console.log(`[Main Message]: ${s.main_message}`);
+        console.log(`[On-Slide Text]:\n${s.on_slide_text}`);
+        console.log(`[Sources]: ${s.evidenceSources}`);
+      });
     })
     .catch(err => {
       console.error('\n❌ ACCEPTANCE TEST FAILED:', err);
