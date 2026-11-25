@@ -1745,7 +1745,7 @@ function renderStep8DeckStudio() {
   navBar.innerHTML = '';
   slidesContainer.innerHTML = '';
 
-  if (state.deck.selfCheck && state.deck.selfCheck.status === 'error') {
+  if (state.deck.selfCheck && (state.deck.selfCheck.status === 'error' || state.deck.selfCheck.status === 'failed')) {
     const notice = document.createElement('div');
     notice.id = 'self-check-warning-banner';
     notice.className = 'alert-box alert-warn';
@@ -1754,12 +1754,30 @@ function renderStep8DeckStudio() {
     const titleDiv = document.createElement('div');
     titleDiv.className = 'alert-title';
     const titleSpan = document.createElement('span');
-    titleSpan.textContent = '⚠️ Quality Check Notice';
+    titleSpan.textContent = state.deck.selfCheck.status === 'failed'
+      ? '⚠️ Quality Check Failed After Auto-Repair'
+      : '⚠️ Quality Check Notice';
     titleDiv.appendChild(titleSpan);
 
     const reasonDiv = document.createElement('div');
     reasonDiv.className = 'alert-reason';
-    reasonDiv.textContent = state.deck.selfCheck.message || 'Internal quality check could not run; please review the deck manually.';
+    if (state.deck.selfCheck.status === 'failed' && Array.isArray(state.deck.selfCheck.failures)) {
+      const summaryP = document.createElement('p');
+      summaryP.style.margin = '0 0 6px 0';
+      summaryP.textContent = `${state.deck.selfCheck.failures.length} quality check(s) failed after repair. Review the issues below before exporting:`;
+      reasonDiv.appendChild(summaryP);
+      const ul = document.createElement('ul');
+      ul.style.margin = '0';
+      ul.style.paddingLeft = '18px';
+      state.deck.selfCheck.failures.forEach(f => {
+        const li = document.createElement('li');
+        li.textContent = `${f.name || f.id}: ${f.details || 'Check failed'}`;
+        ul.appendChild(li);
+      });
+      reasonDiv.appendChild(ul);
+    } else {
+      reasonDiv.textContent = state.deck.selfCheck.message || 'Internal quality check could not run; please review the deck manually.';
+    }
 
     notice.appendChild(titleDiv);
     notice.appendChild(reasonDiv);
@@ -1989,6 +2007,9 @@ async function runPreExportValidation() {
       warningsCheckbox.onchange = updateExportButtonState;
     }
 
+    const existingBlockedBox = document.getElementById('export-blocked-details');
+    if (existingBlockedBox) existingBlockedBox.remove();
+
     if (!hasFailures) {
       if (badgeEl) {
         badgeEl.textContent = report.summary || `${report.passedCount} passed · ${report.warningCount} warnings · 0 failed`;
@@ -2003,6 +2024,76 @@ async function runPreExportValidation() {
         badgeEl.style.color = '#991b1b';
       }
       updateExportButtonState();
+
+      // Actionable Export-Blocked Panel (Prompt 3b)
+      const blockedBox = document.createElement('div');
+      blockedBox.id = 'export-blocked-details';
+      blockedBox.className = 'alert-box alert-warn';
+      blockedBox.style.marginTop = '12px';
+      blockedBox.style.borderColor = '#ef4444';
+      blockedBox.style.background = '#fef2f2';
+
+      const bTitle = document.createElement('div');
+      bTitle.className = 'alert-title';
+      bTitle.style.color = '#991b1b';
+      bTitle.textContent = `⚠️ Export Blocked (${report.failedCount} validation failure${report.failedCount === 1 ? '' : 's'})`;
+      blockedBox.appendChild(bTitle);
+
+      const bList = document.createElement('ul');
+      bList.style.margin = '8px 0 12px 0';
+      bList.style.paddingLeft = '20px';
+      bList.style.color = '#7f1d1d';
+
+      const failedChecks = (report.checks || []).filter(c => c.status === 'fail');
+      failedChecks.forEach(fc => {
+        const li = document.createElement('li');
+        li.style.marginBottom = '6px';
+        const slideMatch = (fc.details || '').match(/Slide\s+\d+/i);
+        const slideLabel = slideMatch ? slideMatch[0] : 'Deck-wide';
+        const strongEl = document.createElement('strong');
+        strongEl.textContent = `[${slideLabel}] ${fc.name || fc.id}: `;
+        const detailSpan = document.createElement('span');
+        detailSpan.textContent = fc.details || 'Validation check failed.';
+        li.appendChild(strongEl);
+        li.appendChild(detailSpan);
+        bList.appendChild(li);
+      });
+      blockedBox.appendChild(bList);
+
+      const actionsRow = document.createElement('div');
+      actionsRow.style.display = 'flex';
+      actionsRow.style.gap = '10px';
+      actionsRow.style.flexWrap = 'wrap';
+
+      const regenBtn = document.createElement('button');
+      regenBtn.type = 'button';
+      regenBtn.className = 'btn btn-primary';
+      regenBtn.textContent = 'Regenerate deck';
+      regenBtn.addEventListener('click', () => {
+        handleApproveSelectedPapers();
+      });
+
+      const backBtn = document.createElement('button');
+      backBtn.type = 'button';
+      backBtn.className = 'btn btn-secondary';
+      backBtn.textContent = 'Back to papers';
+      backBtn.addEventListener('click', () => {
+        const s8 = document.getElementById('step-8-section');
+        const s6 = document.getElementById('step-6-section');
+        if (s8) s8.style.display = 'none';
+        if (s6) s6.style.display = 'block';
+        setStepNav(6);
+        if (s6) s6.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      actionsRow.appendChild(regenBtn);
+      actionsRow.appendChild(backBtn);
+      blockedBox.appendChild(actionsRow);
+
+      if (container && container.parentNode) {
+        container.parentNode.insertBefore(blockedBox, container.nextSibling);
+      }
+
       if (report.errors && report.errors.length > 0) {
         showToast(`Validation Alert: ${report.errors[0]}`);
       }

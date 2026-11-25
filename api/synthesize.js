@@ -1,6 +1,7 @@
 const { generatePresentationDeck } = require('../lib/synthesize.js');
 const { generateDeckWithLLM } = require('../lib/llm-synthesizer.js');
 const { validatePresentationOutput } = require('../lib/validator.js');
+const { stripCitations } = require('../lib/text-rules.js');
 
 async function parseBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -144,24 +145,60 @@ module.exports = async (req, res) => {
         requestedSlideCount: synthesisParams.slideCount
       });
 
-      if (validation.failedCount > 0) {
-        console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair...`);
-        deck.slides.forEach(s => {
+      for (let pass = 1; pass <= 3 && validation.failedCount > 0; pass++) {
+        console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair pass ${pass}/3...`);
+        const failedChecks = (validation.checks || []).filter(c => c.status === 'fail');
+        const failedSlideNums = new Set();
+        for (const fc of failedChecks) {
+          const matches = (fc.details || '').matchAll(/Slide\s+(\d+)/gi);
+          for (const m of matches) failedSlideNums.add(Number(m[1]));
+        }
+
+        deck.slides.forEach((s, idx) => {
+          const slideNum = s.slide_number || s.slideNumber || (idx + 1);
           const originalBullets = (s.on_slide_text || '').split('\n').filter(Boolean);
-          const filteredBullets = originalBullets.filter(b => {
-            const clean = b.replace(/^[•\s-]+/, '').trim();
+          const filteredBullets = [];
+          const filteredData = [];
+
+          originalBullets.forEach((b, bIdx) => {
+            const clean = stripCitations(b.replace(/^[•\s-]+/, '').trim());
             const openP = (clean.match(/\(/g) || []).length;
             const closeP = (clean.match(/\)/g) || []).length;
-            if (openP !== closeP) return false;
-            if (/\(\s*\d+[\s\.]*$/.test(clean)) return false;
-            return true;
+            const openB = (clean.match(/\[/g) || []).length;
+            const closeB = (clean.match(/\]/g) || []).length;
+            if (openP !== closeP || openB !== closeB) return;
+            if (/\(\s*\d+[\s\.]*$/.test(clean) || /\[\s*\d+[\s\.]*$/.test(clean)) return;
+
+            // If this slide was flagged on a bullet-level failure, drop offending bullet
+            if (failedSlideNums.has(slideNum)) {
+              const bulletMentioned = failedChecks.some(fc =>
+                (fc.details || '').includes(`Slide ${slideNum} bullet ${bIdx + 1}`) ||
+                (fc.details || '').includes(`Slide ${slideNum} finding bullet`)
+              );
+              if (bulletMentioned) return;
+            }
+
+            const rebuilt = clean ? `• ${clean}` : '';
+            if (rebuilt) {
+              filteredBullets.push(rebuilt);
+              if (Array.isArray(s.bulletsData) && s.bulletsData[bIdx]) {
+                filteredData.push({ ...s.bulletsData[bIdx], text: rebuilt });
+              }
+            }
           });
-          if (filteredBullets.length < originalBullets.length) {
-            s.on_slide_text = filteredBullets.join('\n');
-            s.onSlideText = s.on_slide_text;
-            s.bullets = filteredBullets;
+
+          if (filteredBullets.length === 0 && originalBullets.length > 0) {
+            const fallbackMsg = '• No eligible finding in the selected papers for this section.';
+            filteredBullets.push(fallbackMsg);
+            s.sources = [];
           }
+
+          s.on_slide_text = filteredBullets.join('\n');
+          s.onSlideText = s.on_slide_text;
+          s.bullets = filteredBullets;
+          if (filteredData.length > 0) s.bulletsData = filteredData;
         });
+
         validation = validatePresentationOutput({
           deck,
           papers: synthesisParams.papers,
@@ -171,6 +208,12 @@ module.exports = async (req, res) => {
       }
 
       deck.validation = validation;
+      if (validation.failedCount > 0) {
+        deck.selfCheck = {
+          status: 'failed',
+          failures: (validation.checks || []).filter(c => c.status === 'fail')
+        };
+      }
     } catch (selfCheckErr) {
       console.error('Internal self-check error:', selfCheckErr);
       deck.selfCheck = {
