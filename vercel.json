@@ -1,0 +1,4 @@
+{
+  "functions": { "api/*.js": { "maxDuration": 60 } },
+  "git": { "deploymentEnabled": { "main": true } }
+}

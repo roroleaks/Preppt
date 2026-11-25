@@ -269,6 +269,22 @@ node scratch/run-random-topic-e2e.js
 
 ---
 
+## 🚢 Deployment & CI
+
+- **Git-Only Production Deploys**: Production deploys **only** by merging a Pull Request into `main` with GitHub Actions CI green (`vercel.json` enforces `git.deploymentEnabled.main: true` with branch previews enabled).
+- **Never Deploy Locally**: Never run `vercel --prod` from a local folder.
+- **Local CI Verification**:
+  ```bash
+  # First-time browser setup
+  npx playwright install chromium
+
+  # Run full CI gate (syntax check + offline unit/E2E suite + Playwright browser smoke suite)
+  npm run ci
+  ```
+- **Environment Variables**: Configure API keys (`OPENALEX_API_KEY`, `S2_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) and `CONTACT_EMAIL` in Vercel Project Settings (see `.env.example`). Never commit secrets to the repository.
+
+---
+
 ## 📄 License & Attribution
 
 - **Author**: Dr. Raouf Roshdy
