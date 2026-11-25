@@ -427,11 +427,21 @@ async function runAcceptanceTests() {
     findingSlide9.sources && findingSlide9.sources.includes(3),
     'Assertion (e) failed: Finding slide must include source [3]'
   );
-  const wangBullet = findingBullets9.find(b => b.includes('Wang S') || b.includes('implantation rate was significantly higher'));
+  const wangData = (findingSlide9.bulletsData || []).find(bd =>
+    Array.isArray(bd.derivedFrom) && bd.derivedFrom.some(df => df.ref === 3)
+  );
+  const wangBullet = wangData ? wangData.text : findingBullets9.find(b => /\(Wang \d{4}\)/.test(b));
   assert(wangBullet, 'Assertion (e) failed: Wang bullet must exist on findings slide');
   assert(
-    wangBullet.includes('implantation') && wangBullet.includes('live birth'),
+    /implantation/i.test(wangBullet) && /live birth/i.test(wangBullet),
     'Assertion (e) failed: Wang implantation and live-birth results must appear together in the same finding bullet'
+  );
+  assert(
+    wangBullet.includes('80.87%') &&
+    wangBullet.includes('68.15%') &&
+    /p\s*=\s*0\.022/i.test(wangBullet) &&
+    /no\s+(?:statistically\s+)?significant\s+difference.*live\s*birth|no\s+difference\s+in\s+live\s*birth/i.test(wangBullet),
+    `Assertion (e) failed: Wang bullet must retain 80.87%, 68.15%, p=0.022, and no-difference phrase for live birth. Found: "${wangBullet}"`
   );
   assert.strictEqual(
     /wang.*contrast.*wang|wang.*conflict.*wang/i.test(allSlideText9),
