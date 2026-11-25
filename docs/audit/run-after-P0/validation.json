@@ -1,11 +1,11 @@
 {
   "isValid": true,
   "canExport": true,
-  "totalChecks": 20,
-  "passedCount": 18,
+  "totalChecks": 21,
+  "passedCount": 19,
   "warningCount": 2,
   "failedCount": 0,
-  "summary": "18 passed · 2 warnings · 0 failed",
+  "summary": "19 passed · 2 warnings · 0 failed",
   "note": "These checks test traceability and consistency with the selected abstracts. They do not verify scientific accuracy or study quality. Review every slide against its listed sources before presenting.",
   "checks": [
     {
@@ -147,6 +147,13 @@
       "status": "warning",
       "passed": false,
       "details": "Cited source(s) [1, 8, 9, 10, 13, 14] are not indexed in PubMed/MEDLINE (Tier B / unknown) and are marked [not PubMed-indexed]."
+    },
+    {
+      "id": "conclusion_grounding",
+      "name": "Conclusion bullet grounding in source findings and abstracts",
+      "status": "pass",
+      "passed": true,
+      "details": "All attributed conclusion bullets are grounded in deck findings and cited paper abstracts."
     }
   ],
   "errors": [],

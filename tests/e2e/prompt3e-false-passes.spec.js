@@ -127,7 +127,25 @@ function runTests() {
     requestedSlideCount: 1
   });
   assert.strictEqual(rOmit.checks.find(c => c.id === 'quantitative_finding_omitted').status, 'warning', 'Omitted quantitative result must trigger quantitative_finding_omitted WARNING');
-  console.log('   ✓ All 6 bad bullets + duplicate + omitted quantitative checks caught as expected.');
+
+  // Kakkar 2025 regression: cut mid-phrase + narrative-review opinion -> sentence_integrity & finding_role FAIL
+  const kakkarPaper = req15.papers.find(p => JSON.stringify(p.authors || []).includes('Kakkar'));
+  const rKakkar = validatePresentationOutput({
+    deck: {
+      meta: { projectName: 'Preppt – Scientific Literature to Presentation', topic: 'AI in ART' },
+      slides: [{
+        slide_number: 4, stage: 4, title: 'What the Studies Found: Primary Outcomes', main_message: 'Summary.',
+        on_slide_text: '• AI-driven healthcare products demonstrate the potential for real-time (Kakkar 2025).',
+        speaker_notes: 'Summary.', sources: [1]
+      }],
+      researchGaps: []
+    },
+    papers: [kakkarPaper],
+    requestedSlideCount: 1
+  });
+  assert.strictEqual(rKakkar.checks.find(c => c.id === 'sentence_integrity').status, 'fail', 'Kakkar mid-phrase cut must FAIL sentence_integrity');
+  assert.strictEqual(rKakkar.checks.find(c => c.id === 'finding_role').status, 'fail', 'Kakkar narrative-review opinion must FAIL finding_role');
+  console.log('   ✓ All 6 bad bullets + duplicate + omitted quantitative + Kakkar regression caught as expected.');
 
   // 2. Test 15-paper deck prioritizes Tier A quantitative findings and passes with 0 ERROR failures
   console.log('2. Verifying Tier A quantitative findings and 0 ERROR failures on 15-paper deck...');
