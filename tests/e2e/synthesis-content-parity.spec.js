@@ -86,19 +86,19 @@ deck.slides.forEach((slide, idx) => {
 });
 console.log('✓ Zero forbidden generic AI phrases found across all slides for non-AI topic.');
 
-// 3. Verify clinical narrative arc stages
+// 3. Verify topic-neutral extractive narrative arc stages (Prompt 1)
 const slideTitles = deck.slides.map(s => s.title);
 console.log('Slide titles generated:');
 slideTitles.forEach((t, i) => console.log(`  Slide ${i + 1}: ${t}`));
 
 assert(slideTitles[0].includes('SGLT2i in HFpEF'), 'Slide 1 should reflect title');
-assert(slideTitles[1].includes('The Hook'), 'Slide 2 should be The Hook');
-assert(slideTitles[2].includes('Definition & Scope'), 'Slide 3 should be Definition & Scope');
-assert(slideTitles[3].includes('Mechanistic Targets') || slideTitles[3].includes('Biological Action'), 'Slide 4 should be clinical mechanistic targets on non-AI topic');
-assert(slideTitles[4].includes('Clinical Impacts'), 'Slide 5 should be Clinical Impacts & Use Cases');
-assert(slideTitles[5].includes('Safety') || slideTitles[5].includes('Tolerability'), 'Slide 6 should be Clinical Safety & Limitations on non-AI topic');
-assert(slideTitles[6].includes('Future Outlook'), 'Slide 7 should be Future Outlook');
-assert(slideTitles[7].includes('Conclusion & Call to Action'), 'Slide 8 should be Conclusion & Call to Action');
-console.log('✓ Strict 8-stage clinical narrative arc validated.');
+assert(/Scope|Dilemma/i.test(slideTitles[1]), 'Slide 2 should be Question & Scope');
+assert(/Characteristics|Design|Overview/i.test(slideTitles[2]), 'Slide 3 should be Evidence Overview / Characteristics');
+assert(/Primary Outcomes|What the Studies Found/i.test(slideTitles[3]), 'Slide 4 should be Primary Outcomes');
+assert(/Comparative|Null|Conflicting|Findings/i.test(slideTitles[4]), 'Slide 5 should be Comparative or Null Findings');
+assert(/Limitations/i.test(slideTitles[5]), 'Slide 6 should be Methodological Limitations');
+assert(/Horizons|Unresolved|Gaps/i.test(slideTitles[6]), 'Slide 7 should be Research Gaps / Horizons');
+assert(/Conclusion|Take-Homes/i.test(slideTitles[7]), 'Slide 8 should be Conclusion & Practice Take-Homes');
+console.log('✓ Strict topic-neutral narrative arc validated.');
 
 console.log('\n✅ ALL SYNTHESIS CONTENT PARITY TESTS PASSED SUCCESSFULLY.');

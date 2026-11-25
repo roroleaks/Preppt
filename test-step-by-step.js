@@ -197,7 +197,7 @@ async function runStepByStepValidation() {
   });
 
   assert.strictEqual(deck.slides.length, slideCount, `Slide count must equal requested (${slideCount})`);
-  assert(deck.researchGaps.length >= 3, 'At least 3 research gaps must be synthesized');
+  assert(deck.researchGaps.length >= 1, 'At least 1 research gap must be synthesized (Prompt 2B)');
   assert(deck.synthesisPlan, 'Evidence-based synthesis plan must be present');
 
   // Audit 10 fields per slide and absence of in-text citations
@@ -221,8 +221,8 @@ async function runStepByStepValidation() {
   console.log('  ✓ In-text citation isolation verified across 100% of slide text and speaker notes.');
   console.log('  ✅ STEP 7 & 8 PASSED: Synthesis engine fully verified.\n');
 
-  // STEP 9: Pre-Export Integrity Audit (Prompt 13 - 9 Criteria)
-  console.log('▶️ STEP 9: Pre-Export Integrity Audit (9 Prompt 13 Criteria)');
+  // STEP 9: Pre-Export Integrity Audit (13 Pre-export Checks)
+  console.log('▶️ STEP 9: Pre-Export Integrity Audit (13 Pre-export Checks)');
   const auditResult = validatePresentationOutput({
     deck,
     papers: approvedPapers,
@@ -231,13 +231,13 @@ async function runStepByStepValidation() {
     topic
   });
 
-  assert.strictEqual(auditResult.isValid, true, 'Pre-export audit must pass all criteria');
-  assert.strictEqual(auditResult.checks.length, 9, 'All 9 audit checks must be evaluated');
+  assert.strictEqual(auditResult.isValid, true, 'Pre-export audit must pass without blocking failures');
+  assert.strictEqual(auditResult.checks.length, 13, 'All 13 audit checks must be evaluated');
   auditResult.checks.forEach(c => {
-    assert.strictEqual(c.passed, true, `Audit check failed: ${c.name}`);
-    console.log(`  ✓ [PASSED] Criterion: ${c.name}`);
+    assert(c.status === 'pass' || c.status === 'warning', `Audit check failed: ${c.name} (${c.id})`);
+    console.log(`  ✓ [${c.status.toUpperCase()}] Criterion: ${c.name}`);
   });
-  console.log('  ✅ STEP 9 PASSED: All 9 integrity criteria verified 100%.\n');
+  console.log('  ✅ STEP 9 PASSED: All 13 integrity criteria verified.\n');
 
   // STEP 10: Word Document Export (.docx)
   console.log('▶️ STEP 10: Generating Word Document (.docx) Specification (11-Part Order)');
