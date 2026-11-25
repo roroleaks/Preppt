@@ -1745,6 +1745,27 @@ function renderStep8DeckStudio() {
   navBar.innerHTML = '';
   slidesContainer.innerHTML = '';
 
+  if (state.deck.selfCheck && state.deck.selfCheck.status === 'error') {
+    const notice = document.createElement('div');
+    notice.id = 'self-check-warning-banner';
+    notice.className = 'alert-box alert-warn';
+    notice.style.marginBottom = '16px';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'alert-title';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = '⚠️ Quality Check Notice';
+    titleDiv.appendChild(titleSpan);
+
+    const reasonDiv = document.createElement('div');
+    reasonDiv.className = 'alert-reason';
+    reasonDiv.textContent = state.deck.selfCheck.message || 'Internal quality check could not run; please review the deck manually.';
+
+    notice.appendChild(titleDiv);
+    notice.appendChild(reasonDiv);
+    slidesContainer.appendChild(notice);
+  }
+
   state.deck.slides.forEach((slide, idx) => {
     // Navigation Pill with accessibility title
     const pill = document.createElement('button');

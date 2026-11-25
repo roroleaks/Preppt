@@ -30,6 +30,16 @@ module.exports = async (req, res) => {
 
   try {
     const data = await parseBody(req);
+    if (!data || typeof data !== 'object' || !Array.isArray(data.papers) || data.papers.length === 0) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.end(JSON.stringify({ error: 'At least one approved paper is required to generate the presentation deck.' }));
+    }
+    if (data.slideCount !== undefined && (!Number.isFinite(Number(data.slideCount)) || Number(data.slideCount) < 1)) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.end(JSON.stringify({ error: 'Invalid slideCount parameter.' }));
+    }
     const synthesisParams = {
       topic: data.topic || 'Scientific Topic',
       shortTitle: data.shortTitle || '',
@@ -126,48 +136,56 @@ module.exports = async (req, res) => {
     }
 
     // Prompt 2B - Generator self-check & auto-repair
-    let validation = validatePresentationOutput({
-      deck,
-      papers: synthesisParams.papers,
-      topic: synthesisParams.topic,
-      requestedSlideCount: synthesisParams.slideCount
-    });
-
-    if (validation.failedCount > 0) {
-      console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair...`);
-      deck.slides.forEach(s => {
-        const originalBullets = (s.on_slide_text || '').split('\n').filter(Boolean);
-        const filteredBullets = originalBullets.filter(b => {
-          const clean = b.replace(/^[•\s-]+/, '').trim();
-          const openP = (clean.match(/\(/g) || []).length;
-          const closeP = (clean.match(/\)/g) || []).length;
-          if (openP !== closeP) return false;
-          if (/\(\s*\d+[\s\.]*$/.test(clean)) return false;
-          return true;
-        });
-        if (filteredBullets.length < originalBullets.length) {
-          s.on_slide_text = filteredBullets.join('\n');
-          s.onSlideText = s.on_slide_text;
-          s.bullets = filteredBullets;
-        }
-      });
-      validation = validatePresentationOutput({
+    try {
+      let validation = validatePresentationOutput({
         deck,
         papers: synthesisParams.papers,
         topic: synthesisParams.topic,
         requestedSlideCount: synthesisParams.slideCount
       });
-    }
 
-    deck.validation = validation;
+      if (validation.failedCount > 0) {
+        console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair...`);
+        deck.slides.forEach(s => {
+          const originalBullets = (s.on_slide_text || '').split('\n').filter(Boolean);
+          const filteredBullets = originalBullets.filter(b => {
+            const clean = b.replace(/^[•\s-]+/, '').trim();
+            const openP = (clean.match(/\(/g) || []).length;
+            const closeP = (clean.match(/\)/g) || []).length;
+            if (openP !== closeP) return false;
+            if (/\(\s*\d+[\s\.]*$/.test(clean)) return false;
+            return true;
+          });
+          if (filteredBullets.length < originalBullets.length) {
+            s.on_slide_text = filteredBullets.join('\n');
+            s.onSlideText = s.on_slide_text;
+            s.bullets = filteredBullets;
+          }
+        });
+        validation = validatePresentationOutput({
+          deck,
+          papers: synthesisParams.papers,
+          topic: synthesisParams.topic,
+          requestedSlideCount: synthesisParams.slideCount
+        });
+      }
+
+      deck.validation = validation;
+    } catch (selfCheckErr) {
+      console.error('Internal self-check error:', selfCheckErr);
+      deck.selfCheck = {
+        status: 'error',
+        message: 'Internal quality check could not run; please review the deck manually.'
+      };
+    }
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.end(JSON.stringify(deck));
   } catch (err) {
     console.error('Synthesis error:', err);
-    res.statusCode = 400;
+    res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    return res.end(JSON.stringify({ error: err.message }));
+    return res.end(JSON.stringify({ error: 'Synthesis failed. Please retry.' }));
   }
 };
