@@ -247,7 +247,11 @@ async function runStepByStepValidation() {
     'no_api_secrets',
     'english_only',
     'finding_readability',
-    'finding_role'
+    'finding_role',
+    'sentence_integrity',
+    'duplicate_source_sentence',
+    'generic_conclusion',
+    'quantitative_finding_omitted'
   ];
   const actualCheckIds = auditResult.checks.map(c => c.id);
   EXPECTED_CHECK_IDS.forEach(id => {

@@ -152,5 +152,33 @@
     "index": 3,
     "total": 4,
     "expectedRole": "conclusion"
+  },
+  {
+    "source": "15-paper Ref 3 (Kakkar 2025)",
+    "raw": "Personalized treatment plans and enhanced diagnostic accuracy are central themes explored in this review.",
+    "index": 2,
+    "total": 4,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "15-paper Ref 4 (Li 2025)",
+    "raw": "Artificial intelligence (AI) is ideally suited to processing and analyzing large, dynamic temporal data sets.",
+    "index": 2,
+    "total": 4,
+    "expectedRole": "background"
+  },
+  {
+    "source": "15-paper Ref 6 (Kragh 2021)",
+    "raw": "In this paper, we provide a technical view on some of the major topics that divide the field of AI in embryo selection.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "15-paper Ref 5 (Medenica 2022)",
+    "raw": "AI has great potential in reproductive medicine and is expected to transform clinical workflows.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "background"
   }
 ]

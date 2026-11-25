@@ -1,11 +1,11 @@
 {
   "isValid": true,
   "canExport": true,
-  "totalChecks": 15,
-  "passedCount": 15,
+  "totalChecks": 19,
+  "passedCount": 19,
   "warningCount": 0,
   "failedCount": 0,
-  "summary": "15 passed · 0 warnings · 0 failed",
+  "summary": "19 passed · 0 warnings · 0 failed",
   "note": "These checks test traceability and consistency with the selected abstracts. They do not verify scientific accuracy or study quality. Review every slide against its listed sources before presenting.",
   "checks": [
     {
@@ -112,6 +112,34 @@
       "status": "pass",
       "passed": true,
       "details": "All finding bullets on findings slides originate from results or conclusion sentences."
+    },
+    {
+      "id": "sentence_integrity",
+      "name": "Sentence boundary integrity (no mid-sentence cuts)",
+      "status": "pass",
+      "passed": true,
+      "details": "All slide bullets end at valid sentence or clause boundaries."
+    },
+    {
+      "id": "duplicate_source_sentence",
+      "name": "No duplicate source sentences across slides",
+      "status": "pass",
+      "passed": true,
+      "details": "Zero duplicate source sentences across presentation slides."
+    },
+    {
+      "id": "generic_conclusion",
+      "name": "Evidence-derived conclusion (no generic evaluative templates)",
+      "status": "pass",
+      "passed": true,
+      "details": "Conclusion bullets are derived from study types, attributed directions, and evidence limits."
+    },
+    {
+      "id": "quantitative_finding_omitted",
+      "name": "Quantitative study findings included",
+      "status": "pass",
+      "passed": true,
+      "details": "All parsed quantitative study findings from selected abstracts are represented in the deck."
     }
   ],
   "errors": [],

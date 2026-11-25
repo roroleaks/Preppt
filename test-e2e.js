@@ -663,7 +663,11 @@ async function runTests() {
     'no_api_secrets',
     'english_only',
     'finding_readability',
-    'finding_role'
+    'finding_role',
+    'sentence_integrity',
+    'duplicate_source_sentence',
+    'generic_conclusion',
+    'quantitative_finding_omitted'
   ];
   const actualIds = validReport.checks.map(c => c.id);
   for (const id of EXPECTED_CHECK_IDS) {
