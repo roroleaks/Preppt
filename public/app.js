@@ -2051,12 +2051,6 @@ async function exportToWord() {
         reviewedWarnings
       })
     });
-        papers: state.selectedPapers,
-        removedPapers: state.projectRun?.removed_papers || [],
-        slideCount: state.slideCount,
-        meta: state.deck.meta
-      })
-    });
 
     if (!res.ok) {
       const err = await res.json();
