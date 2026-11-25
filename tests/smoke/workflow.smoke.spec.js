@@ -244,4 +244,99 @@ test.describe('Preppt Browser Smoke Suite', () => {
       expect(body).not.toMatch(/\b\w*key\w*\s*=\s*['"`][A-Za-z0-9]{16,}['"`]/i);
     }
   });
+
+  test('D: malicious paper metadata and slide bullets are escaped (XSS)', async ({ page }) => {
+    const dialogs = [];
+    page.on('dialog', async (d) => {
+      dialogs.push(d.message());
+      await d.dismiss();
+    });
+
+    const maliciousTitle = '<img src=x onerror="window.__xss=1">';
+    const maliciousNote = '<script>window.__xss=2</script>';
+    const maliciousDoi = 'javascript:alert(1)';
+    const maliciousBullet = '<b onmouseover=alert(1)>x</b>';
+
+    await page.addInitScript((noteVal) => {
+      localStorage.setItem('preppt:notes:v1', JSON.stringify({
+        '<img src=x onerror="window.__xss=1">': noteVal
+      }));
+    }, maliciousNote);
+
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    await page.fill('#topic-input', 'Artificial Intelligence in Assisted Reproduction');
+    await page.fill('#short-title-input', 'AI in ART');
+    await page.fill('#target-papers-input', '5');
+    await page.fill('#start-year-input', '2019');
+    await page.click('#btn-to-keywords');
+    await expect(page.locator('#step-2-section')).toBeVisible({ timeout: 15000 });
+    await page.click('#btn-approve-keywords');
+    await expect(page.locator('#step-3-section')).toBeVisible({ timeout: 15000 });
+
+    const maliciousPaper = {
+      ...fixturePapers[0],
+      id: 'xss-1',
+      title: maliciousTitle,
+      doi: maliciousDoi,
+      pmid: '',
+      abstract: 'Artificial Intelligence in Assisted Reproduction clinical outcomes.'
+    };
+    await page.route('https://www.ebi.ac.uk/europepmc/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildEpmcStub(fixturePapers.slice(1, 5))) })
+    );
+    await page.route('**/api/s2**', (route) =>
+      route.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: 'Rate limit' }) })
+    );
+    await page.route('**/api/openalex**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildProxyStub([maliciousPaper], 'openalex')) })
+    );
+    await page.route('**/api/crossref**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildProxyStub(fixturePapers.slice(5, 8), 'crossref')) })
+    );
+
+    await page.click('#btn-approve-strategy');
+    await expect(page.locator('#step-6-section')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('#papers-list .paper-card').first()).toBeVisible({ timeout: 15000 });
+
+    const paperListText = await page.locator('#papers-list').innerText();
+    expect(paperListText).toContain(maliciousTitle);
+
+    await page.route('**/api/synthesize', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          shortTitle: 'AI in ART',
+          meta: { engine: 'deterministic-extractive', slideDensity: 'Balanced', audience: 'Consultants' },
+          synthesisPlan: { objective: 'Test', themes: [] },
+          researchGaps: [],
+          slides: [{
+            slideNumber: 1,
+            title: 'XSS Test Slide',
+            suggestedVisualType: 'Bar chart',
+            objective: 'Objective',
+            mainMessage: 'Main message',
+            slideDensity: 'Balanced',
+            onSlideText: maliciousBullet,
+            detailedVisualDescription: 'Layout',
+            speakerNotes: 'Notes',
+            audienceQuestion: 'Question?',
+            transition: 'Next',
+            sources: [1]
+          }],
+          validation: { isValid: true, passedCount: 1, warningCount: 0, failedCount: 0, checks: [] }
+        })
+      })
+    );
+
+    await page.click('#btn-approve-papers');
+    await expect(page.locator('#step-8-section')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.slide-card').first()).toBeVisible({ timeout: 15000 });
+
+    const xssFlag = await page.evaluate(() => window.__xss);
+    expect(xssFlag).toBeUndefined();
+    expect(dialogs).toEqual([]);
+    const slideText = await page.locator('.slide-card').first().innerText();
+    expect(slideText).toContain(maliciousBullet);
+  });
 });
