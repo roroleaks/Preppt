@@ -1,0 +1,184 @@
+[
+  {
+    "source": "15-paper Ref 4",
+    "raw": "As a disease that seriously affects the health of men and women of childbearing age, the incidence of infertility is increasing worldwide, and the popularization of assisted reproductive technology (ART) is expected to improve the situation.",
+    "index": 0,
+    "total": 4,
+    "expectedRole": "background"
+  },
+  {
+    "source": "15-paper Ref 4",
+    "raw": "However, invitro fertilization and embryo transfer (IVF) success rates are only about 50%, and IVF success rates are affected by a number of factors.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "background"
+  },
+  {
+    "source": "15-paper Ref 13",
+    "raw": "Despite four decades of refinement, in vitro fertilisation live birth rates plateau at 25-30% globally, largely due to limitations in subjective embryo selection.",
+    "index": 0,
+    "total": 5,
+    "expectedRole": "background"
+  },
+  {
+    "source": "3-paper Ref 2 (Murria 2023)",
+    "raw": "STUDY QUESTION: Can artificial intelligence algorithms improve embryo selection in assisted reproduction?",
+    "index": 0,
+    "total": 6,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "3-paper Ref 2 (Murria 2023)",
+    "raw": "WHAT IS KNOWN ALREADY: Morphological assessment of embryos remains subjective with high inter-observer variability.",
+    "index": 1,
+    "total": 6,
+    "expectedRole": "background"
+  },
+  {
+    "source": "3-paper Ref 2 (Murria 2023)",
+    "raw": "PARTICIPANTS/MATERIALS, SETTING AND METHODS: Retrospective multicenter cohort of 1,200 IVF cycles.",
+    "index": 2,
+    "total": 6,
+    "expectedRole": "methods"
+  },
+  {
+    "source": "3-paper Ref 2 (Murria 2023)",
+    "raw": "MAIN RESULTS AND THE ROLE OF CHANCE: AI prediction achieved AUC 0.79 (95% CI 0.71–0.86) for clinical pregnancy.",
+    "index": 3,
+    "total": 6,
+    "expectedRole": "results"
+  },
+  {
+    "source": "3-paper Ref 2 (Murria 2023)",
+    "raw": "LIMITATIONS, REASONS FOR CAUTION: The study was retrospective and requires prospective validation.",
+    "index": 4,
+    "total": 6,
+    "expectedRole": "limitation"
+  },
+  {
+    "source": "3-paper Ref 2 (Murria 2023)",
+    "raw": "WIDER IMPLICATIONS OF THE FINDINGS: Standardized external benchmarks are warranted prior to clinical deployment.",
+    "index": 5,
+    "total": 6,
+    "expectedRole": "conclusion"
+  },
+  {
+    "source": "15-paper Ref 13",
+    "raw": "Clinical pregnancy rates were significantly higher in the AI-assisted group (45.7%, 268/587) compared to the conventional group (38.1%, 223/585), with an adjusted odds ratio of 1.40 (95% confidence interval, 1.11-1.77; p = 0.004).",
+    "index": 2,
+    "total": 5,
+    "expectedRole": "results"
+  },
+  {
+    "source": "GDM-1",
+    "raw": "Metformin in gestational diabetes demonstrated comparable glycemic control with reduced maternal gestational weight gain compared with insulin.",
+    "index": 0,
+    "total": 1,
+    "expectedRole": "results"
+  },
+  {
+    "source": "GDM-2",
+    "raw": "At 2-year follow-up, offspring exposed to metformin demonstrated no adverse neurodevelopmental delays compared with insulin-exposed controls.",
+    "index": 0,
+    "total": 1,
+    "expectedRole": "results"
+  },
+  {
+    "source": "Endo-1",
+    "raw": "Robotic-assisted excision demonstrated lower operative blood loss with longer operating times but comparable 12-month pain reduction scores.",
+    "index": 0,
+    "total": 1,
+    "expectedRole": "results"
+  },
+  {
+    "source": "Endo-2",
+    "raw": "Spontaneous pregnancy rates at 18 months post-surgery were 42.1% following complete robotic resection of deep infiltrating nodules.",
+    "index": 0,
+    "total": 1,
+    "expectedRole": "results"
+  },
+  {
+    "source": "3-paper Ref 1 (Cimadomo 2026)",
+    "raw": "This review summarizes recent clinical evidence and ethical challenges of artificial intelligence in assisted reproduction.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "3-paper Ref 3 (Medenica 2022)",
+    "raw": "OBJECTIVE: To evaluate the role of artificial intelligence and machine learning in assisted reproductive technologies.",
+    "index": 0,
+    "total": 4,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "15-paper Ref 5",
+    "raw": "METHODS: We searched PubMed and Scopus for studies evaluating machine learning algorithms in IVF.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "methods"
+  },
+  {
+    "source": "15-paper Ref 5",
+    "raw": "RESULTS: Deep learning models improved blastocyst grading reproducibility across participating clinics.",
+    "index": 2,
+    "total": 4,
+    "expectedRole": "results"
+  },
+  {
+    "source": "15-paper Ref 5",
+    "raw": "CONCLUSIONS: Prospective randomized trials are required to confirm clinical benefit over standard morphology.",
+    "index": 3,
+    "total": 4,
+    "expectedRole": "conclusion"
+  },
+  {
+    "source": "15-paper Ref 8",
+    "raw": "LIMITATIONS: Small sample size and retrospective single-center design limit generalizability.",
+    "index": 3,
+    "total": 4,
+    "expectedRole": "limitation"
+  },
+  {
+    "source": "15-paper Ref 9",
+    "raw": "A total of 420 patients were enrolled in this observational cohort between 2020 and 2023.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "methods"
+  },
+  {
+    "source": "15-paper Ref 10",
+    "raw": "In conclusion, our findings suggest that AI-assisted time-lapse selection requires prospective validation before routine use.",
+    "index": 3,
+    "total": 4,
+    "expectedRole": "conclusion"
+  },
+  {
+    "source": "15-paper Ref 3 (Kakkar 2025)",
+    "raw": "Personalized treatment plans and enhanced diagnostic accuracy are central themes explored in this review.",
+    "index": 2,
+    "total": 4,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "15-paper Ref 4 (Li 2025)",
+    "raw": "Artificial intelligence (AI) is ideally suited to processing and analyzing large, dynamic temporal data sets.",
+    "index": 2,
+    "total": 4,
+    "expectedRole": "background"
+  },
+  {
+    "source": "15-paper Ref 6 (Kragh 2021)",
+    "raw": "In this paper, we provide a technical view on some of the major topics that divide the field of AI in embryo selection.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "objective"
+  },
+  {
+    "source": "15-paper Ref 5 (Medenica 2022)",
+    "raw": "AI has great potential in reproductive medicine and is expected to transform clinical workflows.",
+    "index": 1,
+    "total": 4,
+    "expectedRole": "background"
+  }
+]

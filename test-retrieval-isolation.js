@@ -94,8 +94,11 @@ function fetchSemanticScholar(query, pageSize = 5) {
 // OpenAlex Real Network Query (Resilient fallback when Semantic Scholar fails)
 function fetchOpenAlex(query, pageSize = 5) {
   return new Promise((resolve, reject) => {
-    const OPENALEX_KEY = 'LCR4PBZ9z5sTV3HuRDicln';
-    const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&filter=publication_year:2021-${CURRENT_YEAR}&per_page=${pageSize}&api_key=${OPENALEX_KEY}&mailto=raouf.roshdy@aimed.org`;
+    const openAlexKey = process.env.OPENALEX_API_KEY || '';
+    const contactEmail = process.env.CONTACT_EMAIL || '';
+    const keyParam = openAlexKey ? `&api_key=${encodeURIComponent(openAlexKey)}` : '';
+    const mailtoParam = contactEmail ? `&mailto=${encodeURIComponent(contactEmail)}` : '';
+    const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&filter=publication_year:2021-${CURRENT_YEAR}&per_page=${pageSize}${keyParam}${mailtoParam}`;
     const req = https.get(url, { timeout: 8000, headers: { 'User-Agent': 'Preppt/1.0 (mailto:raouf.roshdy@aimed.org)' } }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);

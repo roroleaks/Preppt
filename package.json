@@ -5,8 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test-e2e.js && node test-step-by-step.js && npm run test:e2e",
-    "test:e2e": "node tests/e2e/no-client-secrets.spec.js && node tests/e2e/synthesis-content-parity.spec.js && node tests/e2e/stats-panel-accuracy.spec.js && node tests/e2e/paper-note.spec.js && node tests/e2e/numeric-range-validation.spec.js",
+    "lint:syntax": "node scripts/check-syntax.js",
+    "test": "node scripts/run-offline-tests.js",
+    "test:e2e": "node tests/e2e/no-client-secrets.spec.js && node tests/e2e/synthesis-content-parity.spec.js && node tests/e2e/stats-panel-accuracy.spec.js && node tests/e2e/paper-note.spec.js && node tests/e2e/numeric-range-validation.spec.js && node tests/e2e/prompt1-synthesis-extractive.spec.js && node tests/e2e/prompt2-validation.spec.js && node tests/e2e/prompt2b.spec.js && node tests/e2e/client-bundle-parses.spec.js && node tests/e2e/validator-provenance-direction.spec.js && node tests/e2e/module-imports.spec.js && node tests/e2e/generator-validator-consistency.spec.js && node tests/e2e/no-hardcoded-results.spec.js && node tests/e2e/finding-readability.spec.js && node tests/e2e/prompt3e-false-passes.spec.js && node tests/e2e/prompt3f-labels-pairing-types.spec.js && node tests/e2e/venue-assurance.spec.js && node tests/e2e/prompt3g-conclusion-grounding.spec.js",
+    "test:smoke": "playwright test",
+    "ci": "npm run lint:syntax && npm test && npm run test:smoke",
     "test:retrieval": "node test-retrieval-isolation.js",
     "snapshot": "node scripts/create-snapshot.js"
   },
@@ -22,5 +25,8 @@
   "license": "MIT",
   "dependencies": {
     "docx": "^9.14.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
   }
 }

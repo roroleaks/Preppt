@@ -1,0 +1,164 @@
+{
+  "isValid": true,
+  "canExport": true,
+  "totalChecks": 21,
+  "passedCount": 19,
+  "warningCount": 2,
+  "failedCount": 0,
+  "summary": "19 passed · 2 warnings · 0 failed",
+  "note": "These checks test traceability and consistency with the selected abstracts. They do not verify scientific accuracy or study quality. Review every slide against its listed sources before presenting.",
+  "checks": [
+    {
+      "id": "source_coverage",
+      "name": "Finding statements trace to valid reference sources",
+      "status": "pass",
+      "passed": true,
+      "details": "All empirical finding bullets, main messages, and notes sentences cite approved reference sources."
+    },
+    {
+      "id": "source_support",
+      "name": "Finding statements supported by cited study abstracts",
+      "status": "pass",
+      "passed": true,
+      "details": "All sourced empirical statements are corroborated by verbatim finding sentences or data in cited abstracts."
+    },
+    {
+      "id": "direction_fidelity",
+      "name": "Outcome direction fidelity (no benefit on null evidence)",
+      "status": "pass",
+      "passed": true,
+      "details": "Outcome directions match cited evidence; no clinical benefit is claimed where randomized trials showed null outcomes."
+    },
+    {
+      "id": "unsupported_numbers",
+      "name": "Numbers and percentages supported by selected records",
+      "status": "pass",
+      "passed": true,
+      "details": "All statistics, percentages, and numerical values in slides and notes appear in the approved study records."
+    },
+    {
+      "id": "vocabulary_drift",
+      "name": "Zero vocabulary drift from watch list terms",
+      "status": "pass",
+      "passed": true,
+      "details": "Output text contains zero off-topic or ungrounded clinical terms from the integrity watch list."
+    },
+    {
+      "id": "framing_sources",
+      "name": "Framing slides display no numeric sources",
+      "status": "pass",
+      "passed": true,
+      "details": "Framing and scoping slides show \"none (framing slide)\" and carry no numeric evidence sources."
+    },
+    {
+      "id": "truncation",
+      "name": "Sentence integrity and truncation check",
+      "status": "pass",
+      "passed": true,
+      "details": "All slide bullets have complete syntax with zero mid-word cuts or trailing dangling stop words."
+    },
+    {
+      "id": "no_intext_citations",
+      "name": "Zero in-text citations in on-slide text or notes",
+      "status": "pass",
+      "passed": true,
+      "details": "Zero in-text citations found. (Policy: study label prefixes like \"Wang S, 2023:\" are permitted at bullet start; in-text parenthetical citations or author-year prose citations are prohibited)."
+    },
+    {
+      "id": "slide_count",
+      "name": "Requested slide count present or documented shortfall",
+      "status": "pass",
+      "passed": true,
+      "details": "Exact requested count confirmed: 15 slides generated."
+    },
+    {
+      "id": "abstract_only_notice",
+      "name": "Abstract-only and conference abstract disclosure",
+      "status": "pass",
+      "passed": true,
+      "details": "15 selected records evaluated: 0 without abstract, 0 conference abstracts. Findings are based on titles and abstracts only; full texts were not read."
+    },
+    {
+      "id": "removed_papers_absent",
+      "name": "Removed papers absent from active selection",
+      "status": "pass",
+      "passed": true,
+      "details": "Active selection contains only approved studies (15 papers). All removed papers permanently excluded."
+    },
+    {
+      "id": "no_api_secrets",
+      "name": "API secrets are not exposed",
+      "status": "pass",
+      "passed": true,
+      "details": "Zero API keys, private tokens, or credentials exposed in document payload or client bundle."
+    },
+    {
+      "id": "english_only",
+      "name": "English-only content",
+      "status": "pass",
+      "passed": true,
+      "details": "All slide titles, objectives, slide text, visual descriptions, notes, and metadata are in English."
+    },
+    {
+      "id": "finding_readability",
+      "name": "Finding readability and labelled numbers",
+      "status": "pass",
+      "passed": true,
+      "details": "All finding bullets have labelled numbers, valid lead phrases, and readable structure."
+    },
+    {
+      "id": "finding_role",
+      "name": "Finding role provenance (results/conclusion only)",
+      "status": "pass",
+      "passed": true,
+      "details": "All finding bullets on findings slides originate from results or conclusion sentences."
+    },
+    {
+      "id": "sentence_integrity",
+      "name": "Sentence boundary integrity (no mid-sentence cuts)",
+      "status": "pass",
+      "passed": true,
+      "details": "All slide bullets end at valid sentence or clause boundaries."
+    },
+    {
+      "id": "duplicate_source_sentence",
+      "name": "No duplicate source sentences across slides",
+      "status": "pass",
+      "passed": true,
+      "details": "Zero duplicate source sentences across presentation slides."
+    },
+    {
+      "id": "generic_conclusion",
+      "name": "Evidence-derived conclusion (no generic evaluative templates)",
+      "status": "pass",
+      "passed": true,
+      "details": "Conclusion bullets are derived from study types, attributed directions, and evidence limits."
+    },
+    {
+      "id": "quantitative_finding_omitted",
+      "name": "Quantitative study findings included",
+      "status": "warning",
+      "passed": false,
+      "details": "Paper [13] reports quantitative effect (45.7, 38.1, 1.40) omitted from deck slides."
+    },
+    {
+      "id": "low_assurance_source_used",
+      "name": "Venue assurance tier (PubMed/MEDLINE indexing)",
+      "status": "warning",
+      "passed": false,
+      "details": "Cited source(s) [1, 8, 9, 10, 13, 14] are not indexed in PubMed/MEDLINE (Tier B / unknown) and are marked [not PubMed-indexed]."
+    },
+    {
+      "id": "conclusion_grounding",
+      "name": "Conclusion bullet grounding in source findings and abstracts",
+      "status": "pass",
+      "passed": true,
+      "details": "All attributed conclusion bullets are grounded in deck findings and cited paper abstracts."
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "quantitative_finding_omitted (Quantitative study findings included): Paper [13] reports quantitative effect (45.7, 38.1, 1.40) omitted from deck slides.",
+    "low_assurance_source_used (Venue assurance tier (PubMed/MEDLINE indexing)): Cited source(s) [1, 8, 9, 10, 13, 14] are not indexed in PubMed/MEDLINE (Tier B / unknown) and are marked [not PubMed-indexed]."
+  ]
+}

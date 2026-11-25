@@ -1,5 +1,8 @@
 const { generatePresentationDeck } = require('../lib/synthesize.js');
 const { generateDeckWithLLM } = require('../lib/llm-synthesizer.js');
+const { validatePresentationOutput } = require('../lib/validator.js');
+const { stripCitations } = require('../lib/text-rules.js');
+const { enrichPapersWithAssurance } = require('../lib/venue-assurance.js');
 
 async function parseBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -29,6 +32,16 @@ module.exports = async (req, res) => {
 
   try {
     const data = await parseBody(req);
+    if (!data || typeof data !== 'object' || !Array.isArray(data.papers) || data.papers.length === 0) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.end(JSON.stringify({ error: 'At least one approved paper is required to generate the presentation deck.' }));
+    }
+    if (data.slideCount !== undefined && (!Number.isFinite(Number(data.slideCount)) || Number(data.slideCount) < 1)) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.end(JSON.stringify({ error: 'Invalid slideCount parameter.' }));
+    }
     const synthesisParams = {
       topic: data.topic || 'Scientific Topic',
       shortTitle: data.shortTitle || '',
@@ -44,6 +57,12 @@ module.exports = async (req, res) => {
     };
 
     const hasLlmKey = !!(process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+    const currentYear = new Date().getFullYear();
+
+    // Server-side venue assurance lookup via Europe PMC (batched, max 5 concurrent, 5s timeout)
+    if (process.env.PREPPT_OFFLINE !== '1') {
+      synthesisParams.papers = await enrichPapersWithAssurance(synthesisParams.papers);
+    }
 
     let deck = generatePresentationDeck(synthesisParams);
 
@@ -61,6 +80,10 @@ module.exports = async (req, res) => {
             const speakerNotes = s.speaker_notes || s.speakerNotes || '';
             const audienceQuestion = s.interactive_question || s.audienceQuestion || '';
             const transition = s.logical_transition || s.transition || '';
+            const slideSources = Array.isArray(s.sources) ? s.sources : [];
+            const evidenceSourcesText = slideSources.length > 0
+              ? `Evidence sources for this slide: ${slideSources.map(ref => `[${ref}]`).join(', ')}`
+              : 'Evidence sources for this slide: None (Methodological overview)';
 
             return {
               slide_number: slideNumber,
@@ -83,6 +106,9 @@ module.exports = async (req, res) => {
               audienceQuestion,
               transition,
 
+              sources: slideSources,
+              evidenceSources: evidenceSourcesText,
+
               slideRatio: '16:9',
               font: 'Arial',
               fontSizeTarget: '12-14 pt (minimum legibility floor)',
@@ -91,8 +117,9 @@ module.exports = async (req, res) => {
               visual_style: activeVisualStyle,
               visualStyle: activeVisualStyle,
               audience: synthesisParams.audience || 'Postgraduate',
-              footer_copyright: '© 2025 Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy2025)',
-              footerCopyright: '© 2025 Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy2025)'
+              footer_copyright: `© ${currentYear} Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy${currentYear})`,
+              footerCopyright: `© ${currentYear} Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy${currentYear})`,
+              footer_format: 'Arial 9 pt, right lower corner'
             };
           });
 
@@ -102,6 +129,8 @@ module.exports = async (req, res) => {
           if (llmResult.researchGaps) {
             deck.researchGaps = llmResult.researchGaps;
           }
+          deck.meta.engine = `llm:${llmResult.provider || 'configured'}`;
+          deck.outline = deck.slides.map(s => s.title);
         }
       } catch (llmErr) {
         console.error('LLM synthesis failed:', llmErr);
@@ -113,13 +142,99 @@ module.exports = async (req, res) => {
       }
     }
 
+    // Prompt 2B - Generator self-check & auto-repair
+    try {
+      let validation = validatePresentationOutput({
+        deck,
+        papers: synthesisParams.papers,
+        topic: synthesisParams.topic,
+        requestedSlideCount: synthesisParams.slideCount
+      });
+
+      for (let pass = 1; pass <= 3 && validation.failedCount > 0; pass++) {
+        console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair pass ${pass}/3...`);
+        const failedChecks = (validation.checks || []).filter(c => c.status === 'fail');
+        const failedSlideNums = new Set();
+        for (const fc of failedChecks) {
+          const matches = (fc.details || '').matchAll(/Slide\s+(\d+)/gi);
+          for (const m of matches) failedSlideNums.add(Number(m[1]));
+        }
+
+        deck.slides.forEach((s, idx) => {
+          const slideNum = s.slide_number || s.slideNumber || (idx + 1);
+          const originalBullets = (s.on_slide_text || '').split('\n').filter(Boolean);
+          const filteredBullets = [];
+          const filteredData = [];
+
+          originalBullets.forEach((b, bIdx) => {
+            const clean = stripCitations(b.replace(/^[•\s-]+/, '').trim());
+            const openP = (clean.match(/\(/g) || []).length;
+            const closeP = (clean.match(/\)/g) || []).length;
+            const openB = (clean.match(/\[/g) || []).length;
+            const closeB = (clean.match(/\]/g) || []).length;
+            if (openP !== closeP || openB !== closeB) return;
+            if (/\(\s*\d+[\s\.]*$/.test(clean) || /\[\s*\d+[\s\.]*$/.test(clean)) return;
+
+            // If this slide was flagged on a bullet-level failure, drop offending bullet
+            if (failedSlideNums.has(slideNum)) {
+              const bulletMentioned = failedChecks.some(fc =>
+                (fc.details || '').includes(`Slide ${slideNum} bullet ${bIdx + 1}`) ||
+                (fc.details || '').includes(`Slide ${slideNum} finding bullet`)
+              );
+              if (bulletMentioned) return;
+            }
+
+            const rebuilt = clean ? `• ${clean}` : '';
+            if (rebuilt) {
+              filteredBullets.push(rebuilt);
+              if (Array.isArray(s.bulletsData) && s.bulletsData[bIdx]) {
+                filteredData.push({ ...s.bulletsData[bIdx], text: rebuilt });
+              }
+            }
+          });
+
+          if (filteredBullets.length === 0 && originalBullets.length > 0) {
+            const fallbackMsg = '• No eligible finding in the selected papers for this section.';
+            filteredBullets.push(fallbackMsg);
+            s.sources = [];
+          }
+
+          s.on_slide_text = filteredBullets.join('\n');
+          s.onSlideText = s.on_slide_text;
+          s.bullets = filteredBullets;
+          if (filteredData.length > 0) s.bulletsData = filteredData;
+        });
+
+        validation = validatePresentationOutput({
+          deck,
+          papers: synthesisParams.papers,
+          topic: synthesisParams.topic,
+          requestedSlideCount: synthesisParams.slideCount
+        });
+      }
+
+      deck.validation = validation;
+      if (validation.failedCount > 0) {
+        deck.selfCheck = {
+          status: 'failed',
+          failures: (validation.checks || []).filter(c => c.status === 'fail')
+        };
+      }
+    } catch (selfCheckErr) {
+      console.error('Internal self-check error:', selfCheckErr);
+      deck.selfCheck = {
+        status: 'error',
+        message: 'Internal quality check could not run; please review the deck manually.'
+      };
+    }
+
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.end(JSON.stringify(deck));
   } catch (err) {
     console.error('Synthesis error:', err);
-    res.statusCode = 400;
+    res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    return res.end(JSON.stringify({ error: err.message }));
+    return res.end(JSON.stringify({ error: 'Synthesis failed. Please retry.' }));
   }
 };

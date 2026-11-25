@@ -1,0 +1,484 @@
+{
+  "topic": "Artificial Intelligence in Assisted Reproduction: Clinical Evidence, Current Limitations, Bias, and the Future of Embryo Selection",
+  "shortTitle": "AI in ART",
+  "papers": [
+    {
+      "id": "https://openalex.org/W4416050015",
+      "paperId": "https://openalex.org/W4416050015",
+      "openalex_id": "https://openalex.org/W4416050015",
+      "title": "Ethical Challenges and Governance of Artificial Intelligence in Embryo Selection for Human Assisted Reproduction",
+      "authors": [
+        "Jian Tang",
+        "Fuyi LINGHU",
+        "Lie MANG"
+      ],
+      "journal": "JOURNAL OF ENGINEERING STUDIES",
+      "year": 2025,
+      "publication_date": "2025-11-09",
+      "abstract": "人类辅助生殖中的体外受精（IVF）技术依赖于胚胎选择来提高成功率。传统方法主要基于形态学评估，虽透明度高且患者参与度强，但存在主观性和低效率问题。近年来，人工智能（AI），特别是深度学习技术，为胚胎选择提供了新的可能性。然而，该技术目前尚处于早期阶段，面临透明性、患者自主性、责任归属和公平性等伦理问题的评估。AI的“黑盒”特性可能影响临床可解释性，患者知情同意机制亦受其影响。此外，AI的应用可能改变责任界定，并对辅助生殖的公平性和安全性带来潜在影响。在当前阶段，应审慎推进AI辅助胚胎选择，避免盲目依赖技术，强化伦理治理，并推动透明度提升和长期跟踪研究，以确保其健康发展。",
+      "abstract_summary": "人类辅助生殖中的体外受精（IVF）技术依赖于胚胎选择来提高成功率。传统方法主要基于形态学评估，虽透明度高且患者参与度强，但存在主观性和低效率问题。近年来，人工智能（AI），特别是深度学习技术，为胚胎选择提供了新的可能性。然而，该技术目前尚处于早期阶段，面临透明性、患者自主性、责任归属和公平性等伦理问题的评估。AI的“黑盒”特性可能影响临床可解释性，患者知情同意机制亦受其影响。此外，AI的应用可能改变责任界定，并对辅助生殖的公平性和安全性带来潜在影响。在当前阶段，应审慎推进AI辅助胚胎选择，避免盲目依赖技术，强化伦理治理，并推动透明度提升和长期跟踪研究，以确保其健康发展。",
+      "citationCount": 0,
+      "citation_count": 0,
+      "doi": "10.3724/j.issn.1674-4969.20250037",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4416050015",
+      "full_text_url": "https://doi.org/10.3724/j.issn.1674-4969.20250037"
+    },
+    {
+      "id": "https://openalex.org/W7149228676",
+      "paperId": "https://openalex.org/W7149228676",
+      "openalex_id": "https://openalex.org/W7149228676",
+      "title": "Development of an artificial intelligence model based on Machine Learning to optimize embryo selection in assisted human reproduction",
+      "authors": [
+        "Aitana Eugenia Salvo Jiménez"
+      ],
+      "journal": "Hispana",
+      "year": 2023,
+      "publication_date": "2023-07-25",
+      "abstract": "[ES] En las clínicas de reproducción asistida, tanto en el ámbito humano como animal, uno de los pasos fundamentales es la selección del embrión cultivado de mayor calidad para su posterior transferencia al útero de la futura gestante. La elección se basa en la interpretación de la calidad que el embriólogo considere al visualizar imágenes del embrión; basándose principalmente en que posea una morfología correcta. Es un método demostrado como subjetivo, variable y poco reproducible; por tanto, en este área se está indagando en la búsqueda de alternativas que sean técnicas no invasivas para el embrión y que proporcionen buenos resultados con el nacimiento de individuos sanos. Este es el objetivo del presente trabajo: que a través de la información recogida mediante la segmentación manual y etiquetado de imágenes de embriones en estadio de hatching (etapa posterior al blastocisto donde el embrión eclosiona y sale de la zona pelúcida para implantarse en el endometrio), se ha desarrollado un modelo de inteligencia artificial basado en un enfoque de Machine Learning supervisado capaz de identificar los embriones de mejor calidad según los criterios de clasificación embrionaria de ASEBIR. La segmentación manual, una herramienta del procesado de imágenes, se ha realizado mediante la delimitación de los componentes más relevantes del blastocisto: células del trofoectodermo, masa celular interna y la zona pelúcida, entre otros; además, las etiquetas seleccionadas estaban referidas a la calidad del embrión fotografiado y a su estadio de desarrollo. Con esta información previa se ha entrenado y evaluado el modelo y finalmente, se ha testeado con un 10% de imágenes nunca vistas por el sistema para comprobar su funcionamiento. De esta forma, la inteligencia artificial ha podido detectar todos los componentes del embrión, reconocer el estadio de desarrollo en el que se encuentra y asignarle una calificación con respecto a su calidad con una sensibilidad de 0,64 , una precisión del 0,75 y un rendimiento reflejado como el área bajo la curva ROC del 0,79. Estos resultados contribuyen a la finalidad de que el modelo pueda ser empleado en los laboratorios y clínicas de medicina reproductiva para la selección del embrión óptimo para transferir al útero de la mujer y reducir la carga subjetiva que supone la elección por parte del embriólogo en cuanto a su criterio. Por lo que este trabajo se relaciona con los siguientes ODS de la Agenda 2030: ODS 3. Salud y Bienestar y ODS 10. Reducción de las Desigualdades.",
+      "abstract_summary": "[ES] En las clínicas de reproducción asistida, tanto en el ámbito humano como animal, uno de los pasos fundamentales es la selección del embrión cultivado de mayor calidad para su posterior transferencia al útero de la futura gestante. La elección se basa en la interpretación de la calidad que el embriólogo considere al visualizar imágenes del embrión; basándose principalmente en que posea una morfología correcta. Es un método demostrado como subjetivo, variable y poco reproducible; por tanto, en este área se está indagando en la búsqueda de alternativas que sean técnicas no invasivas para el embrión y que proporcionen buenos resultados con el nacimiento de individuos sanos. Este es el objetivo del presente trabajo: que a través de la información recogida mediante la segmentación manual y etiquetado de imágenes de embriones en estadio de hatching (etapa posterior al blastocisto donde el embrión eclosiona y sale de la zona pelúcida para implantarse en el endometrio), se ha desarrollado un modelo de inteligencia artificial basado en un enfoque de Machine Learning supervisado capaz de identificar los embriones de mejor calidad según los criterios de clasificación embrionaria de ASEBIR. La segmentación manual, una herramienta del procesado de imágenes, se ha realizado mediante la delimitación de los componentes más relevantes del blastocisto: células del trofoectodermo, masa celular interna y la zona pelúcida, entre otros; además, las etiquetas seleccionadas estaban referidas a la calidad del embrión fotografiado y a su estadio de desarrollo. Con esta información previa se ha entrenado y evaluado el modelo y finalmente, se ha testeado con un 10% de imágenes nunca vistas por el sistema para comprobar su funcionamiento. De esta forma, la inteligencia artificial ha podido detectar todos los componentes del embrión, reconocer el estadio de desarrollo en el que se encuentra y asignarle una calificación con respecto a su calidad con una sensibilidad de 0,64 , una precisión del 0,75 y un rendimiento reflejado como el área bajo la curva ROC del 0,79. Estos resultados contribuyen a la finalidad de que el modelo pueda ser empleado en los laboratorios y clínicas de medicina reproductiva para la selección del embrión óptimo para transferir al útero de la mujer y reducir la carga subjetiva que supone la elección por parte del embriólogo en cuanto a su criterio. Por lo que este trabajo se relaciona con los siguientes ODS de la Agenda 2030: ODS 3. Salud y Bienestar y ODS 10. Reducción de las Desigualdades.",
+      "citationCount": 0,
+      "citation_count": 0,
+      "doi": "",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W7149228676",
+      "full_text_url": "https://riunet.upv.es/handle/10251/195441"
+    },
+    {
+      "id": "https://openalex.org/W4408692262",
+      "paperId": "https://openalex.org/W4408692262",
+      "openalex_id": "https://openalex.org/W4408692262",
+      "title": "The integration of artificial intelligence in assisted reproduction: a comprehensive review",
+      "authors": [
+        "Pragati Kakkar",
+        "Shruti Gupta",
+        "Kasmiria Ioanna Paschopoulou",
+        "Ilias Paschopoulos",
+        "Ioannis Paschopoulos",
+        "Vassiliki Siafaka",
+        "Orestis Tsonis"
+      ],
+      "journal": "Frontiers in Reproductive Health",
+      "year": 2025,
+      "publication_date": "2025-03-20",
+      "abstract": "Artificial Intelligence (AI) has emerged as a transformative force in healthcare, with its integration into assisted reproduction technologies representing a notable milestone. The utilization of AI in assisted reproduction is rooted in the persistent challenge of optimizing outcomes. Despite years of progress, success rates in assisted reproductive techniques remain a concern. The current landscape of AI applications demonstrates significant potential to revolutionize various facets of assisted reproduction, including stimulation protocol optimization, embryo formation prediction, oocyte and sperm selection, and live birth prediction from embryos. AI's capacity for precise image-based analysis, leveraging convolutional neural networks, stands out as a promising avenue. Personalized treatment plans and enhanced diagnostic accuracy are central themes explored in this review. AI-driven healthcare products demonstrate the potential for real-time, adaptive health programs, fostering improved communication between patients and healthcare teams. Continuous learning systems to address challenges associated with biased training data and the time required for accurate decision-making capabilities to develop is imperative. Challenges and ethical considerations in AI-assisted conception as evident when taking into consideration issues such as the lack of legislation regulating AI in healthcare, a fact that emphasizes the need for transparency and equity in the development and implementation of AI technologies. The regulatory framework, both in the UK and globally, is making efforts to balance innovation with patient safety. This paper delves into the revolutionary impact of Artificial Intelligence (AI) in the realm of assisted reproduction technologies (ART). As AI continues to evolve, its application in the field of reproductive medicine holds great promise for improving success rates, personalized treatments, and overall efficiency. This comprehensive review explores the current state of AI in assisted reproduction, its potential benefits, challenges, and ethical considerations.",
+      "abstract_summary": "Artificial Intelligence (AI) has emerged as a transformative force in healthcare, with its integration into assisted reproduction technologies representing a notable milestone. The utilization of AI in assisted reproduction is rooted in the persistent challenge of optimizing outcomes. Despite years of progress, success rates in assisted reproductive techniques remain a concern. The current landscape of AI applications demonstrates significant potential to revolutionize various facets of assisted reproduction, including stimulation protocol optimization, embryo formation prediction, oocyte and sperm selection, and live birth prediction from embryos. AI's capacity for precise image-based analysis, leveraging convolutional neural networks, stands out as a promising avenue. Personalized treatment plans and enhanced diagnostic accuracy are central themes explored in this review. AI-driven healthcare products demonstrate the potential for real-time, adaptive health programs, fostering improved communication between patients and healthcare teams. Continuous learning systems to address challenges associated with biased training data and the time required for accurate decision-making capabilities to develop is imperative. Challenges and ethical considerations in AI-assisted conception as evident when taking into consideration issues such as the lack of legislation regulating AI in healthcare, a fact that emphasizes the need for transparency and equity in the development and implementation of AI technologies. The regulatory framework, both in the UK and globally, is making efforts to balance innovation with patient safety. This paper delves into the revolutionary impact of Artificial Intelligence (AI) in the realm of assisted reproduction technologies (ART). As AI continues to evolve, its application in the field of reproductive medicine holds great promise for improving success rates, personalized treatments, and overall efficiency. This comprehensive review explores the current state of AI in assisted reproduction, its potential benefits, challenges, and ethical considerations.",
+      "citationCount": 35,
+      "citation_count": 35,
+      "doi": "10.3389/frph.2025.1520919",
+      "pmid": "40182958",
+      "pmcid": "11965653",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4408692262",
+      "full_text_url": "https://doi.org/10.3389/frph.2025.1520919"
+    },
+    {
+      "id": "https://openalex.org/W7128357601",
+      "paperId": "https://openalex.org/W7128357601",
+      "openalex_id": "https://openalex.org/W7128357601",
+      "title": "[Progress in the application of artificial intelligence in assisted reproduction].",
+      "authors": [
+        "Qiuyao Li",
+        "Ting Wang",
+        "Yidan Liu",
+        "Xinghan Wang",
+        "Xiaoling Ma",
+        "Lin Liu"
+      ],
+      "journal": "PubMed Central",
+      "year": 2025,
+      "publication_date": "2025-10-28",
+      "abstract": "As a disease that seriously affects the health of men and women of childbearing age, the incidence of infertility is increasing worldwide, and the popularization of assisted reproductive technology (ART) is expected to improve the situation. However, invitro fertilization and embryo transfer (IVF) success rates are only about 50%, and IVF success rates are affected by a number of factors. For example, semen quality, endometrial thickness, fallopian tube patency, embryo selection and transplantation, uterine microenvironment, etc., and the treatment process of IVF is highly dependent on the clinical experience of embryologists, and there is a lack of objective and unified evaluation criteria. Artificial intelligence (AI) is ideally suited to processing and analyzing large, dynamic temporal data sets to assist physicians in making more objective and precise decisions, thereby improving IVF success. At present, artificial intelligence technology using different types of algorithms has been used for sperm classification, oocyte and embryo selection, and prediction of embryo development after implantation, etc. The application of AI in the field of assisted reproduction is expected to improve infertility diagnosis results and increase the pregnancy rate and live birth rate of ART, but there are still certain controversies in privacy, safety and other aspects.In the future, with the accumulation of high-quality datasets, algorithm optimization and the advancement of imaging technology, AI is expected to increase the success rate of ART by selecting higher-quality sperm and oocytes, as well as embryos with greater developmental potential. This will bring significant innovation to the field of reproductive medicine and the entire healthcare sector, while also reducing treatment costs.",
+      "abstract_summary": "As a disease that seriously affects the health of men and women of childbearing age, the incidence of infertility is increasing worldwide, and the popularization of assisted reproductive technology (ART) is expected to improve the situation. However, invitro fertilization and embryo transfer (IVF) success rates are only about 50%, and IVF success rates are affected by a number of factors. For example, semen quality, endometrial thickness, fallopian tube patency, embryo selection and transplantation, uterine microenvironment, etc., and the treatment process of IVF is highly dependent on the clinical experience of embryologists, and there is a lack of objective and unified evaluation criteria. Artificial intelligence (AI) is ideally suited to processing and analyzing large, dynamic temporal data sets to assist physicians in making more objective and precise decisions, thereby improving IVF success. At present, artificial intelligence technology using different types of algorithms has been used for sperm classification, oocyte and embryo selection, and prediction of embryo development after implantation, etc. The application of AI in the field of assisted reproduction is expected to improve infertility diagnosis results and increase the pregnancy rate and live birth rate of ART, but there are still certain controversies in privacy, safety and other aspects.In the future, with the accumulation of high-quality datasets, algorithm optimization and the advancement of imaging technology, AI is expected to increase the success rate of ART by selecting higher-quality sperm and oocytes, as well as embryos with greater developmental potential. This will bring significant innovation to the field of reproductive medicine and the entire healthcare sector, while also reducing treatment costs.",
+      "citationCount": 0,
+      "citation_count": 0,
+      "doi": "10.11817/j.issn.1672-7347.2025.240638",
+      "pmid": "41656806",
+      "pmcid": "12949863",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W7128357601",
+      "full_text_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12949863/pdf/"
+    },
+    {
+      "id": "https://openalex.org/W4310071951",
+      "paperId": "https://openalex.org/W4310071951",
+      "openalex_id": "https://openalex.org/W4310071951",
+      "title": "The Future Is Coming: Artificial Intelligence in the Treatment of Infertility Could Improve Assisted Reproduction Outcomes—The Value of Regulatory Frameworks",
+      "authors": [
+        "Sanja Medenica",
+        "Dušan Živanović",
+        "Ljubica Batkoska",
+        "Susanna Marinelli",
+        "Giuseppe Basile",
+        "A Perino",
+        "Gaspare Cucinella",
+        "Giuseppe Gullo",
+        "Simona Zaami"
+      ],
+      "journal": "Diagnostics",
+      "year": 2022,
+      "publication_date": "2022-11-28",
+      "abstract": "Infertility is a global health issue affecting women and men of reproductive age with increasing incidence worldwide, in part due to greater awareness and better diagnosis. Assisted reproduction technologies (ART) are considered the ultimate step in the treatment of infertility. Recently, artificial intelligence (AI) has been progressively used in the many fields of medicine, integrating knowledge and computer science through machine learning algorithms. AI has the potential to improve infertility diagnosis and ART outcomes estimated as pregnancy and/or live birth rate, especially with recurrent ART failure. A broad-ranging review has been conducted, focusing on clinical AI applications up until September 2022, which could be estimated in terms of possible applications, such as ultrasound monitoring of folliculogenesis, endometrial receptivity, embryo selection based on quality and viability, and prediction of post implantation embryo development, in order to eliminate potential contributing risk factors. Oocyte morphology assessment is highly relevant in terms of successful fertilization rate, as well as during oocyte freezing for fertility preservation, and substantially valuable in oocyte donation cycles. AI has great implications in the assessment of male infertility, with computerised semen analysis systems already in use and a broad spectrum of possible AI-based applications in environmental and lifestyle evaluation to predict semen quality. In addition, considerable progress has been made in terms of harnessing AI in cases of idiopathic infertility, to improve the stratification of infertile/fertile couples based on their biological and clinical signatures. With AI as a very powerful tool of the future, our review is meant to summarise current AI applications and investigations in contemporary reproduction medicine, mainly focusing on the nonsurgical aspects of it; in addition, the authors have briefly explored the frames of reference and guiding principles for the definition and implementation of legal, regulatory, and ethical standards for AI in healthcare.",
+      "abstract_summary": "Infertility is a global health issue affecting women and men of reproductive age with increasing incidence worldwide, in part due to greater awareness and better diagnosis. Assisted reproduction technologies (ART) are considered the ultimate step in the treatment of infertility. Recently, artificial intelligence (AI) has been progressively used in the many fields of medicine, integrating knowledge and computer science through machine learning algorithms. AI has the potential to improve infertility diagnosis and ART outcomes estimated as pregnancy and/or live birth rate, especially with recurrent ART failure. A broad-ranging review has been conducted, focusing on clinical AI applications up until September 2022, which could be estimated in terms of possible applications, such as ultrasound monitoring of folliculogenesis, endometrial receptivity, embryo selection based on quality and viability, and prediction of post implantation embryo development, in order to eliminate potential contributing risk factors. Oocyte morphology assessment is highly relevant in terms of successful fertilization rate, as well as during oocyte freezing for fertility preservation, and substantially valuable in oocyte donation cycles. AI has great implications in the assessment of male infertility, with computerised semen analysis systems already in use and a broad spectrum of possible AI-based applications in environmental and lifestyle evaluation to predict semen quality. In addition, considerable progress has been made in terms of harnessing AI in cases of idiopathic infertility, to improve the stratification of infertile/fertile couples based on their biological and clinical signatures. With AI as a very powerful tool of the future, our review is meant to summarise current AI applications and investigations in contemporary reproduction medicine, mainly focusing on the nonsurgical aspects of it; in addition, the authors have briefly explored the frames of reference and guiding principles for the definition and implementation of legal, regulatory, and ethical standards for AI in healthcare.",
+      "citationCount": 139,
+      "citation_count": 139,
+      "doi": "10.3390/diagnostics12122979",
+      "pmid": "36552986",
+      "pmcid": "9777042",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4310071951",
+      "full_text_url": "https://www.mdpi.com/2075-4418/12/12/2979/pdf?version=1669804631"
+    },
+    {
+      "id": "https://openalex.org/W3176290932",
+      "paperId": "https://openalex.org/W3176290932",
+      "openalex_id": "https://openalex.org/W3176290932",
+      "title": "Embryo selection with artificial intelligence: how to evaluate and compare methods?",
+      "authors": [
+        "Mikkel Fly Kragh",
+        "Henrik Karstoft"
+      ],
+      "journal": "Journal of Assisted Reproduction and Genetics",
+      "year": 2021,
+      "publication_date": "2021-06-26",
+      "abstract": "Embryo selection within in vitro fertilization (IVF) is the process of evaluating qualities of fertilized oocytes (embryos) and selecting the best embryo(s) available within a patient cohort for subsequent transfer or cryopreservation. In recent years, artificial intelligence (AI) has been used extensively to improve and automate the embryo ranking and selection procedure by extracting relevant information from embryo microscopy images. The AI models are evaluated based on their ability to identify the embryo(s) with the highest chance(s) of achieving a successful pregnancy. Whether such evaluations should be based on ranking performance or pregnancy prediction, however, seems to divide studies. As such, a variety of performance metrics are reported, and comparisons between studies are often made on different outcomes and data foundations. Moreover, superiority of AI methods over manual human evaluation is often claimed based on retrospective data, without any mentions of potential bias. In this paper, we provide a technical view on some of the major topics that divide how current AI models are trained, evaluated and compared. We explain and discuss the most common evaluation metrics and relate them to the two separate evaluation objectives, ranking and prediction. We also discuss when and how to compare AI models across studies and explain in detail how a selection bias is inevitable when comparing AI models against current embryo selection practice in retrospective cohort studies.",
+      "abstract_summary": "Embryo selection within in vitro fertilization (IVF) is the process of evaluating qualities of fertilized oocytes (embryos) and selecting the best embryo(s) available within a patient cohort for subsequent transfer or cryopreservation. In recent years, artificial intelligence (AI) has been used extensively to improve and automate the embryo ranking and selection procedure by extracting relevant information from embryo microscopy images. The AI models are evaluated based on their ability to identify the embryo(s) with the highest chance(s) of achieving a successful pregnancy. Whether such evaluations should be based on ranking performance or pregnancy prediction, however, seems to divide studies. As such, a variety of performance metrics are reported, and comparisons between studies are often made on different outcomes and data foundations. Moreover, superiority of AI methods over manual human evaluation is often claimed based on retrospective data, without any mentions of potential bias. In this paper, we provide a technical view on some of the major topics that divide how current AI models are trained, evaluated and compared. We explain and discuss the most common evaluation metrics and relate them to the two separate evaluation objectives, ranking and prediction. We also discuss when and how to compare AI models across studies and explain in detail how a selection bias is inevitable when comparing AI models against current embryo selection practice in retrospective cohort studies.",
+      "citationCount": 151,
+      "citation_count": 151,
+      "doi": "10.1007/s10815-021-02254-6",
+      "pmid": "34173914",
+      "pmcid": "8324599",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W3176290932",
+      "full_text_url": "https://link.springer.com/content/pdf/10.1007/s10815-021-02254-6.pdf"
+    },
+    {
+      "id": "https://openalex.org/W4385845014",
+      "paperId": "https://openalex.org/W4385845014",
+      "openalex_id": "https://openalex.org/W4385845014",
+      "title": "Embryo selection through artificial intelligence versus embryologists: a systematic review",
+      "authors": [
+        "Mohamed Salih",
+        "C Austin",
+        "Ritesh Rikain Warty",
+        "C Tiktin",
+        "Daniel L. Rolnik",
+        "Milad Momeni",
+        "Hamid Rezatofighi",
+        "Sandeep Reddy",
+        "Vinayak Smith",
+        "Beverley J. Vollenhoven",
+        "Fabrizzio Horta"
+      ],
+      "journal": "Human Reproduction Open",
+      "year": 2023,
+      "publication_date": "2023-01-01",
+      "abstract": "STUDY QUESTION: What is the present performance of artificial intelligence (AI) decision support during embryo selection compared to the standard embryo selection by embryologists? SUMMARY ANSWER: AI consistently outperformed the clinical teams in all the studies focused on embryo morphology and clinical outcome prediction during embryo selection assessment. WHAT IS KNOWN ALREADY: The ART success rate is ∼30%, with a worrying trend of increasing female age correlating with considerably worse results. As such, there have been ongoing efforts to address this low success rate through the development of new technologies. With the advent of AI, there is potential for machine learning to be applied in such a manner that areas limited by human subjectivity, such as embryo selection, can be enhanced through increased objectivity. Given the potential of AI to improve IVF success rates, it remains crucial to review the performance between AI and embryologists during embryo selection. STUDY DESIGN SIZE DURATION: fertili*' OR 'assisted reproductive techn*' OR 'embryo'), where the character '*' refers the search engine to include any auto completion of the search term. PARTICIPANTS/MATERIALS SETTING METHODS: A literature search was conducted for literature relating to AI applications to IVF. Primary outcomes of interest were accuracy, sensitivity, and specificity of the embryo morphology grade assessments and the likelihood of clinical outcomes, such as clinical pregnancy after IVF treatments. Risk of bias was assessed using the Modified Down and Black Checklist. MAIN RESULTS AND THE ROLE OF CHANCE: Twenty articles were included in this review. There was no specific embryo assessment day across the studies-Day 1 until Day 5/6 of embryo development was investigated. The types of input for training AI algorithms were images and time-lapse (10/20), clinical information (6/20), and both images and clinical information (4/20). Each AI model demonstrated promise when compared to an embryologist's visual assessment. On average, the models predicted the likelihood of successful clinical pregnancy with greater accuracy than clinical embryologists, signifying greater reliability when compared to human prediction. The AI models performed at a median accuracy of 75.5% (range 59-94%) on predicting embryo morphology grade. The correct prediction (Ground Truth) was defined through the use of embryo images according to post embryologists' assessment following local respective guidelines. Using blind test datasets, the embryologists' accuracy prediction was 65.4% (range 47-75%) with the same ground truth provided by the original local respective assessment. Similarly, AI models had a median accuracy of 77.8% (range 68-90%) in predicting clinical pregnancy through the use of patient clinical treatment information compared to 64% (range 58-76%) when performed by embryologists. When both images/time-lapse and clinical information inputs were combined, the median accuracy by the AI models was higher at 81.5% (range 67-98%), while clinical embryologists had a median accuracy of 51% (range 43-59%). LIMITATIONS REASONS FOR CAUTION: The findings of this review are based on studies that have not been prospectively evaluated in a clinical setting. Additionally, a fair comparison of all the studies were deemed unfeasible owing to the heterogeneity of the studies, development of the AI models, database employed and the study design and quality. WIDER IMPLICATIONS OF THE FINDINGS: AI provides considerable promise to the IVF field and embryo selection. However, there needs to be a shift in developers' perception of the clinical outcome from successful implantation towards ongoing pregnancy or live birth. Additionally, existing models focus on locally generated databases and many lack external validation. STUDY FUNDING/COMPETING INTERESTS: This study was funded by Monash Data Future Institute. All authors have no conflicts of interest to declare. REGISTRATION NUMBER: CRD42021256333.",
+      "abstract_summary": "STUDY QUESTION: What is the present performance of artificial intelligence (AI) decision support during embryo selection compared to the standard embryo selection by embryologists? SUMMARY ANSWER: AI consistently outperformed the clinical teams in all the studies focused on embryo morphology and clinical outcome prediction during embryo selection assessment. WHAT IS KNOWN ALREADY: The ART success rate is ∼30%, with a worrying trend of increasing female age correlating with considerably worse results. As such, there have been ongoing efforts to address this low success rate through the development of new technologies. With the advent of AI, there is potential for machine learning to be applied in such a manner that areas limited by human subjectivity, such as embryo selection, can be enhanced through increased objectivity. Given the potential of AI to improve IVF success rates, it remains crucial to review the performance between AI and embryologists during embryo selection. STUDY DESIGN SIZE DURATION: fertili*' OR 'assisted reproductive techn*' OR 'embryo'), where the character '*' refers the search engine to include any auto completion of the search term. PARTICIPANTS/MATERIALS SETTING METHODS: A literature search was conducted for literature relating to AI applications to IVF. Primary outcomes of interest were accuracy, sensitivity, and specificity of the embryo morphology grade assessments and the likelihood of clinical outcomes, such as clinical pregnancy after IVF treatments. Risk of bias was assessed using the Modified Down and Black Checklist. MAIN RESULTS AND THE ROLE OF CHANCE: Twenty articles were included in this review. There was no specific embryo assessment day across the studies-Day 1 until Day 5/6 of embryo development was investigated. The types of input for training AI algorithms were images and time-lapse (10/20), clinical information (6/20), and both images and clinical information (4/20). Each AI model demonstrated promise when compared to an embryologist's visual assessment. On average, the models predicted the likelihood of successful clinical pregnancy with greater accuracy than clinical embryologists, signifying greater reliability when compared to human prediction. The AI models performed at a median accuracy of 75.5% (range 59-94%) on predicting embryo morphology grade. The correct prediction (Ground Truth) was defined through the use of embryo images according to post embryologists' assessment following local respective guidelines. Using blind test datasets, the embryologists' accuracy prediction was 65.4% (range 47-75%) with the same ground truth provided by the original local respective assessment. Similarly, AI models had a median accuracy of 77.8% (range 68-90%) in predicting clinical pregnancy through the use of patient clinical treatment information compared to 64% (range 58-76%) when performed by embryologists. When both images/time-lapse and clinical information inputs were combined, the median accuracy by the AI models was higher at 81.5% (range 67-98%), while clinical embryologists had a median accuracy of 51% (range 43-59%). LIMITATIONS REASONS FOR CAUTION: The findings of this review are based on studies that have not been prospectively evaluated in a clinical setting. Additionally, a fair comparison of all the studies were deemed unfeasible owing to the heterogeneity of the studies, development of the AI models, database employed and the study design and quality. WIDER IMPLICATIONS OF THE FINDINGS: AI provides considerable promise to the IVF field and embryo selection. However, there needs to be a shift in developers' perception of the clinical outcome from successful implantation towards ongoing pregnancy or live birth. Additionally, existing models focus on locally generated databases and many lack external validation. STUDY FUNDING/COMPETING INTERESTS: This study was funded by Monash Data Future Institute. All authors have no conflicts of interest to declare. REGISTRATION NUMBER: CRD42021256333.",
+      "citationCount": 200,
+      "citation_count": 200,
+      "doi": "10.1093/hropen/hoad031",
+      "pmid": "37588797",
+      "pmcid": "10426717",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4385845014",
+      "full_text_url": "https://academic.oup.com/hropen/article-pdf/2023/3/hoad031/51112668/hoad031.pdf"
+    },
+    {
+      "id": "https://openalex.org/W4410789852",
+      "paperId": "https://openalex.org/W4410789852",
+      "openalex_id": "https://openalex.org/W4410789852",
+      "title": "Intelligent assisted reproduction: Innovative applications of artificial intelligence in embryo health assessment",
+      "authors": [
+        "Kuo Chen",
+        "Zuo Jing",
+        "Wei Han",
+        "Jinhong Guo"
+      ],
+      "journal": "LabMed discovery.",
+      "year": 2025,
+      "publication_date": "2025-05-27",
+      "abstract": "Identifying embryos with the highest likelihood of successful implantation is a critical component of the in vitro fertilization (IVF) process. Visual assessments are limited by the subjectivity of embryologists, making consistent evaluation of embryo health challenging with traditional methods. Recent advances in artificial intelligence (AI)—particularly in computer vision and deep learning—have enabled the automated analysis of embryo morphology images, reducing subjectivity and improving evaluation efficiency. Through an extensive literature search using keywords such as “embryo health assessment” and “artificial intelligence,” the present review focuses on AI-driven approaches for automated embryo evaluation. It examines AI techniques applied to embryo assessment across the early development, blastocyst, and full developmental stages. This review indicated the promising potential of AI technologies in enhancing the precision, consistency, and speed of embryo selection. AI models have been reported to outperform manual evaluations across several parameters, offering promising opportunities to improve success rates and operational efficiency in reproductive medicine. Additionally, this review discusses the current limitations of AI implementation in clinical settings and explores future research directions. Overall, the review provides insight into AI’s growing role in advancing embryo selection and highlights the path toward fully automated evaluation systems in assisted reproductive technology.",
+      "abstract_summary": "Identifying embryos with the highest likelihood of successful implantation is a critical component of the in vitro fertilization (IVF) process. Visual assessments are limited by the subjectivity of embryologists, making consistent evaluation of embryo health challenging with traditional methods. Recent advances in artificial intelligence (AI)—particularly in computer vision and deep learning—have enabled the automated analysis of embryo morphology images, reducing subjectivity and improving evaluation efficiency. Through an extensive literature search using keywords such as “embryo health assessment” and “artificial intelligence,” the present review focuses on AI-driven approaches for automated embryo evaluation. It examines AI techniques applied to embryo assessment across the early development, blastocyst, and full developmental stages. This review indicated the promising potential of AI technologies in enhancing the precision, consistency, and speed of embryo selection. AI models have been reported to outperform manual evaluations across several parameters, offering promising opportunities to improve success rates and operational efficiency in reproductive medicine. Additionally, this review discusses the current limitations of AI implementation in clinical settings and explores future research directions. Overall, the review provides insight into AI’s growing role in advancing embryo selection and highlights the path toward fully automated evaluation systems in assisted reproductive technology.",
+      "citationCount": 14,
+      "citation_count": 14,
+      "doi": "10.1016/j.lmd.2025.100075",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4410789852",
+      "full_text_url": "https://doi.org/10.1016/j.lmd.2025.100075"
+    },
+    {
+      "id": "https://openalex.org/W4413800623",
+      "paperId": "https://openalex.org/W4413800623",
+      "openalex_id": "https://openalex.org/W4413800623",
+      "title": "Artificial intelligence in assisted reproduction: the future for reproductive medicine",
+      "authors": [
+        "Barry Cooper Hynniewta",
+        "Ferrill Navas",
+        "Kathrina Marbaniang"
+      ],
+      "journal": "International Journal of Reproduction Contraception Obstetrics and Gynecology",
+      "year": 2025,
+      "publication_date": "2025-08-28",
+      "abstract": "An important turning point in the development of assisted reproductive technologies has come with the use of artificial intelligence (AI). Because optimising results is such a constant struggle, AI is being used in assisted reproduction. This review presents a concise yet comprehensive overview of AI applications in ART, including its role in computer-assisted semen analysis (CASA), oocyte and embryo evaluation, personalized stimulation protocols, and treatment outcome prediction. AI augments objectivity, enhances prediction precision, and facilitates individualized therapy through the utilization of extensive, intricate datasets. Commercial AI platforms are increasingly integrated into routine IVF workflows, particularly in embryo grading and selection, showing promising preliminary outcomes. The need for openness and fairness in AI research, development, and implementation, as well as the identification of issues and moral quandaries surrounding AI support, are underscored by the lack of legislation addressing AI in healthcare. The goal of the regulatory framework is to strike a middle ground between worldwide innovation and patient safety. Highlighting possible benefits, limits, and ethical issues, this comprehensive research evaluates the advancement of AI in assisted reproduction.",
+      "abstract_summary": "An important turning point in the development of assisted reproductive technologies has come with the use of artificial intelligence (AI). Because optimising results is such a constant struggle, AI is being used in assisted reproduction. This review presents a concise yet comprehensive overview of AI applications in ART, including its role in computer-assisted semen analysis (CASA), oocyte and embryo evaluation, personalized stimulation protocols, and treatment outcome prediction. AI augments objectivity, enhances prediction precision, and facilitates individualized therapy through the utilization of extensive, intricate datasets. Commercial AI platforms are increasingly integrated into routine IVF workflows, particularly in embryo grading and selection, showing promising preliminary outcomes. The need for openness and fairness in AI research, development, and implementation, as well as the identification of issues and moral quandaries surrounding AI support, are underscored by the lack of legislation addressing AI in healthcare. The goal of the regulatory framework is to strike a middle ground between worldwide innovation and patient safety. Highlighting possible benefits, limits, and ethical issues, this comprehensive research evaluates the advancement of AI in assisted reproduction.",
+      "citationCount": 2,
+      "citation_count": 2,
+      "doi": "10.18203/2320-1770.ijrcog20252767",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4413800623",
+      "full_text_url": "https://www.ijrcog.org/index.php/ijrcog/article/download/15736/9798"
+    },
+    {
+      "id": "https://openalex.org/W4367059839",
+      "paperId": "https://openalex.org/W4367059839",
+      "openalex_id": "https://openalex.org/W4367059839",
+      "title": "Embryo Transfer is the last Frontier for Deep Machine Learning & Artificial Intelligence in Medically Assisted Reproduction (MAR)",
+      "authors": [
+        "Gautam Allahbadia"
+      ],
+      "journal": "The Journal of Reproduction",
+      "year": 2023,
+      "publication_date": "2023-04-26",
+      "abstract": "Embryo Transfer is the last Frontier for Deep Machine Learning & Artificial Intelligence in Medically Assisted Reproduction (MAR). In the last five years, nearly every aspect of an IVF cycle has been investigated by artificial intelligence(AI) & deep machine learning (ML), including sperm morphology, sperm identification, identification of empty or oocyte containing follicles, prediction of embryo cell stages, prediction of blastulation from oocytes, scoring blastocyst quality, prediction of euploid blastocysts and live birth from blastocysts, improving the embryo selection process, and for developing algorithms for optimal IVF stimulation protocols. Moreover, AI-based methods can be implemented for other clinical aspects of IVF, such as assessing patient reproductive potential and individualizing gonadotropin stimulation protocols. As AI has the capability to analyze \"big\" data, the ultimate goal will be to apply AI tools to the analysis of all embryological, clinical, and genetic data in an effort to provide patient-tailored treatments. Embryo Transfer is the only step of IVF that is outside the realm of AI & ML today. Embryo Transfer success is presently human skill dependent and deep machine learning may one day intrude into this sacred space with the advent of specialized humanoid robots. Embryo transfer is arguably the rate limiting step in the sequential events that complete an IVF cycle. Many variables play a role in the success of embryo transfer, including catheter type, atraumatic technique, and the use of sonography guidance. In this clinical review we will cover the contemporary research goals of AI & ML as well as the variables influencing Embryo Transfer success.",
+      "abstract_summary": "Embryo Transfer is the last Frontier for Deep Machine Learning & Artificial Intelligence in Medically Assisted Reproduction (MAR). In the last five years, nearly every aspect of an IVF cycle has been investigated by artificial intelligence(AI) & deep machine learning (ML), including sperm morphology, sperm identification, identification of empty or oocyte containing follicles, prediction of embryo cell stages, prediction of blastulation from oocytes, scoring blastocyst quality, prediction of euploid blastocysts and live birth from blastocysts, improving the embryo selection process, and for developing algorithms for optimal IVF stimulation protocols. Moreover, AI-based methods can be implemented for other clinical aspects of IVF, such as assessing patient reproductive potential and individualizing gonadotropin stimulation protocols. As AI has the capability to analyze \"big\" data, the ultimate goal will be to apply AI tools to the analysis of all embryological, clinical, and genetic data in an effort to provide patient-tailored treatments. Embryo Transfer is the only step of IVF that is outside the realm of AI & ML today. Embryo Transfer success is presently human skill dependent and deep machine learning may one day intrude into this sacred space with the advent of specialized humanoid robots. Embryo transfer is arguably the rate limiting step in the sequential events that complete an IVF cycle. Many variables play a role in the success of embryo transfer, including catheter type, atraumatic technique, and the use of sonography guidance. In this clinical review we will cover the contemporary research goals of AI & ML as well as the variables influencing Embryo Transfer success.",
+      "citationCount": 4,
+      "citation_count": 4,
+      "doi": "10.58779/issn.2954-467x.tjor2023.v2.n1.18",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4367059839",
+      "full_text_url": "https://thejournalofreproduction.com/ojs/index.php/tjor/article/download/18/31"
+    },
+    {
+      "id": "https://openalex.org/W3209259671",
+      "paperId": "https://openalex.org/W3209259671",
+      "openalex_id": "https://openalex.org/W3209259671",
+      "title": "Interpretable, not black-box, artificial intelligence should be used for embryo selection",
+      "authors": [
+        "Michael Anis Mihdi Afnan",
+        "Yanhe Liu",
+        "Vincent Conitzer",
+        "Cynthia D Rudin",
+        "Abhishek Mishra",
+        "Julian Savulescu",
+        "Masoud Afnan"
+      ],
+      "journal": "Human Reproduction Open",
+      "year": 2021,
+      "publication_date": "2021-09-01",
+      "abstract": "Artificial intelligence (AI) techniques are starting to be used in IVF, in particular for selecting which embryos to transfer to the woman. AI has the potential to process complex data sets, to be better at identifying subtle but important patterns, and to be more objective than humans when evaluating embryos. However, a current review of the literature shows much work is still needed before AI can be ethically implemented for this purpose. No randomized controlled trials (RCTs) have been published, and the efficacy studies which exist demonstrate that algorithms can broadly differentiate well between 'good-' and 'poor-' quality embryos but not necessarily between embryos of similar quality, which is the actual clinical need. Almost universally, the AI models were opaque ('black-box') in that at least some part of the process was uninterpretable. This gives rise to a number of epistemic and ethical concerns, including problems with trust, the possibility of using algorithms that generalize poorly to different populations, adverse economic implications for IVF clinics, potential misrepresentation of patient values, broader societal implications, a responsibility gap in the case of poor selection choices and introduction of a more paternalistic decision-making process. Use of interpretable models, which are constrained so that a human can easily understand and explain them, could overcome these concerns. The contribution of AI to IVF is potentially significant, but we recommend that AI models used in this field should be interpretable, and rigorously evaluated with RCTs before implementation. We also recommend long-term follow-up of children born after AI for embryo selection, regulatory oversight for implementation, and public availability of data and code to enable research teams to independently reproduce and validate existing models.",
+      "abstract_summary": "Artificial intelligence (AI) techniques are starting to be used in IVF, in particular for selecting which embryos to transfer to the woman. AI has the potential to process complex data sets, to be better at identifying subtle but important patterns, and to be more objective than humans when evaluating embryos. However, a current review of the literature shows much work is still needed before AI can be ethically implemented for this purpose. No randomized controlled trials (RCTs) have been published, and the efficacy studies which exist demonstrate that algorithms can broadly differentiate well between 'good-' and 'poor-' quality embryos but not necessarily between embryos of similar quality, which is the actual clinical need. Almost universally, the AI models were opaque ('black-box') in that at least some part of the process was uninterpretable. This gives rise to a number of epistemic and ethical concerns, including problems with trust, the possibility of using algorithms that generalize poorly to different populations, adverse economic implications for IVF clinics, potential misrepresentation of patient values, broader societal implications, a responsibility gap in the case of poor selection choices and introduction of a more paternalistic decision-making process. Use of interpretable models, which are constrained so that a human can easily understand and explain them, could overcome these concerns. The contribution of AI to IVF is potentially significant, but we recommend that AI models used in this field should be interpretable, and rigorously evaluated with RCTs before implementation. We also recommend long-term follow-up of children born after AI for embryo selection, regulatory oversight for implementation, and public availability of data and code to enable research teams to independently reproduce and validate existing models.",
+      "citationCount": 145,
+      "citation_count": 145,
+      "doi": "10.1093/hropen/hoab040",
+      "pmid": "34938903",
+      "pmcid": "8687137",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W3209259671",
+      "full_text_url": "https://academic.oup.com/hropen/article-pdf/2021/4/hoab040/41285975/hoab040.pdf"
+    },
+    {
+      "id": "https://openalex.org/W7127052612",
+      "paperId": "https://openalex.org/W7127052612",
+      "openalex_id": "https://openalex.org/W7127052612",
+      "title": "Artificial intelligence in human-assisted reproduction: a paradigm shift still in search of clinical impact",
+      "authors": [
+        "Danilo Cimadomo",
+        "Giovanni Coticchio",
+        "Laura Francesca Rienzi"
+      ],
+      "journal": "Current Opinion in Obstetrics & Gynecology",
+      "year": 2026,
+      "publication_date": "2026-02-02",
+      "abstract": "PURPOSE: Artificial intelligence in human-assisted reproduction has attracted intense interest and inflated expectations, with proposed applications ranging from ovarian stimulation to gamete and embryo selection and outcome prediction. Despite the initial enthusiasm, its real-world clinical value remains uncertain. This review critically reassesses the current evidence to clarify where artificial intelligence meaningfully contributes and where expectations exceed demonstrated impact. RECENT FINDINGS: Most published studies show relevant methodological weaknesses, including limited reproducibility, poor external validation, scarce explainability, and weak comparison with standard clinical practice. Research efforts have disproportionately focused on embryo selection, an area with intrinsically constrained potential to improve treatment efficacy, while other clinically relevant domains remain underexplored. As a result, reported improvements often concern surrogate or intermediate endpoints rather than robust clinical outcomes. SUMMARY: Artificial intelligence holds greater promise in domains such as gamete assessment, automated data extraction, and personalized outcome prediction, where it may enhance treatment management, counselling, and decision-making for both clinicians and patients. Realizing this potential requires a strategic shift in research priorities and rigorous adherence to shared standards, including model transparency, uniformity, external validation, and benchmarking against established clinical workflows. Without such recalibration, artificial intelligence risks becoming a hyped technology with limited clinical relevance in assisted reproduction.",
+      "abstract_summary": "PURPOSE: Artificial intelligence in human-assisted reproduction has attracted intense interest and inflated expectations, with proposed applications ranging from ovarian stimulation to gamete and embryo selection and outcome prediction. Despite the initial enthusiasm, its real-world clinical value remains uncertain. This review critically reassesses the current evidence to clarify where artificial intelligence meaningfully contributes and where expectations exceed demonstrated impact. RECENT FINDINGS: Most published studies show relevant methodological weaknesses, including limited reproducibility, poor external validation, scarce explainability, and weak comparison with standard clinical practice. Research efforts have disproportionately focused on embryo selection, an area with intrinsically constrained potential to improve treatment efficacy, while other clinically relevant domains remain underexplored. As a result, reported improvements often concern surrogate or intermediate endpoints rather than robust clinical outcomes. SUMMARY: Artificial intelligence holds greater promise in domains such as gamete assessment, automated data extraction, and personalized outcome prediction, where it may enhance treatment management, counselling, and decision-making for both clinicians and patients. Realizing this potential requires a strategic shift in research priorities and rigorous adherence to shared standards, including model transparency, uniformity, external validation, and benchmarking against established clinical workflows. Without such recalibration, artificial intelligence risks becoming a hyped technology with limited clinical relevance in assisted reproduction.",
+      "citationCount": 4,
+      "citation_count": 4,
+      "doi": "10.1097/gco.0000000000001092",
+      "pmid": "41621090",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W7127052612",
+      "full_text_url": "https://doi.org/10.1097/gco.0000000000001092"
+    },
+    {
+      "id": "https://openalex.org/W4415259060",
+      "paperId": "https://openalex.org/W4415259060",
+      "openalex_id": "https://openalex.org/W4415259060",
+      "title": "Artificial Intelligence in Embryo Selection",
+      "authors": [
+        "Olasoji O. Agboola",
+        "Aderinola Adebiyi Adegoke",
+        "Jolade Opeyemi Olabanji"
+      ],
+      "journal": "Path of Science",
+      "year": 2025,
+      "publication_date": "2025-09-30",
+      "abstract": "Despite four decades of refinement, in vitro fertilisation live birth rates plateau at 25-30% globally, largely due to limitations in subjective embryo selection. We evaluated whether artificial intelligence-assisted embryo selection improves clinical pregnancy rates compared to conventional morphological assessment. This multi-centre prospective cohort study was conducted across six university-affiliated IVF clinics in the United Kingdom between January 2023 and March 2024. We enrolled 1,187 patients undergoing single blastocyst transfer, with 1,172 completing the analysis (585 in the control group and 587 in the intervention group). The study compared a 6-month control phase using conventional morphological grading against a 6-month intervention phase employing the iDAScore v1.0 deep learning algorithm. The primary outcome analysis employed logistic regression, adjusted for female age, body mass index, anti-Müllerian hormone level, and infertility diagnosis. Clinical pregnancy rates were significantly higher in the AI-assisted group (45.7%, 268/587) compared to the conventional group (38.1%, 223/585), with an adjusted odds ratio of 1.40 (95% confidence interval, 1.11-1.77; p = 0.004). This represents a 40% increase in pregnancy odds and an absolute improvement of 7.6 percentage points. AI-assisted embryo selection significantly improves clinical pregnancy rates whilst maintaining the safety standard of single embryo transfer.",
+      "abstract_summary": "Despite four decades of refinement, in vitro fertilisation live birth rates plateau at 25-30% globally, largely due to limitations in subjective embryo selection. We evaluated whether artificial intelligence-assisted embryo selection improves clinical pregnancy rates compared to conventional morphological assessment. This multi-centre prospective cohort study was conducted across six university-affiliated IVF clinics in the United Kingdom between January 2023 and March 2024. We enrolled 1,187 patients undergoing single blastocyst transfer, with 1,172 completing the analysis (585 in the control group and 587 in the intervention group). The study compared a 6-month control phase using conventional morphological grading against a 6-month intervention phase employing the iDAScore v1.0 deep learning algorithm. The primary outcome analysis employed logistic regression, adjusted for female age, body mass index, anti-Müllerian hormone level, and infertility diagnosis. Clinical pregnancy rates were significantly higher in the AI-assisted group (45.7%, 268/587) compared to the conventional group (38.1%, 223/585), with an adjusted odds ratio of 1.40 (95% confidence interval, 1.11-1.77; p = 0.004). This represents a 40% increase in pregnancy odds and an absolute improvement of 7.6 percentage points. AI-assisted embryo selection significantly improves clinical pregnancy rates whilst maintaining the safety standard of single embryo transfer.",
+      "citationCount": 1,
+      "citation_count": 1,
+      "doi": "10.22178/pos.122-2",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4415259060",
+      "full_text_url": "https://pathofscience.org/index.php/ps/article/download/3630/1795"
+    },
+    {
+      "id": "https://openalex.org/W4376612807",
+      "paperId": "https://openalex.org/W4376612807",
+      "openalex_id": "https://openalex.org/W4376612807",
+      "title": "Ethical Issues of Artificial Intelligence & Assisted Reproductive Technologies",
+      "authors": [
+        "Raymond Zammit"
+      ],
+      "journal": "The International Journal of Prenatal & Life Sciences",
+      "year": 2023,
+      "publication_date": "2023-05-13",
+      "abstract": "The downward trend in fertility rates has not surprisingly led to an increase in assisted reproduction techniques (ART), and assisted reproduction today is characterised by high-tech, high-end investment and international fertility companies, with the global fertility services market expected to grow beyond US$25 billion by 2026. Much has happened since the birth of the first test tube baby in 1978, including personalised ovarian stimulation, extended embryonic culture, intra cytoplasmic sperm injection (ICSI), pre-implantation genetic diagnosis, embryo selection (leading to elective single embryo transfer) and oocyte vitrification. Nevertheless, the success rate of IVF currently stands at around 30%, even though this depends heavily on a number of factors, such as age and changes in the physical and psychosocial environments. Many women, therefore, have to go through multiple rounds of IVF such that the process can be time-consuming, and challenges patients both financially and emotionally. Research is thus increasingly focused on how to improve treatments and outcomes, and rapid advancements in Artificial Intelligence look promising and are increasingly being utilised in fertility clinics around the world.",
+      "abstract_summary": "The downward trend in fertility rates has not surprisingly led to an increase in assisted reproduction techniques (ART), and assisted reproduction today is characterised by high-tech, high-end investment and international fertility companies, with the global fertility services market expected to grow beyond US$25 billion by 2026. Much has happened since the birth of the first test tube baby in 1978, including personalised ovarian stimulation, extended embryonic culture, intra cytoplasmic sperm injection (ICSI), pre-implantation genetic diagnosis, embryo selection (leading to elective single embryo transfer) and oocyte vitrification. Nevertheless, the success rate of IVF currently stands at around 30%, even though this depends heavily on a number of factors, such as age and changes in the physical and psychosocial environments. Many women, therefore, have to go through multiple rounds of IVF such that the process can be time-consuming, and challenges patients both financially and emotionally. Research is thus increasingly focused on how to improve treatments and outcomes, and rapid advancements in Artificial Intelligence look promising and are increasingly being utilised in fertility clinics around the world.",
+      "citationCount": 11,
+      "citation_count": 11,
+      "doi": "10.24946/ijpls/2023132305",
+      "pmid": "",
+      "pmcid": "",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4376612807",
+      "full_text_url": "https://www.journalprenatalife.com/index.php/prenatal/article/download/107/42"
+    },
+    {
+      "id": "https://openalex.org/W4298145769",
+      "paperId": "https://openalex.org/W4298145769",
+      "openalex_id": "https://openalex.org/W4298145769",
+      "title": "Artificial Intelligence-Based Detection of Human Embryo Components for Assisted Reproduction by In Vitro Fertilization",
+      "authors": [
+        "Abeer Mushtaq",
+        "Maria Mumtaz",
+        "Ali Raza",
+        "Nema Salem",
+        "Muhammad Naveed Yasir"
+      ],
+      "journal": "Sensors",
+      "year": 2022,
+      "publication_date": "2022-09-29",
+      "abstract": "Assisted reproductive technology is helping humans by addressing infertility using different medical procedures that help in a successful pregnancy. In vitro fertilization (IVF) is one of those assisted reproduction methods in which the sperm and eggs are combined outside the human body in a specialized environment and kept for growth. Assisted reproductive technology is helping humans by addressing infertility using different medical procedures that help in a successful pregnancy. The morphology of the embryological components is highly related to the success of the assisted reproduction procedure. In approximately 3-5 days, the embryo transforms into the blastocyst. To prevent the multiple-birth risk and to increase the chance of pregnancy the embryologist manually analyzes the blastocyst components and selects valuable embryos to transfer to the women's uterus. The manual microscopic analysis of blastocyst components, such as trophectoderm, zona pellucida, blastocoel, and inner cell mass, is time-consuming and requires keen expertise to select a viable embryo. Artificial intelligence is easing medical procedures by the successful implementation of deep learning algorithms that mimic the medical doctor's knowledge to provide a better diagnostic procedure that helps in reducing the diagnostic burden. The deep learning-based automatic detection of these blastocyst components can help to analyze the morphological properties to select viable embryos. This research presents a deep learning-based embryo component segmentation network (ECS-Net) that accurately detects trophectoderm, zona pellucida, blastocoel, and inner cell mass for embryological analysis. The proposed method (ECS-Net) is based on a shallow deep segmentation network that uses two separate streams produced by a base convolutional block and a depth-wise separable convolutional block. Both streams are densely concatenated in combination with two dense skip paths to produce powerful features before and after upsampling. The proposed ECS-Net is evaluated on a publicly available microscopic blastocyst image dataset, the experimental segmentation results confirm the efficacy of the proposed method. The proposed ECS-Net is providing a mean Jaccard Index (Mean JI) of 85.93% for embryological analysis.",
+      "abstract_summary": "Assisted reproductive technology is helping humans by addressing infertility using different medical procedures that help in a successful pregnancy. In vitro fertilization (IVF) is one of those assisted reproduction methods in which the sperm and eggs are combined outside the human body in a specialized environment and kept for growth. Assisted reproductive technology is helping humans by addressing infertility using different medical procedures that help in a successful pregnancy. The morphology of the embryological components is highly related to the success of the assisted reproduction procedure. In approximately 3-5 days, the embryo transforms into the blastocyst. To prevent the multiple-birth risk and to increase the chance of pregnancy the embryologist manually analyzes the blastocyst components and selects valuable embryos to transfer to the women's uterus. The manual microscopic analysis of blastocyst components, such as trophectoderm, zona pellucida, blastocoel, and inner cell mass, is time-consuming and requires keen expertise to select a viable embryo. Artificial intelligence is easing medical procedures by the successful implementation of deep learning algorithms that mimic the medical doctor's knowledge to provide a better diagnostic procedure that helps in reducing the diagnostic burden. The deep learning-based automatic detection of these blastocyst components can help to analyze the morphological properties to select viable embryos. This research presents a deep learning-based embryo component segmentation network (ECS-Net) that accurately detects trophectoderm, zona pellucida, blastocoel, and inner cell mass for embryological analysis. The proposed method (ECS-Net) is based on a shallow deep segmentation network that uses two separate streams produced by a base convolutional block and a depth-wise separable convolutional block. Both streams are densely concatenated in combination with two dense skip paths to produce powerful features before and after upsampling. The proposed ECS-Net is evaluated on a publicly available microscopic blastocyst image dataset, the experimental segmentation results confirm the efficacy of the proposed method. The proposed ECS-Net is providing a mean Jaccard Index (Mean JI) of 85.93% for embryological analysis.",
+      "citationCount": 20,
+      "citation_count": 20,
+      "doi": "10.3390/s22197418",
+      "pmid": "36236516",
+      "pmcid": "9573355",
+      "source": "openalex",
+      "sources": [
+        "OpenAlex"
+      ],
+      "source_url": "https://openalex.org/W4298145769",
+      "full_text_url": "https://www.mdpi.com/1424-8220/22/19/7418/pdf?version=1664760449"
+    }
+  ],
+  "targetPapers": 15,
+  "startYear": 2019,
+  "audience": "Consultants",
+  "slideCount": 15,
+  "density": "Short bullet points",
+  "visualStyle": "Scientific pictorial",
+  "approvedKeywords": {
+    "topic": "Artificial Intelligence in Assisted Reproduction: Clinical Evidence, Current Limitations, Bias, and the Future of Embryo Selection",
+    "primaryKeywords": [
+      "Artificial",
+      "Intelligence",
+      "Assisted",
+      "Reproduction"
+    ],
+    "synonyms": [
+      "Artificial therapy",
+      "Artificial clinical outcomes",
+      "Artificial efficacy",
+      "Intelligence therapy",
+      "Intelligence clinical outcomes",
+      "Intelligence efficacy",
+      "Assisted therapy",
+      "Assisted clinical outcomes",
+      "Assisted efficacy",
+      "Reproduction therapy",
+      "Reproduction clinical outcomes",
+      "Reproduction efficacy"
+    ],
+    "meshConcepts": [
+      "Randomized Controlled Trials as Topic",
+      "Treatment Outcome",
+      "Humans"
+    ]
+  },
+  "approvedStrategy": {
+    "topic": "",
+    "startYear": 2019,
+    "currentYear": 2026,
+    "pmc": {
+      "engine": "Europe PMC / PubMed Central",
+      "query": "(biomedical) AND (PUB_YEAR:[2019 TO 2026])",
+      "filters": "PUB_YEAR:[2019 TO 2026]",
+      "endpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
+    },
+    "semanticScholar": {
+      "engine": "Semantic Scholar Academic Graph",
+      "query": "",
+      "yearFilter": "2019-2026",
+      "fields": "paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy",
+      "endpoint": "https://api.semanticscholar.org/graph/v1/paper/search"
+    }
+  }
+}

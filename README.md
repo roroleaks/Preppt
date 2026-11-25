@@ -31,7 +31,7 @@
   1. *Keyword Approval Gate*: Clinicians review and refine suggested primary terms, clinical synonyms, and MeSH concepts.
   2. *Search Strategy Approval Gate*: Dual Solr/Graph queries are inspectable and editable before issuing network requests.
   3. *Selected Papers Approval Gate*: Curated evidence papers must be explicitly approved before slide synthesis begins.
-- **Audience & Density Adaptation**: Calibrates medical terminology depth across 5 audience tiers (*Public audience, Undergraduate, Postgraduate, Consultants, Mixed audience*) and visible slide text across 3 density tiers (*Detailed, Balanced [30–40% occupancy], Short bullet points*).
+- **Audience & Density Adaptation**: Calibrates medical terminology depth across 5 audience tiers (*Public audience, Undergraduate, Postgraduate, Consultants, Mixed audience*) and visible slide text across 3 density tiers (*Detailed, Balanced [30–40% occupancy], Short bullet points [8-word target for non-finding bullets; up to 18 words for finding bullets so labelled numbers and confidence intervals stay intact]*).
 - **10 Mandatory Slide Fields**: Every synthesized slide contains all 10 essential specification fields, including slide objective, main message, visual type suggestion, detailed visual description, verbatim speaker notes narration script, interactive audience question, and logical transition.
 - **Strict Citation Isolation**: Zero in-text citations or references on slide cards. All bibliographic citations are strictly consolidated in a dedicated, Vancouver-style final References section.
 - **Pre-Export Integrity Gate (Prompt 13)**: Automatically audits 9 compliance criteria before allowing Word document export.
@@ -266,6 +266,22 @@ node test-retrieval-isolation.js
 # Run live scenario integration test with deep Word document XML inspection
 node scratch/run-random-topic-e2e.js
 ```
+
+---
+
+## 🚢 Deployment & CI
+
+- **Git-Only Production Deploys**: Production deploys **only** by merging a Pull Request into `main` with GitHub Actions CI green (`vercel.json` enforces `git.deploymentEnabled.main: true` with branch previews enabled).
+- **Never Deploy Locally**: Never run `vercel --prod` from a local folder.
+- **Local CI Verification**:
+  ```bash
+  # First-time browser setup
+  npx playwright install chromium
+
+  # Run full CI gate (syntax check + offline unit/E2E suite + Playwright browser smoke suite)
+  npm run ci
+  ```
+- **Environment Variables**: Configure API keys (`OPENALEX_API_KEY`, `S2_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) and `CONTACT_EMAIL` in Vercel Project Settings (see `.env.example`). Never commit secrets to the repository.
 
 ---
 

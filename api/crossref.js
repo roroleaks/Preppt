@@ -40,13 +40,18 @@ function queryCrossref(query, pageSize = 30, startYear = null) {
       params.set('filter', `from-pub-date:${startYear}-01-01`);
     }
 
+    const contactEmail = process.env.CONTACT_EMAIL || '';
+    const userAgent = contactEmail
+      ? `Preppt/1.0 (Scientific Literature to Presentation; mailto:${contactEmail})`
+      : 'Preppt/1.0';
+
     const options = {
       hostname: 'api.crossref.org',
       path: `/works?${params.toString()}`,
       method: 'GET',
       timeout: 8000,
       headers: {
-        'User-Agent': 'Preppt/1.0 (Scientific Literature to Presentation; mailto:raouf.roshdy@aimed.org)',
+        'User-Agent': userAgent,
         'Accept': 'application/json'
       }
     };

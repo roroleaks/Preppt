@@ -49,6 +49,7 @@ module.exports = async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       return res.end(JSON.stringify({
         error: 'Pre-export validation failed: ' + validation.errors.join('; '),
+        failingChecks: validation.checks.filter(c => c.status === 'fail').map(c => c.id),
         validation
       }));
     }

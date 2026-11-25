@@ -469,9 +469,9 @@ async function executeLiteratureRetrieval() {
     } else if (epmcResult.success && !s2Result.success) {
       unavailableSourceWarning = `Semantic Scholar was temporarily unavailable after automatic retries (${s2Result.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Europe PMC.`;
     } else if (epmcCount > 0 && s2Count === 0) {
-      unavailableSourceWarning = `Semantic Scholar reached its upstream request limit (HTTP 429). The system continued seamlessly using ${epmcCount} eligible peer-reviewed studies retrieved from Europe PMC.`;
+      unavailableSourceWarning = `Semantic Scholar reached its upstream request limit (HTTP 429). The system continued seamlessly using ${epmcCount} eligible studies retrieved from Europe PMC.`;
     } else if (s2Count > 0 && epmcCount === 0) {
-      unavailableSourceWarning = `Europe PMC was temporarily unavailable. The system continued seamlessly using ${s2Count} eligible peer-reviewed studies retrieved from Semantic Scholar.`;
+      unavailableSourceWarning = `Europe PMC was temporarily unavailable. The system continued seamlessly using ${s2Count} eligible studies retrieved from Semantic Scholar.`;
     }
 
     if (unavailableSourceWarning) {
@@ -519,7 +519,7 @@ async function executeLiteratureRetrieval() {
         zeroAlert.style.display = 'block';
         const msgEl = document.getElementById('zero-results-message');
         if (msgEl) {
-          msgEl.textContent = `No eligible peer-reviewed papers were retrieved matching the current search strategy and date filter (${state.startYear} to ${new Date().getFullYear()}).`;
+          msgEl.textContent = `No eligible records were retrieved matching the current search strategy and date filter (${state.startYear} to ${new Date().getFullYear()}).`;
         }
       }
       if (progressStatus) progressStatus.textContent = 'Retrieval complete: 0 candidate records found.';
@@ -552,7 +552,7 @@ async function executeLiteratureRetrieval() {
     if (shortfallAlert) {
       if (ranked.length < state.targetPapers) {
         shortfallAlert.style.display = 'block';
-        shortfallAlert.innerHTML = `<strong>Literature Shortfall Notice:</strong> You requested a target of ${state.targetPapers} final papers, but only ${ranked.length} eligible peer-reviewed studies were identified between ${state.startYear} and ${new Date().getFullYear()}. All ${ranked.length} available papers are presented below.`;
+        shortfallAlert.innerHTML = `<strong>Literature Shortfall Notice:</strong> You requested a target of ${state.targetPapers} final papers, but only ${ranked.length} eligible studies were identified between ${state.startYear} and ${new Date().getFullYear()}. All ${ranked.length} available papers are presented below.`;
       } else {
         shortfallAlert.style.display = 'none';
       }
@@ -691,7 +691,6 @@ function parseAuthors(item) {
 
 async function fetchOpenAlex(query, pageSize, startYear) {
   const currentYear = new Date().getFullYear();
-  const OPENALEX_KEY = 'LCR4PBZ9z5sTV3HuRDicln';
   const cleanQ = cleanQueryKeywords(query);
 
   let results = [];
@@ -711,7 +710,7 @@ async function fetchOpenAlex(query, pageSize, startYear) {
   // 2. Direct client fallback with API key and CORS if proxy returns 0 or fails
   if (results.length === 0) {
     try {
-      const directUrl = `https://api.openalex.org/works?search=${encodeURIComponent(cleanQ)}&filter=publication_year:${startYear || 2021}-${currentYear}&per_page=${pageSize}&api_key=${OPENALEX_KEY}&mailto=raouf.roshdy@aimed.org`;
+      const directUrl = `https://api.openalex.org/works?search=${encodeURIComponent(cleanQ)}&filter=publication_year:${startYear || 2021}-${currentYear}&per_page=${pageSize}`;
       const directRes = await fetch(directUrl);
       if (directRes.ok) {
         const json = await directRes.json();
@@ -1309,6 +1308,13 @@ function renderPaperCards() {
       ? (paper.abstract.substring(0, 200) + (paper.abstract.length > 200 ? '...' : ''))
       : 'Short abstract summary not available in primary index record.';
 
+    const isConference = paper.isConferenceAbstract ||
+      /^(?:[A-Za-z0-9\/_-]*\/)?[OPL]\s*[-–/]?\s*\d+/i.test(paper.title || '') ||
+      /^[A-Z]\d*[-/][A-Z0-9-]+/i.test(paper.title || '') ||
+      /supplement|suppl/i.test(paper.volume || '') ||
+      /supplement|suppl/i.test(paper.issue || '') ||
+      /meeting|congress|conference|abstracts/i.test(paper.venue || paper.journal || '');
+
     card.innerHTML = `
       <div class="paper-card-top-row">
         <div class="paper-badges-group">
@@ -1316,6 +1322,7 @@ function renderPaperCards() {
           <span class="badge badge-relevance">${paper.relevancePercentage}% Relevance</span>
           <span class="badge" style="background:#f1f5f9; color:#475569;">${paper.studyType}</span>
           <span class="badge" style="background:#e2e8f0; color:#334155;">${(paper.pubType || ['Article'])[0]}</span>
+          ${isConference ? '<span class="badge badge-conference" style="background:#fed7aa; color:#9a3412; font-weight:700;">Conference abstract</span>' : ''}
           ${paper.userStatus === 'essential' ? '<span class="badge badge-essential">⭐ Essential</span>' : ''}
           ${paper.userStatus === 'background' ? '<span class="badge badge-background">📘 Background</span>' : ''}
           ${paper.userNote ? '<span class="badge badge-note" style="background:#e0f2fe; color:#0369a1; font-weight:600;">📝 Note</span>' : ''}
@@ -1632,6 +1639,20 @@ function renderStep8DeckStudio() {
     paperCountBadge.textContent = `${state.selectedPapers?.length || meta.selectedPaperCount || 0} Evidence Papers`;
   }
 
+  const engineBadge = document.getElementById('deck-engine-badge');
+  if (engineBadge) {
+    const engineName = deck.meta?.engine || state.deck?.meta?.engine || 'deterministic-extractive';
+    if (engineName.startsWith('llm:')) {
+      engineBadge.textContent = `Generated by: ${engineName}`;
+      engineBadge.style.background = '#dcfce7';
+      engineBadge.style.color = '#15803d';
+    } else {
+      engineBadge.textContent = 'Generated by: extractive engine (no LLM configured)';
+      engineBadge.style.background = '#e0e7ff';
+      engineBadge.style.color = '#3730a3';
+    }
+  }
+
   // Null-safe helper for spec pills
   const setElText = (id, text) => {
     const el = document.getElementById(id);
@@ -1723,6 +1744,45 @@ function renderStep8DeckStudio() {
   navBar.innerHTML = '';
   slidesContainer.innerHTML = '';
 
+  if (state.deck.selfCheck && (state.deck.selfCheck.status === 'error' || state.deck.selfCheck.status === 'failed')) {
+    const notice = document.createElement('div');
+    notice.id = 'self-check-warning-banner';
+    notice.className = 'alert-box alert-warn';
+    notice.style.marginBottom = '16px';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'alert-title';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = state.deck.selfCheck.status === 'failed'
+      ? '⚠️ Quality Check Failed After Auto-Repair'
+      : '⚠️ Quality Check Notice';
+    titleDiv.appendChild(titleSpan);
+
+    const reasonDiv = document.createElement('div');
+    reasonDiv.className = 'alert-reason';
+    if (state.deck.selfCheck.status === 'failed' && Array.isArray(state.deck.selfCheck.failures)) {
+      const summaryP = document.createElement('p');
+      summaryP.style.margin = '0 0 6px 0';
+      summaryP.textContent = `${state.deck.selfCheck.failures.length} quality check(s) failed after repair. Review the issues below before exporting:`;
+      reasonDiv.appendChild(summaryP);
+      const ul = document.createElement('ul');
+      ul.style.margin = '0';
+      ul.style.paddingLeft = '18px';
+      state.deck.selfCheck.failures.forEach(f => {
+        const li = document.createElement('li');
+        li.textContent = `${f.name || f.id}: ${f.details || 'Check failed'}`;
+        ul.appendChild(li);
+      });
+      reasonDiv.appendChild(ul);
+    } else {
+      reasonDiv.textContent = state.deck.selfCheck.message || 'Internal quality check could not run; please review the deck manually.';
+    }
+
+    notice.appendChild(titleDiv);
+    notice.appendChild(reasonDiv);
+    slidesContainer.appendChild(notice);
+  }
+
   state.deck.slides.forEach((slide, idx) => {
     // Navigation Pill with accessibility title
     const pill = document.createElement('button');
@@ -1800,6 +1860,14 @@ function renderStep8DeckStudio() {
           </div>
         </div>
 
+        <!-- Evidence Sources Traceability -->
+        <div class="slide-field-row">
+          <span class="slide-field-label">Evidence Sources (Traceability):</span>
+          <div style="font-size:13px; font-weight:700; color:var(--accent); background:#f0fdfa; border:1px solid #99f6e4; border-radius:6px; padding:6px 12px; margin-top:4px;">
+            ${slide.evidenceSources || (slide.sources && slide.sources.length > 0 ? `Evidence sources for this slide: ${slide.sources.map(s => `[${s}]`).join(', ')}` : 'Evidence sources for this slide: None (Methodological overview)')}
+          </div>
+        </div>
+
         <!-- 9. Interactive question for audience -->
         <div class="slide-field-row">
           <span class="slide-field-label">Field 9 • Interactive Question for Audience:</span>
@@ -1857,21 +1925,24 @@ function renderStep8DeckStudio() {
 }
 
 // ==========================================
-// PROMPT 13: PRE-EXPORT VALIDATION GATE
+// PRE-EXPORT VALIDATION GATE (Prompt 2 - B4)
 // ==========================================
 async function runPreExportValidation() {
   const exportBtn = document.getElementById('export-docx-btn');
   const badgeEl = document.getElementById('validation-overall-badge');
+  const summaryEl = document.getElementById('validation-summary-line');
   const container = document.getElementById('validation-checklist-container');
+  const warningsGate = document.getElementById('warnings-review-gate');
+  const warningsCheckbox = document.getElementById('warnings-reviewed-checkbox');
 
   if (exportBtn) {
     exportBtn.disabled = true;
     exportBtn.style.opacity = '0.6';
-    exportBtn.innerHTML = '<span>⏳ Validating Standards...</span>';
+    exportBtn.innerHTML = '<span>⏳ Running pre-export checks...</span>';
   }
 
   if (badgeEl) {
-    badgeEl.textContent = 'Validating 9 Standards...';
+    badgeEl.textContent = 'Running pre-export checks...';
     badgeEl.style.background = '#e0f2fe';
     badgeEl.style.color = '#0369a1';
   }
@@ -1897,30 +1968,134 @@ async function runPreExportValidation() {
     state.validationReport = report;
     renderValidationChecklist(report);
 
-    if (report.isValid) {
-      if (exportBtn) {
-        exportBtn.disabled = false;
-        exportBtn.style.opacity = '1';
-        exportBtn.innerHTML = '<span class="btn-icon">📄</span><span>Export to Word</span>';
+    const hasFailures = (report.failedCount || 0) > 0;
+    const hasWarnings = (report.warningCount || 0) > 0;
+
+    if (summaryEl) {
+      summaryEl.textContent = report.summary || (hasFailures ? `Export blocked: ${report.failedCount} check failed.` : `${report.passedCount || 0} passed · ${report.warningCount || 0} warnings · 0 failed`);
+    }
+
+    if (warningsGate) {
+      warningsGate.style.display = hasWarnings ? 'block' : 'none';
+      if (!hasWarnings && warningsCheckbox) {
+        warningsCheckbox.checked = true;
       }
-      if (badgeEl) {
-        badgeEl.textContent = `✓ ${report.passedChecks}/${report.totalChecks} Standards Verified`;
-        badgeEl.style.background = '#dcfce7';
-        badgeEl.style.color = '#15803d';
-      }
-    } else {
-      if (exportBtn) {
+    }
+
+    function updateExportButtonState() {
+      if (!exportBtn) return;
+      if (hasFailures) {
         exportBtn.disabled = true;
         exportBtn.setAttribute('aria-disabled', 'true');
         exportBtn.style.opacity = '0.5';
-        exportBtn.innerHTML = '<span>⚠️ Pre-Export Checks Failed</span>';
+        exportBtn.innerHTML = '<span>⚠️ Export Blocked: Checks Failed</span>';
+      } else if (hasWarnings && warningsCheckbox && !warningsCheckbox.checked) {
+        exportBtn.disabled = true;
+        exportBtn.setAttribute('aria-disabled', 'true');
+        exportBtn.style.opacity = '0.6';
+        exportBtn.innerHTML = '<span>⚠️ Review Warnings to Enable Export</span>';
+      } else {
+        exportBtn.disabled = false;
+        exportBtn.removeAttribute('aria-disabled');
+        exportBtn.style.opacity = '1';
+        exportBtn.innerHTML = '<span class="btn-icon">📄</span><span>Export to Word</span>';
       }
+    }
+
+    if (warningsCheckbox) {
+      warningsCheckbox.onchange = updateExportButtonState;
+    }
+
+    const existingBlockedBox = document.getElementById('export-blocked-details');
+    if (existingBlockedBox) existingBlockedBox.remove();
+
+    if (!hasFailures) {
       if (badgeEl) {
-        badgeEl.textContent = `⚠️ ${report.passedChecks}/${report.totalChecks} Standards Passed — see failed checks below`;
+        badgeEl.textContent = report.summary || `${report.passedCount} passed · ${report.warningCount} warnings · 0 failed`;
+        badgeEl.style.background = hasWarnings ? '#fef3c7' : '#dcfce7';
+        badgeEl.style.color = hasWarnings ? '#92400e' : '#15803d';
+      }
+      updateExportButtonState();
+    } else {
+      if (badgeEl) {
+        badgeEl.textContent = `Export blocked: ${report.failedCount} check failed`;
         badgeEl.style.background = '#fee2e2';
         badgeEl.style.color = '#991b1b';
       }
-      showToast(`Validation Alert: ${report.errors[0]}`);
+      updateExportButtonState();
+
+      // Actionable Export-Blocked Panel (Prompt 3b)
+      const blockedBox = document.createElement('div');
+      blockedBox.id = 'export-blocked-details';
+      blockedBox.className = 'alert-box alert-warn';
+      blockedBox.style.marginTop = '12px';
+      blockedBox.style.borderColor = '#ef4444';
+      blockedBox.style.background = '#fef2f2';
+
+      const bTitle = document.createElement('div');
+      bTitle.className = 'alert-title';
+      bTitle.style.color = '#991b1b';
+      bTitle.textContent = `⚠️ Export Blocked (${report.failedCount} validation failure${report.failedCount === 1 ? '' : 's'})`;
+      blockedBox.appendChild(bTitle);
+
+      const bList = document.createElement('ul');
+      bList.style.margin = '8px 0 12px 0';
+      bList.style.paddingLeft = '20px';
+      bList.style.color = '#7f1d1d';
+
+      const failedChecks = (report.checks || []).filter(c => c.status === 'fail');
+      failedChecks.forEach(fc => {
+        const li = document.createElement('li');
+        li.style.marginBottom = '6px';
+        const slideMatch = (fc.details || '').match(/Slide\s+\d+/i);
+        const slideLabel = slideMatch ? slideMatch[0] : 'Deck-wide';
+        const strongEl = document.createElement('strong');
+        strongEl.textContent = `[${slideLabel}] ${fc.name || fc.id}: `;
+        const detailSpan = document.createElement('span');
+        detailSpan.textContent = fc.details || 'Validation check failed.';
+        li.appendChild(strongEl);
+        li.appendChild(detailSpan);
+        bList.appendChild(li);
+      });
+      blockedBox.appendChild(bList);
+
+      const actionsRow = document.createElement('div');
+      actionsRow.style.display = 'flex';
+      actionsRow.style.gap = '10px';
+      actionsRow.style.flexWrap = 'wrap';
+
+      const regenBtn = document.createElement('button');
+      regenBtn.type = 'button';
+      regenBtn.className = 'btn btn-primary';
+      regenBtn.textContent = 'Regenerate deck';
+      regenBtn.addEventListener('click', () => {
+        handleApproveSelectedPapers();
+      });
+
+      const backBtn = document.createElement('button');
+      backBtn.type = 'button';
+      backBtn.className = 'btn btn-secondary';
+      backBtn.textContent = 'Back to papers';
+      backBtn.addEventListener('click', () => {
+        const s8 = document.getElementById('step-8-section');
+        const s6 = document.getElementById('step-6-section');
+        if (s8) s8.style.display = 'none';
+        if (s6) s6.style.display = 'block';
+        setStepNav(6);
+        if (s6) s6.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      actionsRow.appendChild(regenBtn);
+      actionsRow.appendChild(backBtn);
+      blockedBox.appendChild(actionsRow);
+
+      if (container && container.parentNode) {
+        container.parentNode.insertBefore(blockedBox, container.nextSibling);
+      }
+
+      if (report.errors && report.errors.length > 0) {
+        showToast(`Validation Alert: ${report.errors[0]}`);
+      }
     }
   } catch (err) {
     console.error('Validation error:', err);
@@ -1939,9 +2114,11 @@ function renderValidationChecklist(report) {
   container.innerHTML = '';
   (report.checks || []).forEach(check => {
     const item = document.createElement('div');
-    item.className = `validation-item ${check.passed ? 'passed' : 'failed'}`;
+    const statusClass = check.status === 'fail' ? 'failed' : (check.status === 'warning' ? 'warning' : 'passed');
+    const icon = check.status === 'fail' ? '✗' : (check.status === 'warning' ? '⚠️' : '✓');
+    item.className = `validation-item ${statusClass}`;
     item.innerHTML = `
-      <div class="val-item-icon">${check.passed ? '✓' : '✗'}</div>
+      <div class="val-item-icon">${icon}</div>
       <div class="val-item-content">
         <span class="val-item-title">${check.name}</span>
         <span class="val-item-detail">${check.details}</span>
@@ -1960,9 +2137,9 @@ async function exportToWord() {
     return;
   }
 
-  // Prompt 14: Export only after validation succeeds
+  // Export only after validation succeeds (Prompt 2 - B2)
   if (state.validationReport && !state.validationReport.isValid) {
-    showToast('Cannot export: Pre-export validation must pass all 9 criteria first.');
+    showToast('Cannot export: Pre-export checks must pass first.');
     return;
   }
 
@@ -1971,6 +2148,7 @@ async function exportToWord() {
   exportBtn.innerHTML = '<span>📄 Generating Word...</span>';
 
   try {
+    const reviewedWarnings = document.getElementById('warnings-reviewed-checkbox')?.checked || false;
     const res = await fetch('/api/export-docx', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1978,9 +2156,10 @@ async function exportToWord() {
         topic: state.topic,
         deck: state.deck,
         papers: state.selectedPapers,
+        meta: state.deck.meta,
         removedPapers: state.projectRun?.removed_papers || [],
         slideCount: state.slideCount,
-        meta: state.deck.meta
+        reviewedWarnings
       })
     });
 
