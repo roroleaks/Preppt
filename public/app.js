@@ -3,8 +3,7 @@
  * Client-Side Workflow Controller (Steps 1 through 10)
  */
 
-function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function safeUrl(u) { try { const x = new URL(String(u), location.origin); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : '#'; } catch { return '#'; } }
+const { escapeHtml, safeUrl } = window.PrepptRenderHelpers;
 
 // Application Workflow State (Section 7 Canonical Data Model for Active Run)
 
