@@ -59,8 +59,10 @@ module.exports = async (req, res) => {
     const hasLlmKey = !!(process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
     const currentYear = new Date().getFullYear();
 
-    // Server-side venue assurance lookup via Europe PMC (batched, 5s timeout)
-    synthesisParams.papers = await enrichPapersWithAssurance(synthesisParams.papers);
+    // Server-side venue assurance lookup via Europe PMC (batched, max 5 concurrent, 5s timeout)
+    if (process.env.PREPPT_OFFLINE !== '1') {
+      synthesisParams.papers = await enrichPapersWithAssurance(synthesisParams.papers);
+    }
 
     let deck = generatePresentationDeck(synthesisParams);
 

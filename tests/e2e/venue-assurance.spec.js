@@ -101,17 +101,47 @@ async function runTests() {
   assert(s4Lines[0].includes('Salih 2023') && !s4Lines[0].includes('[not PubMed-indexed]'), 'Tier A Salih must be first on Slide 4');
   assert(allSlideText.includes('[not PubMed-indexed]'), 'Tier B Agboola bullet must end with [not PubMed-indexed]');
 
-  // 4. Test Tier B-only quantitative deck conclusion
+  // 4. Test Tier B-only quantitative deck: exact notice first, then Tier B findings marked [not PubMed-indexed], plus Conclusion
   const tierBOnlyDeck = generatePresentationDeck({
     topic: 'AI in Embryo Selection',
     papers: [enriched[0]],
     slideCount: 8,
     density: 'Short bullet points'
   });
-  const bSlide4First = (tierBOnlyDeck.slides.find(s => s.stage === 4).on_slide_text || '').split('\n')[0] || '';
-  assert(!bSlide4First.includes('[not PubMed-indexed]'), 'Tier B bullet must never be the first bullet on a findings slide');
+  const bSlide4Lines = (tierBOnlyDeck.slides.find(s => s.stage === 4).on_slide_text || '').split('\n').filter(Boolean);
+  assert.strictEqual(
+    bSlide4Lines[0].replace(/^•\s*/, '').trim(),
+    'No finding from a PubMed-indexed study in the selected papers.',
+    `Expected exact Tier-B-only headline notice, got: ${bSlide4Lines[0]}`
+  );
+  assert(
+    bSlide4Lines[1] && bSlide4Lines[1].includes('[not PubMed-indexed]'),
+    `Expected Tier B finding marked [not PubMed-indexed] after notice, got: ${bSlide4Lines[1]}`
+  );
   const bConc = tierBOnlyDeck.slides.find(s => s.stage === 8);
   assert(bConc.on_slide_text.includes('from a study not indexed in PubMed'), 'Conclusion must note when quantitative finding is from a study not indexed in PubMed');
+
+  // 5. Verify enrichPapersWithAssurance enforces max 5 concurrent lookups
+  let activeLookups = 0;
+  let maxActiveLookups = 0;
+  const manyPapers = Array.from({ length: 12 }, (_, i) => ({
+    id: `m${i}`,
+    title: `Study ${i}`,
+    journal: 'Test Journal',
+    doi: `10.1000/test.${i}`,
+    pmid: ''
+  }));
+  await enrichPapersWithAssurance(manyPapers, {
+    concurrency: 5,
+    httpGetImpl: async () => {
+      activeLookups++;
+      if (activeLookups > maxActiveLookups) maxActiveLookups = activeLookups;
+      await new Promise(r => setTimeout(r, 15));
+      activeLookups--;
+      return { ok: true, indexedIn: 'none', journalIssn: '', inNlmCatalogue: false, pmid: '' };
+    }
+  });
+  assert(maxActiveLookups <= 5 && maxActiveLookups > 1, `Expected max 5 concurrent lookups, saw ${maxActiveLookups}`);
 
   const val = validatePresentationOutput({
     deck: tierBOnlyDeck,
@@ -121,7 +151,7 @@ async function runTests() {
   });
   const check = val.checks.find(c => c.id === 'low_assurance_source_used');
   assert.strictEqual(check.status, 'warning', 'low_assurance_source_used must emit WARNING when Tier B is used');
-  console.log('   ✓ Synthesis ordering, Tier C exclusion, Conclusion wording, and low_assurance_source_used WARNING verified.');
+  console.log('   ✓ Synthesis ordering, Tier-B-only notice, Tier C exclusion, max-5 concurrency, Conclusion wording, and low_assurance_source_used WARNING verified.');
 
   console.log('\nPassed: All Venue Assurance Tier tests verified.\n');
 }
