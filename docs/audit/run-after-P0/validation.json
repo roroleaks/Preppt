@@ -1,11 +1,11 @@
 {
   "isValid": true,
   "canExport": true,
-  "totalChecks": 19,
+  "totalChecks": 20,
   "passedCount": 19,
-  "warningCount": 0,
+  "warningCount": 1,
   "failedCount": 0,
-  "summary": "19 passed · 0 warnings · 0 failed",
+  "summary": "19 passed · 1 warnings · 0 failed",
   "note": "These checks test traceability and consistency with the selected abstracts. They do not verify scientific accuracy or study quality. Review every slide against its listed sources before presenting.",
   "checks": [
     {
@@ -140,8 +140,17 @@
       "status": "pass",
       "passed": true,
       "details": "All parsed quantitative study findings from selected abstracts are represented in the deck."
+    },
+    {
+      "id": "unverified_source_used",
+      "name": "Source verification status",
+      "status": "warning",
+      "passed": false,
+      "details": "Cited source(s) [2] lack PMID/DOI/verified journal or originate from a repository/aggregator and are marked [unverified source]."
     }
   ],
   "errors": [],
-  "warnings": []
+  "warnings": [
+    "unverified_source_used (Source verification status): Cited source(s) [2] lack PMID/DOI/verified journal or originate from a repository/aggregator and are marked [unverified source]."
+  ]
 }

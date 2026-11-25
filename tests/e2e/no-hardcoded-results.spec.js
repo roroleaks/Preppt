@@ -51,6 +51,9 @@ function testStaticNoHardcodedStats() {
     /\b(?:HR|OR|RR|AUC)\b\s*[=:]?\s*\d/
   ];
 
+  const AUTHOR_NAMES = ['agboola', 'salih', 'illingworth', 'wang', 'kragh', 'mushtaq', 'medenica', 'kakkar', 'cimadomo'];
+  const AUTHOR_ALLOW_LIST = ['trial by salih', 'wang s, 2023'];
+
   for (const rel of files) {
     const content = fs.readFileSync(path.join(rootDir, rel), 'utf8');
     const literals = extractStringLiterals(content);
@@ -61,8 +64,16 @@ function testStaticNoHardcodedStats() {
           assert.fail(`Hard-coded statistical literal found in ${rel}: "${lit}"`);
         }
       }
+      const litLower = lit.toLowerCase();
+      if (!AUTHOR_ALLOW_LIST.some(a => litLower.includes(a))) {
+        for (const author of AUTHOR_NAMES) {
+          if (new RegExp(`\\b${author}\\b`, 'i').test(litLower)) {
+            assert.fail(`Hard-coded author name "${author}" found in ${rel}: "${lit}"`);
+          }
+        }
+      }
     }
-    console.log(`   ✓ ${rel}: 0 hard-coded statistical literals`);
+    console.log(`   ✓ ${rel}: 0 hard-coded statistical literals or author names`);
   }
 }
 
