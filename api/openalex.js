@@ -1,6 +1,7 @@
 const https = require('https');
 
-const OPENALEX_API_KEY = process.env.OPENALEX_API_KEY || 'LCR4PBZ9z5sTV3HuRDicln';
+const OPENALEX_API_KEY = process.env.OPENALEX_API_KEY || '';
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL || '';
 
 function reconstructAbstract(invertedIndex) {
   if (!invertedIndex || typeof invertedIndex !== 'object') return '';
@@ -19,10 +20,14 @@ function queryOpenAlex(query, pageSize = 30, startYear = 2021, endYear = new Dat
     const params = new URLSearchParams({
       search: query,
       filter: filter,
-      per_page: String(pageSize),
-      api_key: OPENALEX_API_KEY,
-      mailto: 'raouf.roshdy@aimed.org'
+      per_page: String(pageSize)
     });
+    if (OPENALEX_API_KEY) params.set('api_key', OPENALEX_API_KEY);
+    if (CONTACT_EMAIL) params.set('mailto', CONTACT_EMAIL);
+
+    const userAgent = CONTACT_EMAIL
+      ? `Preppt/1.0 (Scientific Literature to Presentation; mailto:${CONTACT_EMAIL})`
+      : 'Preppt/1.0';
 
     const options = {
       hostname: 'api.openalex.org',
@@ -30,7 +35,7 @@ function queryOpenAlex(query, pageSize = 30, startYear = 2021, endYear = new Dat
       method: 'GET',
       timeout: 9000,
       headers: {
-        'User-Agent': 'Preppt/1.0 (Scientific Literature to Presentation; mailto:raouf.roshdy@aimed.org)'
+        'User-Agent': userAgent
       }
     };
 

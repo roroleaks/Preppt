@@ -691,7 +691,6 @@ function parseAuthors(item) {
 
 async function fetchOpenAlex(query, pageSize, startYear) {
   const currentYear = new Date().getFullYear();
-  const OPENALEX_KEY = 'LCR4PBZ9z5sTV3HuRDicln';
   const cleanQ = cleanQueryKeywords(query);
 
   let results = [];
@@ -711,7 +710,7 @@ async function fetchOpenAlex(query, pageSize, startYear) {
   // 2. Direct client fallback with API key and CORS if proxy returns 0 or fails
   if (results.length === 0) {
     try {
-      const directUrl = `https://api.openalex.org/works?search=${encodeURIComponent(cleanQ)}&filter=publication_year:${startYear || 2021}-${currentYear}&per_page=${pageSize}&api_key=${OPENALEX_KEY}&mailto=raouf.roshdy@aimed.org`;
+      const directUrl = `https://api.openalex.org/works?search=${encodeURIComponent(cleanQ)}&filter=publication_year:${startYear || 2021}-${currentYear}&per_page=${pageSize}`;
       const directRes = await fetch(directUrl);
       if (directRes.ok) {
         const json = await directRes.json();

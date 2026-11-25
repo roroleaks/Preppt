@@ -1,33 +1,56 @@
 /**
- * E2E Security Test: Verify zero API secrets or tokens in client-facing bundles
- * Enforces BLOCKER 0 / BUG-4 remediation.
+ * E2E Security Test: Verify zero API secrets, tokens, or hard-coded emails
+ * across public/, api/, lib/, scripts/, server.js, and models.js.
+ * Enforces BLOCKER 0 / BUG-4 & P0-5 remediation.
  */
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
+function collectFiles(targetPath) {
+  if (!fs.existsSync(targetPath)) return [];
+  const stat = fs.statSync(targetPath);
+  if (stat.isFile()) return [targetPath];
+  const entries = fs.readdirSync(targetPath, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const full = path.join(targetPath, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...collectFiles(full));
+    } else if (/\.(?:js|html|css|mjs|cjs)$/i.test(entry.name)) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
 function testNoClientSecrets() {
-  const publicDir = path.resolve(__dirname, '../../public');
-  const filesToScan = ['app.js', 'index.html', 'style.css'];
+  const rootDir = path.resolve(__dirname, '../..');
+  const scanTargets = ['public', 'api', 'lib', 'scripts', 'server.js', 'models.js'];
+  const filesToScan = scanTargets.flatMap(t => collectFiles(path.join(rootDir, t)));
 
   const secretPatterns = [
-    { name: 'Semantic Scholar API Key', regex: /s2k-[A-Za-z0-9]{35,45}/i },
-    { name: 'OpenAI API Key', regex: /sk-[A-Za-z0-9]{20,}/i },
-    { name: 'Google Gemini API Key', regex: /AIza[A-Za-z0-9_-]{35}/i },
-    { name: 'Groq API Key', regex: /gsk_[A-Za-z0-9]{20,}/i },
+    { name: 'Semantic Scholar API Key', regex: /s2k-[A-Za-z0-9]{20,}/ },
+    { name: 'OpenAI API Key prefix (sk-)', regex: /['"`]sk-[A-Za-z0-9_-]{12,}['"`]/ },
+    { name: 'Groq API Key prefix (gsk_)', regex: /['"`]gsk_[A-Za-z0-9_-]{12,}['"`]/ },
+    { name: 'Google Gemini API Key prefix (AIza)', regex: /['"`]AIza[A-Za-z0-9_-]{12,}['"`]/ },
+    { name: 'xAI API Key prefix (xai-)', regex: /['"`]xai-[A-Za-z0-9_-]{12,}['"`]/ },
     { name: 'Hardcoded S2_KEY assignment', regex: /const\s+S2_KEY\s*=/i },
-    { name: 'S2 Key in URL Query Parameter', regex: /[?&]key=s2k-/i }
+    { name: 'S2 Key in URL Query Parameter', regex: /[?&]key=s2k-/i },
+    {
+      name: '16+ alphanumeric literal near key/token/secret/api_key',
+      regex: /(?:key|token|secret|api_key)\b[^\n]{0,40}['"`][A-Za-z0-9]{16,}['"`]/i
+    },
+    {
+      name: 'Hard-coded email address in string literal',
+      regex: /['"`][^'"`\n]*[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}[^'"`\n]*['"`]/
+    }
   ];
 
-  console.log('--- TEST: No Client Secrets in Public Bundle (BUG-4 Security Gate) ---');
+  console.log('--- TEST: No Client Secrets or Hard-Coded Emails (P0-5 Security Gate) ---');
 
-  for (const file of filesToScan) {
-    const filePath = path.join(publicDir, file);
-    if (!fs.existsSync(filePath)) {
-      console.warn(`File ${file} not found, skipping.`);
-      continue;
-    }
-
+  for (const filePath of filesToScan) {
+    const relPath = path.relative(rootDir, filePath).replace(/\\/g, '/');
     const content = fs.readFileSync(filePath, 'utf8');
 
     for (const pat of secretPatterns) {
@@ -35,13 +58,13 @@ function testNoClientSecrets() {
       assert.strictEqual(
         match,
         null,
-        `SECURITY VIOLATION: Exposed ${pat.name} detected in public file "${file}": ${match ? match[0].substring(0, 8) + '...' : ''}`
+        `SECURITY VIOLATION: ${pat.name} detected in "${relPath}"`
       );
     }
-    console.log(`  ✓ Public file "${file}" verified: 0 exposed secrets.`);
+    console.log(`  ✓ File "${relPath}" verified: 0 exposed secrets/emails.`);
   }
 
-  console.log('Passed: Zero client secrets exposed in public distribution bundle.\n');
+  console.log(`Passed: Zero secrets or hard-coded emails across ${filesToScan.length} files.\n`);
 }
 
 if (require.main === module) {
