@@ -1,11 +1,11 @@
 {
   "isValid": true,
   "canExport": true,
-  "totalChecks": 13,
-  "passedCount": 13,
+  "totalChecks": 15,
+  "passedCount": 15,
   "warningCount": 0,
   "failedCount": 0,
-  "summary": "13 passed · 0 warnings · 0 failed",
+  "summary": "15 passed · 0 warnings · 0 failed",
   "note": "These checks test traceability and consistency with the selected abstracts. They do not verify scientific accuracy or study quality. Review every slide against its listed sources before presenting.",
   "checks": [
     {
@@ -98,6 +98,20 @@
       "status": "pass",
       "passed": true,
       "details": "All slide titles, objectives, slide text, visual descriptions, notes, and metadata are in English."
+    },
+    {
+      "id": "finding_readability",
+      "name": "Finding readability and labelled numbers",
+      "status": "pass",
+      "passed": true,
+      "details": "All finding bullets have labelled numbers, valid lead phrases, and readable structure."
+    },
+    {
+      "id": "finding_role",
+      "name": "Finding role provenance (results/conclusion only)",
+      "status": "pass",
+      "passed": true,
+      "details": "All finding bullets on findings slides originate from results or conclusion sentences."
     }
   ],
   "errors": [],
