@@ -3,6 +3,8 @@
  * Client-Side Workflow Controller (Steps 1 through 10)
  */
 
+const { escapeHtml, safeUrl } = window.PrepptRenderHelpers;
+
 // Application Workflow State (Section 7 Canonical Data Model for Active Run)
 
 // ==========================================
@@ -477,7 +479,7 @@ async function executeLiteratureRetrieval() {
     if (unavailableSourceWarning) {
       if (warningBanner) {
         warningBanner.style.display = 'flex';
-        warningBanner.innerHTML = `<span class="warning-icon">⚠️</span><div><strong>API Resilience Notice:</strong> ${unavailableSourceWarning}</div>`;
+        warningBanner.innerHTML = `<span class="warning-icon">⚠️</span><div><strong>API Resilience Notice:</strong> ${escapeHtml(unavailableSourceWarning)}</div>`;
       }
       showToast('Notice: Continued with partial results from available source.');
     }
@@ -552,7 +554,7 @@ async function executeLiteratureRetrieval() {
     if (shortfallAlert) {
       if (ranked.length < state.targetPapers) {
         shortfallAlert.style.display = 'block';
-        shortfallAlert.innerHTML = `<strong>Literature Shortfall Notice:</strong> You requested a target of ${state.targetPapers} final papers, but only ${ranked.length} eligible studies were identified between ${state.startYear} and ${new Date().getFullYear()}. All ${ranked.length} available papers are presented below.`;
+        shortfallAlert.innerHTML = `<strong>Literature Shortfall Notice:</strong> You requested a target of ${escapeHtml(state.targetPapers)} final papers, but only ${escapeHtml(ranked.length)} eligible studies were identified between ${escapeHtml(state.startYear)} and ${escapeHtml(new Date().getFullYear())}. All ${escapeHtml(ranked.length)} available papers are presented below.`;
       } else {
         shortfallAlert.style.display = 'none';
       }
@@ -1272,107 +1274,7 @@ function renderPaperCards() {
     card.className = `paper-card ${paper.userStatus === 'essential' ? 'is-essential' : ''} ${paper.userStatus === 'background' ? 'is-background' : ''}`;
     card.id = `paper-card-${paper.id}`;
 
-    // Source badge
-    let srcBadge = '';
-    if (paper.sources && paper.sources.length > 1) {
-      srcBadge = `<span class="badge badge-both">${paper.sources.join(' + ')}</span>`;
-    } else if (paper.source === 'both') {
-      srcBadge = '<span class="badge badge-both">PMC + Semantic Scholar</span>';
-    } else if (paper.source === 's2' || (paper.sources && paper.sources.includes('Semantic Scholar'))) {
-      srcBadge = '<span class="badge badge-s2">Semantic Scholar</span>';
-    } else if (paper.source === 'openalex' || (paper.sources && paper.sources.includes('OpenAlex'))) {
-      srcBadge = '<span class="badge badge-openalex">OpenAlex</span>';
-    } else if (paper.source === 'crossref' || (paper.sources && paper.sources.includes('Crossref'))) {
-      srcBadge = '<span class="badge badge-crossref">Crossref</span>';
-    } else {
-      srcBadge = '<span class="badge badge-pmc">Europe PMC</span>';
-    }
-
-    // Identifiers
-    const ids = [];
-    if (paper.pmid) ids.push(`PMID: ${paper.pmid}`);
-    if (paper.doi) ids.push(`DOI: ${paper.doi}`);
-    if (paper.pmcid) ids.push(`PMCID: ${paper.pmcid}`);
-    if (!paper.pmid && !paper.doi && paper.paperId) ids.push(`S2 ID: ${paper.paperId.substring(0, 8)}...`);
-
-    // External links
-    let sourceLink = '#';
-    if (paper.pmid) sourceLink = `https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}/`;
-    else if (paper.paperId) sourceLink = `https://www.semanticscholar.org/paper/${paper.paperId}`;
-
-    let fullTextLink = '';
-    if (paper.doi) fullTextLink = `https://doi.org/${paper.doi}`;
-    else if (paper.openAccessPdfUrl) fullTextLink = paper.openAccessPdfUrl;
-
-    const abstractSnippet = paper.abstract
-      ? (paper.abstract.substring(0, 200) + (paper.abstract.length > 200 ? '...' : ''))
-      : 'Short abstract summary not available in primary index record.';
-
-    const isConference = paper.isConferenceAbstract ||
-      /^(?:[A-Za-z0-9\/_-]*\/)?[OPL]\s*[-–/]?\s*\d+/i.test(paper.title || '') ||
-      /^[A-Z]\d*[-/][A-Z0-9-]+/i.test(paper.title || '') ||
-      /supplement|suppl/i.test(paper.volume || '') ||
-      /supplement|suppl/i.test(paper.issue || '') ||
-      /meeting|congress|conference|abstracts/i.test(paper.venue || paper.journal || '');
-
-    card.innerHTML = `
-      <div class="paper-card-top-row">
-        <div class="paper-badges-group">
-          ${srcBadge}
-          <span class="badge badge-relevance">${paper.relevancePercentage}% Relevance</span>
-          <span class="badge" style="background:#f1f5f9; color:#475569;">${paper.studyType}</span>
-          <span class="badge" style="background:#e2e8f0; color:#334155;">${(paper.pubType || ['Article'])[0]}</span>
-          ${isConference ? '<span class="badge badge-conference" style="background:#fed7aa; color:#9a3412; font-weight:700;">Conference abstract</span>' : ''}
-          ${paper.userStatus === 'essential' ? '<span class="badge badge-essential">⭐ Essential</span>' : ''}
-          ${paper.userStatus === 'background' ? '<span class="badge badge-background">📘 Background</span>' : ''}
-          ${paper.userNote ? '<span class="badge badge-note" style="background:#e0f2fe; color:#0369a1; font-weight:600;">📝 Note</span>' : ''}
-        </div>
-        <div style="font-size:12px; font-weight:700; color:var(--text-muted);">
-          #${idx + 1} • ${paper.pubDate} • ${paper.citationCount || 0} citations
-        </div>
-      </div>
-
-      <h3 class="paper-title">${paper.title}</h3>
-      <div class="paper-authors-journal">${paper.authors} — <em>${paper.journal}</em> (${paper.pubDate})</div>
-      <div class="paper-identifiers">${ids.join(' | ') || 'Identifier: Academic Graph Record'}</div>
-      <div class="paper-snippet">${abstractSnippet}</div>
-
-      ${paper.userNote ? `<div class="paper-note-box"><strong>User Note:</strong> ${paper.userNote}</div>` : ''}
-
-      <div class="paper-actions-bar">
-        <div class="paper-action-buttons">
-          <!-- Keep / Toggle -->
-          <button class="btn-chip btn-keep" data-id="${paper.id}" style="${isSelected ? 'background:var(--primary); color:#fff;' : ''}">
-            ${isSelected ? '✓ In Deck' : '+ Keep'}
-          </button>
-          
-          <!-- Mark as Essential -->
-          <button class="btn-chip btn-chip-gold btn-essential ${paper.userStatus === 'essential' ? 'active-gold' : ''}" data-id="${paper.id}">
-            ⭐ Essential
-          </button>
-
-          <!-- Mark as Background -->
-          <button class="btn-chip btn-background ${paper.userStatus === 'background' ? 'active-blue' : ''}" data-id="${paper.id}">
-            📘 Background
-          </button>
-
-          <!-- Add / Edit Note -->
-          <button class="btn-chip btn-add-note" data-id="${paper.id}">
-            ${paper.userNote ? '✏️ Edit Note' : '✏️ Add Note'}
-          </button>
-
-          <!-- Remove (Permanently deletes for current run) -->
-          <button class="btn-chip btn-chip-danger btn-remove-paper" data-id="${paper.id}" title="Permanently delete from current run">
-            ✕ Remove
-          </button>
-        </div>
-
-        <div class="paper-links-group">
-          <a href="${sourceLink}" target="_blank" rel="noopener noreferrer" class="paper-link" title="Open primary database record">🌐 Open source ↗</a>
-          ${fullTextLink ? `<a href="${fullTextLink}" target="_blank" rel="noopener noreferrer" class="paper-link paper-link-fulltext" title="Open full-text PDF">📄 Open full text ↗</a>` : ''}
-        </div>
-      </div>
-    `;
+    card.innerHTML = window.PrepptRenderHelpers.buildPaperCardHtml(paper, idx, isSelected);
 
     container.appendChild(card);
   });
@@ -1470,22 +1372,23 @@ function toggleInlineNoteEditor(paperId) {
 
   const currentNote = paper.userNote || '';
 
-  editor.innerHTML = `
+    const safePid = escapeHtml(paper.id);
+    editor.innerHTML = `
     <div style="font-size:12px; font-weight:700; color:var(--accent); margin-bottom:6px;">
       📝 Clinical Note & Commentary
     </div>
     <textarea 
       class="inline-note-input" 
-      id="note-textarea-${paper.id}" 
+      id="note-textarea-${safePid}" 
       maxlength="500" 
       placeholder="Enter your clinical note or commentary for this paper (max 500 characters)..." 
       aria-label="Clinical note"
-    >${currentNote}</textarea>
+    >${escapeHtml(currentNote)}</textarea>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-      <span class="char-count" id="note-char-counter-${paper.id}" style="font-size:12px; color:var(--muted);">${currentNote.length}/500</span>
+      <span class="char-count" id="note-char-counter-${safePid}" style="font-size:12px; color:var(--muted);">${currentNote.length}/500</span>
       <div style="display:flex; gap:8px;">
-        <button type="button" class="btn btn-secondary btn-cancel-inline-note" data-id="${paper.id}" style="padding:4px 10px; font-size:12px; cursor:pointer;">Cancel</button>
-        <button type="button" class="btn btn-primary btn-save-inline-note" data-id="${paper.id}" style="padding:4px 12px; font-size:12px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-weight:600; cursor:pointer;">Save Note</button>
+        <button type="button" class="btn btn-secondary btn-cancel-inline-note" data-id="${safePid}" style="padding:4px 10px; font-size:12px; cursor:pointer;">Cancel</button>
+        <button type="button" class="btn btn-primary btn-save-inline-note" data-id="${safePid}" style="padding:4px 12px; font-size:12px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-weight:600; cursor:pointer;">Save Note</button>
       </div>
     </div>
   `;
@@ -1681,21 +1584,21 @@ function renderStep8DeckStudio() {
       card.className = 'theme-card';
       card.innerHTML = `
         <div class="theme-title-bar">
-          <span class="theme-title-text">${theme.title}</span>
-          <span class="theme-scope-text">${theme.scope || ''}</span>
+          <span class="theme-title-text">${escapeHtml(theme.title)}</span>
+          <span class="theme-scope-text">${escapeHtml(theme.scope || '')}</span>
         </div>
         <div class="theme-columns-split">
           <div class="theme-box theme-box-established">
             <div class="theme-box-label">
               <span>✓</span> Established Findings
             </div>
-            <div>${theme.establishedFindings}</div>
+            <div>${escapeHtml(theme.establishedFindings)}</div>
           </div>
           <div class="theme-box theme-box-unresolved">
             <div class="theme-box-label">
               <span>⚠</span> Uncertain / Unresolved Areas
             </div>
-            <div>${theme.uncertainOrUnresolvedAreas}</div>
+            <div>${escapeHtml(theme.uncertainOrUnresolvedAreas)}</div>
           </div>
         </div>
       `;
@@ -1716,9 +1619,9 @@ function renderStep8DeckStudio() {
       li.style.marginBottom = '8px';
       if (typeof gap === 'object' && gap.domain) {
         li.innerHTML = `
-          <strong>${gap.domain}:</strong> 
-          <span style="color:#0f766e;">${gap.establishedBaseline}</span> 
-          <span style="color:#b45309; font-weight:500;">${gap.unresolvedQuestion}</span>
+          <strong>${escapeHtml(gap.domain)}:</strong> 
+          <span style="color:#0f766e;">${escapeHtml(gap.establishedBaseline)}</span> 
+          <span style="color:#b45309; font-weight:500;">${escapeHtml(gap.unresolvedQuestion)}</span>
         `;
       } else {
         li.textContent = String(gap);
@@ -1813,82 +1716,7 @@ function renderStep8DeckStudio() {
     card.className = 'slide-card';
     card.id = `slide-card-${slide.slideNumber}`;
 
-    card.innerHTML = `
-      <div class="slide-header">
-        <div>
-          <div class="slide-header-num">Field 1 • Slide ${slide.slideNumber} of ${state.deck.slides.length} [16:9 • Arial 12–14 pt]</div>
-          <h3 class="slide-header-title">Field 2 • ${slide.title}</h3>
-        </div>
-        <span class="slide-category-badge">${slide.suggestedVisualType}</span>
-      </div>
-      <div class="slide-body">
-        
-        <!-- 3. Slide objective -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 3 • Slide Objective:</span>
-          <div class="slide-field-val">${slide.objective}</div>
-        </div>
-
-        <!-- 4. Main message -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 4 • Main Message:</span>
-          <div class="slide-field-val" style="font-weight:700; color:var(--primary);">${slide.mainMessage}</div>
-        </div>
-
-        <!-- 5. On-slide text (Kept in a single coherent text box) -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 5 • On-Slide Text (${slide.slideDensity} Density • Arial 12–14 pt):</span>
-          <div class="slide-onslide-textbox">
-            <div class="slide-onslide-content">${slide.onSlideText}</div>
-          </div>
-        </div>
-
-        <!-- 6. Suggested visual type & 7. Detailed visual description -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 6 & 7 • Suggested Visual & Detailed Description:</span>
-          <div class="slide-visual-box">
-            <div><strong>Visual Type:</strong> ${slide.suggestedVisualType}</div>
-            <div style="margin-top:4px;"><strong>Detailed Layout Description:</strong> <em>${slide.detailedVisualDescription}</em></div>
-          </div>
-        </div>
-
-        <!-- 8. Speaker notes -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 8 • Speaker Notes (Presenter Script • ~1.2–1.5 min):</span>
-          <div class="slide-speaker-box">
-            <div class="slide-speaker-script">${slide.speakerNotes}</div>
-          </div>
-        </div>
-
-        <!-- Evidence Sources Traceability -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Evidence Sources (Traceability):</span>
-          <div style="font-size:13px; font-weight:700; color:var(--accent); background:#f0fdfa; border:1px solid #99f6e4; border-radius:6px; padding:6px 12px; margin-top:4px;">
-            ${slide.evidenceSources || (slide.sources && slide.sources.length > 0 ? `Evidence sources for this slide: ${slide.sources.map(s => `[${s}]`).join(', ')}` : 'Evidence sources for this slide: None (Methodological overview)')}
-          </div>
-        </div>
-
-        <!-- 9. Interactive question for audience -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 9 • Interactive Question for Audience:</span>
-          <div class="slide-question-box">
-            <strong>Discussion Prompt:</strong> ${slide.audienceQuestion}
-          </div>
-        </div>
-
-        <!-- 10. Logical transition -->
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 10 • Logical Transition:</span>
-          <div class="slide-transition-box">${slide.transition}</div>
-        </div>
-
-      </div>
-
-      <!-- Mandatory Copyright Footer on every slide: copyrights@Raouf Roshdy2025, Arial 9 pt, right lower corner -->
-      <div class="slide-footer-copyright-row">
-        <span class="slide-copyright-text">© 2025 Raouf Roshdy. All rights reserved.</span>
-      </div>
-    `;
+    card.innerHTML = window.PrepptRenderHelpers.buildSlideCardHtml(slide, state.deck.slides.length);
 
     slidesContainer.appendChild(card);
   });
@@ -2120,8 +1948,8 @@ function renderValidationChecklist(report) {
     item.innerHTML = `
       <div class="val-item-icon">${icon}</div>
       <div class="val-item-content">
-        <span class="val-item-title">${check.name}</span>
-        <span class="val-item-detail">${check.details}</span>
+        <span class="val-item-title">${escapeHtml(check.name)}</span>
+        <span class="val-item-detail">${escapeHtml(check.details)}</span>
       </div>
     `;
     container.appendChild(item);
