@@ -648,8 +648,31 @@ async function runTests() {
   if (!validReport.isValid) {
     throw new Error(`Compliant presentation failed validation: ${validReport.errors.join('; ')}`);
   }
-  if (validReport.totalChecks !== 13) {
-    throw new Error(`Expected exactly 13 evaluated checks, got ${validReport.totalChecks}`);
+  const EXPECTED_CHECK_IDS = [
+    'source_coverage',
+    'source_support',
+    'direction_fidelity',
+    'unsupported_numbers',
+    'vocabulary_drift',
+    'framing_sources',
+    'truncation',
+    'no_intext_citations',
+    'slide_count',
+    'abstract_only_notice',
+    'removed_papers_absent',
+    'no_api_secrets',
+    'english_only',
+    'finding_readability',
+    'finding_role'
+  ];
+  const actualIds = validReport.checks.map(c => c.id);
+  for (const id of EXPECTED_CHECK_IDS) {
+    if (!actualIds.includes(id)) {
+      throw new Error(`Missing expected validator check ID: ${id}`);
+    }
+  }
+  if (validReport.totalChecks !== EXPECTED_CHECK_IDS.length) {
+    throw new Error(`Expected exactly ${EXPECTED_CHECK_IDS.length} evaluated checks, got ${validReport.totalChecks}`);
   }
   console.log('Passed 11.1: Standard compliant deck passes integrity checks without blocking failures');
 

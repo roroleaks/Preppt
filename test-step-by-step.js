@@ -232,7 +232,28 @@ async function runStepByStepValidation() {
   });
 
   assert.strictEqual(auditResult.isValid, true, 'Pre-export audit must pass without blocking failures');
-  assert.strictEqual(auditResult.checks.length, 13, 'All 13 audit checks must be evaluated');
+  const EXPECTED_CHECK_IDS = [
+    'source_coverage',
+    'source_support',
+    'direction_fidelity',
+    'unsupported_numbers',
+    'vocabulary_drift',
+    'framing_sources',
+    'truncation',
+    'no_intext_citations',
+    'slide_count',
+    'abstract_only_notice',
+    'removed_papers_absent',
+    'no_api_secrets',
+    'english_only',
+    'finding_readability',
+    'finding_role'
+  ];
+  const actualCheckIds = auditResult.checks.map(c => c.id);
+  EXPECTED_CHECK_IDS.forEach(id => {
+    assert(actualCheckIds.includes(id), `Missing expected validator check ID: ${id}`);
+  });
+  assert.strictEqual(auditResult.checks.length, EXPECTED_CHECK_IDS.length, `All ${EXPECTED_CHECK_IDS.length} audit checks must be evaluated`);
   auditResult.checks.forEach(c => {
     assert(c.status === 'pass' || c.status === 'warning', `Audit check failed: ${c.name} (${c.id})`);
     console.log(`  ✓ [${c.status.toUpperCase()}] Criterion: ${c.name}`);
