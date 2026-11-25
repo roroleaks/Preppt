@@ -1,5 +1,6 @@
 const { generatePresentationDeck } = require('../lib/synthesize.js');
 const { generateDeckWithLLM } = require('../lib/llm-synthesizer.js');
+const { validatePresentationOutput } = require('../lib/validator.js');
 
 async function parseBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -44,6 +45,7 @@ module.exports = async (req, res) => {
     };
 
     const hasLlmKey = !!(process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+    const currentYear = new Date().getFullYear();
 
     let deck = generatePresentationDeck(synthesisParams);
 
@@ -61,6 +63,10 @@ module.exports = async (req, res) => {
             const speakerNotes = s.speaker_notes || s.speakerNotes || '';
             const audienceQuestion = s.interactive_question || s.audienceQuestion || '';
             const transition = s.logical_transition || s.transition || '';
+            const slideSources = Array.isArray(s.sources) ? s.sources : [];
+            const evidenceSourcesText = slideSources.length > 0
+              ? `Evidence sources for this slide: ${slideSources.map(ref => `[${ref}]`).join(', ')}`
+              : 'Evidence sources for this slide: None (Methodological overview)';
 
             return {
               slide_number: slideNumber,
@@ -83,6 +89,9 @@ module.exports = async (req, res) => {
               audienceQuestion,
               transition,
 
+              sources: slideSources,
+              evidenceSources: evidenceSourcesText,
+
               slideRatio: '16:9',
               font: 'Arial',
               fontSizeTarget: '12-14 pt (minimum legibility floor)',
@@ -91,8 +100,9 @@ module.exports = async (req, res) => {
               visual_style: activeVisualStyle,
               visualStyle: activeVisualStyle,
               audience: synthesisParams.audience || 'Postgraduate',
-              footer_copyright: '© 2025 Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy2025)',
-              footerCopyright: '© 2025 Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy2025)'
+              footer_copyright: `© ${currentYear} Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy${currentYear})`,
+              footerCopyright: `© ${currentYear} Raouf Roshdy. All rights reserved. (copyrights@Raouf Roshdy${currentYear})`,
+              footer_format: 'Arial 9 pt, right lower corner'
             };
           });
 
@@ -102,6 +112,8 @@ module.exports = async (req, res) => {
           if (llmResult.researchGaps) {
             deck.researchGaps = llmResult.researchGaps;
           }
+          deck.meta.engine = `llm:${llmResult.provider || 'configured'}`;
+          deck.outline = deck.slides.map(s => s.title);
         }
       } catch (llmErr) {
         console.error('LLM synthesis failed:', llmErr);
@@ -112,6 +124,42 @@ module.exports = async (req, res) => {
         }));
       }
     }
+
+    // Prompt 2B - Generator self-check & auto-repair
+    let validation = validatePresentationOutput({
+      deck,
+      papers: synthesisParams.papers,
+      topic: synthesisParams.topic,
+      requestedSlideCount: synthesisParams.slideCount
+    });
+
+    if (validation.failedCount > 0) {
+      console.warn(`Deck failed generator self-check (${validation.failedCount} failures). Initiating auto-repair...`);
+      deck.slides.forEach(s => {
+        const originalBullets = (s.on_slide_text || '').split('\n').filter(Boolean);
+        const filteredBullets = originalBullets.filter(b => {
+          const clean = b.replace(/^[•\s-]+/, '').trim();
+          const openP = (clean.match(/\(/g) || []).length;
+          const closeP = (clean.match(/\)/g) || []).length;
+          if (openP !== closeP) return false;
+          if (/\(\s*\d+[\s\.]*$/.test(clean)) return false;
+          return true;
+        });
+        if (filteredBullets.length < originalBullets.length) {
+          s.on_slide_text = filteredBullets.join('\n');
+          s.onSlideText = s.on_slide_text;
+          s.bullets = filteredBullets;
+        }
+      });
+      validation = validatePresentationOutput({
+        deck,
+        papers: synthesisParams.papers,
+        topic: synthesisParams.topic,
+        requestedSlideCount: synthesisParams.slideCount
+      });
+    }
+
+    deck.validation = validation;
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
