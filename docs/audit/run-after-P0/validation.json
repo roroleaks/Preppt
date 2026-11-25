@@ -2,10 +2,10 @@
   "isValid": true,
   "canExport": true,
   "totalChecks": 20,
-  "passedCount": 19,
-  "warningCount": 1,
+  "passedCount": 18,
+  "warningCount": 2,
   "failedCount": 0,
-  "summary": "19 passed · 1 warnings · 0 failed",
+  "summary": "18 passed · 2 warnings · 0 failed",
   "note": "These checks test traceability and consistency with the selected abstracts. They do not verify scientific accuracy or study quality. Review every slide against its listed sources before presenting.",
   "checks": [
     {
@@ -137,20 +137,21 @@
     {
       "id": "quantitative_finding_omitted",
       "name": "Quantitative study findings included",
-      "status": "pass",
-      "passed": true,
-      "details": "All parsed quantitative study findings from selected abstracts are represented in the deck."
-    },
-    {
-      "id": "unverified_source_used",
-      "name": "Source verification status",
       "status": "warning",
       "passed": false,
-      "details": "Cited source(s) [2] lack PMID/DOI/verified journal or originate from a repository/aggregator and are marked [unverified source]."
+      "details": "Paper [13] reports quantitative effect (45.7, 38.1, 1.40) omitted from deck slides."
+    },
+    {
+      "id": "low_assurance_source_used",
+      "name": "Venue assurance tier (PubMed/MEDLINE indexing)",
+      "status": "warning",
+      "passed": false,
+      "details": "Cited source(s) [1, 8, 9, 10, 13, 14] are not indexed in PubMed/MEDLINE (Tier B / unknown) and are marked [not PubMed-indexed]."
     }
   ],
   "errors": [],
   "warnings": [
-    "unverified_source_used (Source verification status): Cited source(s) [2] lack PMID/DOI/verified journal or originate from a repository/aggregator and are marked [unverified source]."
+    "quantitative_finding_omitted (Quantitative study findings included): Paper [13] reports quantitative effect (45.7, 38.1, 1.40) omitted from deck slides.",
+    "low_assurance_source_used (Venue assurance tier (PubMed/MEDLINE indexing)): Cited source(s) [1, 8, 9, 10, 13, 14] are not indexed in PubMed/MEDLINE (Tier B / unknown) and are marked [not PubMed-indexed]."
   ]
 }

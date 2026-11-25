@@ -668,7 +668,7 @@ async function runTests() {
     'duplicate_source_sentence',
     'generic_conclusion',
     'quantitative_finding_omitted',
-    'unverified_source_used'
+    'low_assurance_source_used'
   ];
   const actualIds = validReport.checks.map(c => c.id);
   for (const id of EXPECTED_CHECK_IDS) {

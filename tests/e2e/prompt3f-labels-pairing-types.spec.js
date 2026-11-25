@@ -48,23 +48,33 @@ function runTests() {
   console.log('4. Testing plain-language conclusion wording...');
   assert(!/\(favours intervention\)/i.test(concSlide.on_slide_text), 'Conclusion must not contain "(favours intervention)"');
   assert(
-    /AI accuracy higher than embryologists/i.test(concSlide.on_slide_text) &&
-    /higher clinical pregnancy with AI-assisted selection/i.test(concSlide.on_slide_text),
-    `Expected plain-language diagnostic & treatment conclusions, got:\n${concSlide.on_slide_text}`
+    /AI accuracy higher than embryologists/i.test(concSlide.on_slide_text),
+    `Expected plain-language diagnostic conclusion, got:\n${concSlide.on_slide_text}`
   );
   console.log('   ✓ Plain-language conclusion wording verified.');
 
-  // (e) Source-verification flag for repository/aggregator or missing PMID/DOI/journal
-  console.log('5. Testing unverified_source_used check & [unverified source] slide tag...');
-  const unverifiedPaper = {
+  // (e) Source-verification flag: Tier C excluded, Tier B tagged [not PubMed-indexed] & never bullet #1
+  console.log('5. Testing low_assurance_source_used check & [not PubMed-indexed] slide tag...');
+  const tierCPaper = {
     id: 'u1',
-    title: 'AI embryo model',
+    title: 'AI embryo model thesis',
     authors: ['Doe J'],
     journal: 'Hispana',
     year: 2023,
     doi: '',
     pmid: '',
     abstract: 'RESULTS: AI prediction achieved AUC 0.81 (95% CI 0.74–0.88) across 200 embryos.'
+  };
+  const tierBPaper = {
+    id: 'b1',
+    title: 'AI embryo selection cohort',
+    authors: ['Agboola O'],
+    journal: 'Path of Science',
+    year: 2025,
+    doi: '10.22178/pos.122-2',
+    pmid: '',
+    indexedIn: 'none',
+    abstract: 'RESULTS: Clinical pregnancy was 45.7% AI-assisted vs 38.1% conventional (p=0.004).'
   };
   const verifiedPaper = {
     id: 'v1',
@@ -74,29 +84,30 @@ function runTests() {
     year: 2024,
     doi: '10.1093/humrep/test001',
     pmid: '39000001',
-    abstract: 'RESULTS: Clinical pregnancy was 50.0% AI vs 45.0% morphology (p=0.04).'
+    abstract: 'RESULTS: Implantation was 50.0% AI vs 45.0% morphology (p=0.04).'
   };
   const unvDeck = generatePresentationDeck({
     topic: 'AI in IVF',
-    papers: [unverifiedPaper, verifiedPaper],
+    papers: [tierCPaper, tierBPaper, verifiedPaper],
     slideCount: 8,
     density: 'Short bullet points'
   });
   const slide4 = unvDeck.slides.find(s => s.stage === 4);
   assert(slide4, 'Findings slide must exist');
   const firstBullet = (slide4.on_slide_text || '').split('\n')[0] || '';
-  assert(!firstBullet.includes('[unverified source]'), 'Unverified source must NEVER be the first bullet of a findings slide');
-  assert((unvDeck.slides.map(s => s.on_slide_text).join('\n')).includes('[unverified source]'), 'Unverified source bullet must carry [unverified source] tag');
+  assert(!firstBullet.includes('[not PubMed-indexed]'), 'Tier B source must NEVER be the first bullet of a findings slide');
+  assert(!slide4.on_slide_text.includes('0.81'), 'Tier C Hispana paper must be excluded from synthesis');
+  assert((unvDeck.slides.map(s => s.on_slide_text).join('\n')).includes('[not PubMed-indexed]'), 'Tier B bullet must carry [not PubMed-indexed] tag');
 
   const unvVal = validatePresentationOutput({
     deck: unvDeck,
-    papers: [unverifiedPaper, verifiedPaper],
+    papers: [tierCPaper, tierBPaper, verifiedPaper],
     requestedSlideCount: 8,
     topic: 'AI in IVF'
   });
-  const unvCheck = unvVal.checks.find(c => c.id === 'unverified_source_used');
-  assert(unvCheck && unvCheck.status === 'warning', `Expected unverified_source_used WARNING, got ${unvCheck ? unvCheck.status : 'missing'}`);
-  console.log('   ✓ [unverified source] tag, non-first placement, and unverified_source_used WARNING verified.');
+  const unvCheck = unvVal.checks.find(c => c.id === 'low_assurance_source_used');
+  assert(unvCheck && unvCheck.status === 'warning', `Expected low_assurance_source_used WARNING, got ${unvCheck ? unvCheck.status : 'missing'}`);
+  console.log('   ✓ Tier C excluded, Tier B tagged [not PubMed-indexed], non-first placement, and low_assurance_source_used WARNING verified.');
 
   console.log('\nPassed: All Prompt 3f tests verified.\n');
 }

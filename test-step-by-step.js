@@ -252,7 +252,7 @@ async function runStepByStepValidation() {
     'duplicate_source_sentence',
     'generic_conclusion',
     'quantitative_finding_omitted',
-    'unverified_source_used'
+    'low_assurance_source_used'
   ];
   const actualCheckIds = auditResult.checks.map(c => c.id);
   EXPECTED_CHECK_IDS.forEach(id => {

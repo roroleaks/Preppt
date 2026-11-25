@@ -2,6 +2,7 @@ const { generatePresentationDeck } = require('../lib/synthesize.js');
 const { generateDeckWithLLM } = require('../lib/llm-synthesizer.js');
 const { validatePresentationOutput } = require('../lib/validator.js');
 const { stripCitations } = require('../lib/text-rules.js');
+const { enrichPapersWithAssurance } = require('../lib/venue-assurance.js');
 
 async function parseBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -57,6 +58,9 @@ module.exports = async (req, res) => {
 
     const hasLlmKey = !!(process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
     const currentYear = new Date().getFullYear();
+
+    // Server-side venue assurance lookup via Europe PMC (batched, 5s timeout)
+    synthesisParams.papers = await enrichPapersWithAssurance(synthesisParams.papers);
 
     let deck = generatePresentationDeck(synthesisParams);
 

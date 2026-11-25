@@ -129,13 +129,13 @@ function runTests() {
   assert.strictEqual(rOmit.checks.find(c => c.id === 'quantitative_finding_omitted').status, 'warning', 'Omitted quantitative result must trigger quantitative_finding_omitted WARNING');
   console.log('   ✓ All 6 bad bullets + duplicate + omitted quantitative checks caught as expected.');
 
-  // 2. Test 15-paper deck includes Agboola finding and passes with 0 ERROR failures
-  console.log('2. Verifying Agboola finding and 0 ERROR failures on 15-paper deck...');
+  // 2. Test 15-paper deck prioritizes Tier A quantitative findings and passes with 0 ERROR failures
+  console.log('2. Verifying Tier A quantitative findings and 0 ERROR failures on 15-paper deck...');
   const deck15 = generatePresentationDeck(req15);
   const allOnSlide = deck15.slides.map(s => s.on_slide_text || '').join('\n');
   assert(
-    /Clinical pregnancy: 45\.7% AI-assisted vs 38\.1% conventional; aOR 1\.40 \(95% CI 1\.11[–-]1\.77\), p=0\.004 \(Agboola \d{4}\)/.test(allOnSlide),
-    `Expected Agboola finding in 15-paper deck! Found:\n${allOnSlide}`
+    /75\.5% AI.*65\.4% embryologists/.test(allOnSlide) && /85\.93%/.test(allOnSlide),
+    `Expected Tier A quantitative findings (Salih 75.5% vs 65.4%, Mushtaq 85.93%) in 15-paper deck! Found:\n${allOnSlide}`
   );
 
   const val15 = validatePresentationOutput({
