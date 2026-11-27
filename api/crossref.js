@@ -1,4 +1,5 @@
 const https = require('https');
+const { normaliseJournal, sanitizeAbstract } = require('../public/evidence-rules.js');
 
 function cleanAbstract(raw) {
   if (!raw || typeof raw !== 'string') return '';
@@ -16,7 +17,6 @@ function cleanAbstract(raw) {
 }
 
 function extractYear(item) {
-  const currentYear = new Date().getFullYear();
   const dateParts = item.published?.['date-parts']?.[0]
     || item['published-print']?.['date-parts']?.[0]
     || item['published-online']?.['date-parts']?.[0]
@@ -24,7 +24,7 @@ function extractYear(item) {
   if (Array.isArray(dateParts) && dateParts.length > 0 && Number(dateParts[0]) > 1900) {
     return Number(dateParts[0]);
   }
-  return currentYear;
+  return null; // never invent a publication year (audit D-17)
 }
 
 function queryCrossref(query, pageSize = 30, startYear = null) {
@@ -70,7 +70,6 @@ function queryCrossref(query, pageSize = 30, startYear = null) {
         try {
           const json = JSON.parse(data);
           const items = json.message?.items || [];
-          const currentYear = new Date().getFullYear();
 
           const results = items.map(item => {
             const rawTitle = Array.isArray(item.title) ? item.title[0] : (item.title || 'Untitled Study');
@@ -84,14 +83,13 @@ function queryCrossref(query, pageSize = 30, startYear = null) {
               if (parsed.length > 0) authorsList = parsed;
             }
 
-            const journal = (Array.isArray(item['container-title']) && item['container-title'][0])
+            const journal = normaliseJournal((Array.isArray(item['container-title']) && item['container-title'][0])
               || (Array.isArray(item['short-container-title']) && item['short-container-title'][0])
-              || item.publisher
-              || 'Academic Journal';
+              || '');
 
             const pubYear = extractYear(item);
             const doi = item.DOI || '';
-            const abstract = cleanAbstract(item.abstract);
+            const abstract = sanitizeAbstract(cleanAbstract(item.abstract));
             const citations = Number(item['is-referenced-by-count'] || 0);
 
             return {
@@ -105,8 +103,8 @@ function queryCrossref(query, pageSize = 30, startYear = null) {
               authorsString: authorsList.join(', '),
               journal: journal,
               year: pubYear,
-              pubDate: String(pubYear),
-              publication_date: String(pubYear),
+              pubDate: String(pubYear || 'n.d.'),
+              publication_date: String(pubYear || ''),
               abstract: abstract,
               abstract_summary: abstract,
               citationCount: citations,

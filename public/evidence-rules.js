@@ -282,7 +282,46 @@
     });
   }
 
-  const api = { DESIGNS, classifyStudyDesign, isRandomisedTrialDesign, isEvidenceSynthesisDesign, isPrimaryStudyDesign, collectPubTypes, scorePaperRelevance, conceptGroupsFromKeywords, termMatch };
+
+  // ---------------------------------------------------------------------------
+  // Metadata integrity (audit D-17 / D-18): never invent or mislabel metadata
+  // ---------------------------------------------------------------------------
+  /** Returns a 4-digit year or null. A missing year is never replaced by the current year. */
+  function normaliseYear(v) {
+    const m = String(v == null ? '' : v).match(/\b(1[89]\d{2}|20\d{2})\b/);
+    return m ? Number(m[1]) : null;
+  }
+
+  const REPOSITORY_NAMES = /^(?:pubmed|pubmed central|europe pmc|pmc|medline|semantic scholar|openalex|crossref|zenodo|figshare|ssrn electronic journal|research square|biorxiv|medrxiv|arxiv(?:\.org)?|preprints\.org|google scholar|unknown|academic journal|scholarly journal)$/i;
+  /** Repository / index names are not journals: return '' so the reference shows no false venue. */
+  function normaliseJournal(name) {
+    const n = String(name || '').replace(/\s+/g, ' ').trim();
+    if (!n || REPOSITORY_NAMES.test(n)) return '';
+    return n;
+  }
+
+  function normalisePmcid(v) {
+    const raw = String(v || '').trim().replace(/\/$/, '').replace(/^https?:\/\/.*\//i, '').trim();
+    if (!raw) return '';
+    const digits = raw.replace(/^pmc/i, '');
+    return /^\d+$/.test(digits) ? `PMC${digits}` : raw.toUpperCase();
+  }
+
+  /**
+   * Rejects text that is not a real abstract (reference lists, full-text dumps, publisher boilerplate).
+   * Returns the cleaned abstract or '' when it is not trustworthy.
+   */
+  function sanitizeAbstract(text) {
+    const t = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!t) return '';
+    const refSignals = (t.match(/google scholar|crossref|pubmed\b|\bdoi:|\bet al\.,? \(?\d{4}|\(in press\)|view article|\[\d+\]\s*[A-Z]/gi) || []).length;
+    if (refSignals >= 3) return '';
+    if (t.length > 6000) return '';
+    if (/^(?:abstract not available|no abstract|\[abstract not available\])/i.test(t)) return '';
+    return t.replace(/^abstract[:.\s]+/i, '');
+  }
+
+  const api = { DESIGNS, classifyStudyDesign, isRandomisedTrialDesign, isEvidenceSynthesisDesign, isPrimaryStudyDesign, collectPubTypes, scorePaperRelevance, conceptGroupsFromKeywords, termMatch, normaliseYear, normaliseJournal, normalisePmcid, sanitizeAbstract };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   } else {

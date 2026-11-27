@@ -1,4 +1,5 @@
 const https = require('https');
+const { normaliseYear, normaliseJournal, normalisePmcid, sanitizeAbstract } = require('../public/evidence-rules.js');
 
 const OPENALEX_API_KEY = process.env.OPENALEX_API_KEY || '';
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || '';
@@ -55,8 +56,8 @@ function queryOpenAlex(query, pageSize = 30, startYear = 2021, endYear = new Dat
             const rawAuthors = (p.authorships || []).map(a => a.author?.display_name).filter(Boolean);
             const doi = p.doi ? p.doi.replace(/^https:\/\/doi\.org\//i, '') : '';
             const pmid = p.ids?.pmid ? p.ids.pmid.replace(/^https:\/\/pubmed\.ncbi\.nlm\.nih\.gov\//i, '').replace(/\/$/, '') : '';
-            const pmcid = p.ids?.pmcid ? p.ids.pmcid.replace(/^https:\/\/www\.ncbi\.nlm\.nih\.gov\/pmc\/articles\//i, '').replace(/\/$/, '') : '';
-            const abstract = reconstructAbstract(p.abstract_inverted_index);
+            const pmcid = normalisePmcid(p.ids?.pmcid);
+            const abstract = sanitizeAbstract(reconstructAbstract(p.abstract_inverted_index));
 
             return {
               id: p.id || doi || pmid,
@@ -64,9 +65,9 @@ function queryOpenAlex(query, pageSize = 30, startYear = 2021, endYear = new Dat
               openalex_id: p.id,
               title: p.title || 'Untitled Study',
               authors: rawAuthors.length > 0 ? rawAuthors : ['Unknown Authors'],
-              journal: p.primary_location?.source?.display_name || 'Academic Journal',
-              year: p.publication_year || new Date().getFullYear(),
-              publication_date: p.publication_date || String(p.publication_year || ''),
+              journal: normaliseJournal(p.primary_location?.source?.display_name),
+              year: normaliseYear(p.publication_year),
+              publication_date: p.publication_date || String(normaliseYear(p.publication_year) || ''),
               abstract: abstract,
               abstract_summary: abstract,
               citationCount: Number(p.cited_by_count || 0),

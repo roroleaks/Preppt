@@ -8,7 +8,7 @@ Branch: `fix/audit-remediation`. Each step ends with tests run and a commit.
 | 1 | Study-design classification from publication-type metadata (SR/MA before RCT, title first, retrospective vs prospective, protocols, guidelines) — client and server | D-06 | ✅ |
 | 2 | Keyword engine: phrase-level primary terms, word-boundary domain rules, no invented synonyms or generic MeSH; tighter search strategy | D-04 | ✅ |
 | 3 | Relevance ranking: real 0–100 scale, phrase/condition coverage, population-mismatch penalty, RCT priority; Europe PMC relevance sort | D-05, D-07 | ✅ |
-| 4 | Metadata integrity: no invented years, correct journal/PMCID, discard junk abstracts | D-17, D-18 | ☐ |
+| 4 | Metadata integrity: no invented years, correct journal/PMCID, discard junk abstracts | D-17, D-18 | ✅ |
 | 5 | Evidence direction & conclusion: driven by included RCT / SR primary endpoints, never by a subgroup or off-topic null; remove hard-coded IVF/AI vocabulary | D-01, D-10 | ☐ |
 | 6 | Findings quality: results/conclusion sentences only, strip section headers and author-year citations, density caps, author labels, audience-aware wording, no broken truncation | D-09, D-11–D-16 | ☐ |
 | 7 | Validator: checks that actually detect in-text citations, background-as-finding, vocabulary leakage, broken bullets, conclusion–evidence conflicts; fix direction-polarity false block | D-02, D-03 | ☐ |

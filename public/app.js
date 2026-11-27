@@ -121,6 +121,8 @@ window.activeProjectRun = state.projectRun;
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
+const PER = window.PrepptEvidenceRules;
+
 function cleanHtmlText(text) {
   if (!text) return '';
   return text
@@ -657,12 +659,12 @@ async function fetchEuropePMC(query, pageSize) {
       // Canonical Section 7 Paper fields
       title: cleanHtmlText(item.title) || 'Untitled Study',
       authors: authorList,
-      journal: cleanHtmlText(item.journalInfo?.journal?.title || item.journalTitle || 'Scholarly Journal'),
-      publication_date: item.pubYear ? String(item.pubYear) : (item.journalInfo?.yearOfPublication ? String(item.journalInfo.yearOfPublication) : String(currentYear)),
+      journal: PER.normaliseJournal(cleanHtmlText(item.journalInfo?.journal?.title || item.journalTitle || '')),
+      publication_date: String(PER.normaliseYear(item.pubYear || item.journalInfo?.yearOfPublication) || ''),
       study_type: classifyStudyType(item.title, item.abstractText, item.pubTypeList?.pubType || []),
       publication_type: (Array.isArray(item.pubTypeList?.pubType) ? item.pubTypeList.pubType[0] : item.pubTypeList?.pubType) || 'Journal Article',
       relevance_percentage: 0,
-      abstract_summary: cleanHtmlText(item.abstractText || ''),
+      abstract_summary: PER.sanitizeAbstract(cleanHtmlText(item.abstractText || '')),
       doi: item.doi || '',
       pmid: item.pmid || '',
       pmcid: item.pmcid || '',
@@ -678,9 +680,9 @@ async function fetchEuropePMC(query, pageSize) {
       sources: ['Europe PMC'],
       id: item.id || item.pmid || item.doi || Math.random().toString(36).substring(7),
       authorsString: authorList.join(', '),
-      pubDate: item.pubYear ? String(item.pubYear) : (item.journalInfo?.yearOfPublication ? String(item.journalInfo.yearOfPublication) : String(currentYear)),
-      year: Number(item.pubYear) || (item.journalInfo?.yearOfPublication ? Number(item.journalInfo.yearOfPublication) : currentYear),
-      abstract: cleanHtmlText(item.abstractText || ''),
+      pubDate: String(PER.normaliseYear(item.pubYear || item.journalInfo?.yearOfPublication) || 'n.d.'),
+      year: PER.normaliseYear(item.pubYear || item.journalInfo?.yearOfPublication),
+      abstract: PER.sanitizeAbstract(cleanHtmlText(item.abstractText || '')),
       citationCount: Number(item.citedByCount || 0),
       isOpenAccess: item.isOpenAccess === 'Y',
       pubType: Array.isArray(item.pubTypeList?.pubType) ? item.pubTypeList.pubType : [item.pubTypeList?.pubType || 'Journal Article'],
@@ -740,7 +742,7 @@ async function fetchOpenAlex(query, pageSize, startYear) {
           const rawAuthors = (p.authorships || []).map(a => a.author?.display_name).filter(Boolean);
           const doi = p.doi ? p.doi.replace(/^https:\/\/doi\.org\//i, '') : '';
           const pmid = p.ids?.pmid ? p.ids.pmid.replace(/^https:\/\/pubmed\.ncbi\.nlm\.nih\.gov\//i, '').replace(/\/$/, '') : '';
-          const pmcid = p.ids?.pmcid ? p.ids.pmcid.replace(/^https:\/\/www\.ncbi\.nlm\.nih\.gov\/pmc\/articles\//i, '').replace(/\/$/, '') : '';
+          const pmcid = PER.normalisePmcid(p.ids?.pmcid);
           
           let abstract = '';
           if (p.abstract_inverted_index) {
@@ -760,12 +762,12 @@ async function fetchOpenAlex(query, pageSize, startYear) {
             title: cleanHtmlText(p.title) || 'Untitled Study',
             authors: rawAuthors.length > 0 ? rawAuthors : ['Unknown Authors'],
             authorsString: (rawAuthors.length > 0 ? rawAuthors : ['Unknown Authors']).join(', '),
-            journal: cleanHtmlText(p.primary_location?.source?.display_name || 'Academic Journal'),
-            year: p.publication_year || currentYear,
-            pubDate: String(p.publication_year || currentYear),
-            publication_date: String(p.publication_year || currentYear),
-            abstract: cleanHtmlText(abstract),
-            abstract_summary: cleanHtmlText(abstract),
+            journal: PER.normaliseJournal(cleanHtmlText(p.primary_location?.source?.display_name || '')),
+            year: PER.normaliseYear(p.publication_year),
+            pubDate: String(PER.normaliseYear(p.publication_year) || 'n.d.'),
+            publication_date: String(PER.normaliseYear(p.publication_year) || ''),
+            abstract: PER.sanitizeAbstract(cleanHtmlText(abstract)),
+            abstract_summary: PER.sanitizeAbstract(cleanHtmlText(abstract)),
             citationCount: Number(p.cited_by_count || 0),
             citation_count: Number(p.cited_by_count || 0),
             doi: doi,
@@ -852,7 +854,7 @@ async function fetchCrossref(query, pageSize, startYear) {
             || item['published-print']?.['date-parts']?.[0]
             || item['published-online']?.['date-parts']?.[0]
             || item.created?.['date-parts']?.[0];
-          const pubYear = (Array.isArray(dateParts) && dateParts.length > 0 && Number(dateParts[0]) > 1900) ? Number(dateParts[0]) : currentYear;
+          const pubYear = (Array.isArray(dateParts) && dateParts.length > 0 && Number(dateParts[0]) > 1900) ? Number(dateParts[0]) : null;
 
           const doi = item.DOI || '';
           let abstract = item.abstract || '';
@@ -878,10 +880,10 @@ async function fetchCrossref(query, pageSize, startYear) {
             authorsString: authorsList.join(', '),
             journal: cleanHtmlText(journal),
             year: pubYear,
-            pubDate: String(pubYear),
-            publication_date: String(pubYear),
-            abstract: cleanHtmlText(abstract),
-            abstract_summary: cleanHtmlText(abstract),
+            pubDate: String(pubYear || 'n.d.'),
+            publication_date: String(pubYear || ''),
+            abstract: PER.sanitizeAbstract(cleanHtmlText(abstract)),
+            abstract_summary: PER.sanitizeAbstract(cleanHtmlText(abstract)),
             citationCount: citations,
             citation_count: citations,
             doi: doi,
@@ -974,12 +976,12 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
       // Canonical Section 7 Paper fields
       title: cleanHtmlText(item.title) || 'Untitled Study',
       authors: authorList,
-      journal: cleanHtmlText(item.venue || item.publicationVenue?.name || item.journal?.name || 'Academic Journal'),
-      publication_date: item.year ? String(item.year) : String(currentYear),
+      journal: PER.normaliseJournal(cleanHtmlText(item.venue || item.publicationVenue?.name || item.journal?.name || '')),
+      publication_date: String(PER.normaliseYear(item.year) || ''),
       study_type: classifyStudyType(item.title, item.abstract, item.publicationTypes || []),
       publication_type: (Array.isArray(item.publicationTypes) && item.publicationTypes[0]) ? item.publicationTypes[0] : 'Journal Article',
       relevance_percentage: 0,
-      abstract_summary: cleanHtmlText(item.abstract || ''),
+      abstract_summary: PER.sanitizeAbstract(cleanHtmlText(item.abstract || '')),
       doi: item.externalIds?.DOI || '',
       pmid: item.externalIds?.PubMed || '',
       pmcid: item.externalIds?.PubMedCentral || '',
@@ -996,9 +998,9 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
       id: item.paperId,
       paperId: item.paperId,
       authorsString: authorList.join(', '),
-      pubDate: item.year ? String(item.year) : String(currentYear),
-      year: item.year || currentYear,
-      abstract: cleanHtmlText(item.abstract || ''),
+      pubDate: String(PER.normaliseYear(item.year) || 'n.d.'),
+      year: PER.normaliseYear(item.year),
+      abstract: PER.sanitizeAbstract(cleanHtmlText(item.abstract || '')),
       citationCount: Number(item.citationCount || 0),
       isOpenAccess: Boolean(item.openAccessPdf?.url),
       openAccessPdfUrl: item.openAccessPdf?.url || '',
