@@ -599,27 +599,43 @@ async function fetchEuropePMC(query, pageSize) {
     query: query,
     resultType: 'core',
     pageSize: String(pageSize),
-    format: 'json',
-    sort: 'CITED desc'
+    format: 'json'
+    // Audit D-05: default Europe PMC relevance order (sorting by citations pulled in famous but off-topic papers)
   });
 
   const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?${params.toString()}`;
+
+  // Evidence-priority arm (RCTs / SRs / meta-analyses on the same concepts, most-cited first)
+  const evidenceQuery = state.approvedStrategy?.pmc?.query === query ? state.approvedStrategy?.pmc?.evidenceQuery : '';
+  const evidencePromise = evidenceQuery
+    ? fetch(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?${new URLSearchParams({
+        query: evidenceQuery, resultType: 'core', pageSize: String(Math.min(25, pageSize)), format: 'json', sort: 'CITED desc'
+      }).toString()}`).then(r => (r.ok ? r.json() : null)).catch(() => null)
+    : Promise.resolve(null);
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Europe PMC HTTP ${res.status}`);
   const json = await res.json();
   let results = json.resultList?.result || [];
+  const evidenceJson = await evidencePromise;
+  const evidenceResults = evidenceJson?.resultList?.result || [];
+  if (evidenceResults.length > 0) {
+    const seen = new Set(evidenceResults.map(r => r.id));
+    results = [...evidenceResults, ...results.filter(r => !seen.has(r.id))];
+  }
 
   // Robust Fallback Query Relaxation if query was too narrow and returned 0 hits
   if (results.length === 0 && state.topic) {
-    const fallbackWords = cleanQueryKeywords(state.topic).split(/\s+/).slice(0, 3).join(' ');
-    const fallbackQuery = `(${fallbackWords}) AND (PUB_YEAR:[${state.startYear || 2020} TO ${currentYear}])`;
+    // Relaxed query from the approved strategy (first two concept groups), never a bag of topic words
+    const fallbackQuery = state.approvedStrategy?.pmc?.fallbackQuery
+      || `(TITLE_ABS:"${cleanQueryKeywords(state.topic).replace(/"/g, '')}") AND (PUB_YEAR:[${state.startYear || 2020} TO ${currentYear}])`;
+    if (fallbackQuery === query) return [];
     try {
       const fbParams = new URLSearchParams({
         query: fallbackQuery,
         resultType: 'core',
         pageSize: String(pageSize),
-        format: 'json',
-        sort: 'CITED desc'
+        format: 'json'
       });
       const fbRes = await fetch(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?${fbParams.toString()}`);
       if (fbRes.ok) {
