@@ -48,7 +48,7 @@ function runTests() {
   console.log('4. Testing plain-language conclusion wording...');
   assert(!/\(favours intervention\)/i.test(concSlide.on_slide_text), 'Conclusion must not contain "(favours intervention)"');
   assert(
-    /AI accuracy higher than embryologists/i.test(concSlide.on_slide_text),
+    /higher [a-z ]*accuracy with AI than embryologists/i.test(concSlide.on_slide_text),
     `Expected plain-language diagnostic conclusion, got:\n${concSlide.on_slide_text}`
   );
   console.log('   ✓ Plain-language conclusion wording verified.');

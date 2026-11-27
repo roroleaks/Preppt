@@ -1,0 +1,109 @@
+{
+ "source": "PubMed metadata retrieved during the Nov 2026 audit (abstracts verbatim; long methods sections trimmed)",
+ "topic": "Tranexamic acid for prevention and treatment of postpartum haemorrhage",
+ "papers": [
+  {
+   "id": "pmid-34996342",
+   "pmid": "34996342",
+   "doi": "10.1080/01443615.2021.2013784",
+   "title": "Tranexamic acid for the prevention and the treatment of primary postpartum haemorrhage: a systematic review.",
+   "abstract": "Tranexamic acid (TA) has been proposed for preventing or treating primary postpartum haemorrhage (PPH), which is the leading cause of maternal morbidity and mortality worldwide. We conducted a systematic literature search to the TA role in managing PPH in vaginal and caesarean delivery. Twenty-seven randomised controlled trials (RCTs) (33,302 women) were identified. Three RCTs investigated TA for preventing PPH after vaginal delivery and 22 after caesarean section. None demonstrated a preventive effect on secondary clinical outcomes related to blood loss. Two trials evaluated TA for treating PPH after vaginal and caesarean delivery. Only the WOMAN trial showed that 1 g of TA is effective. In conclusion, TA is considered useful and is recommended or advised for treating PPH. Conversely, available evidence on the prophylactic role is still limited, and this use is not supported. Further investigation is recommended. In this regard, stronger and more reliable outcomes than blood loss should be considered.",
+   "abstract_summary": "Tranexamic acid (TA) has been proposed for preventing or treating primary postpartum haemorrhage (PPH), which is the leading cause of maternal morbidity and mortality worldwide. We conducted a systematic literature search to the TA role in managing PPH in vaginal and caesarean delivery. Twenty-seven randomised controlled trials (RCTs) (33,302 women) were identified. Three RCTs investigated TA for preventing PPH after vaginal delivery and 22 after caesarean section. None demonstrated a preventive effect on secondary clinical outcomes related to blood loss. Two trials evaluated TA for treating PPH after vaginal and caesarean delivery. Only the WOMAN trial showed that 1 g of TA is effective. In conclusion, TA is considered useful and is recommended or advised for treating PPH. Conversely, available evidence on the prophylactic role is still limited, and this use is not supported. Further investigation is recommended. In this regard, stronger and more reliable outcomes than blood loss should be considered.",
+   "authors": [
+    "Ferrari FA",
+    "Garzon S",
+    "Raffaelli R"
+   ],
+   "journal": "Journal of obstetrics and gynaecology",
+   "year": 2022,
+   "pubType": [
+    "Journal Article",
+    "Systematic Review"
+   ],
+   "assuranceTier": "A",
+   "indexedIn": "MEDLINE"
+  },
+  {
+   "id": "pmid-38222769",
+   "pmid": "38222769",
+   "doi": "10.1097/MS9.0000000000001560",
+   "title": "Tranexamic acid for the prevention and treatment of postpartum hemorrhage in resource-limited settings: a literature review.",
+   "abstract": "INTRODUCTION: Postpartum haemorrhage is a major cause of maternal morbidity and mortality worldwide. Early recognition and appropriate treatment are crucial for managing postpartum haemorrhage. OBJECTIVES: This literature review aimed to evaluate the efficacy of tranexamic acid in the prevention and treatment of postpartum haemorrhage in resource-limited settings. RESULT: In total, 5315 articles were identified. Following the elimination of duplicates, the methodological quality of 15 studies was evaluated independently, with eligibility determined based on the inclusion and exclusion criteria, as well as outcome variables. Finally, eight articles were included in the review. CONCLUSION: This review provides evidence that the administration of tranexamic acid has the potential to decrease the need for blood transfusion, incidence of postpartum haemorrhage, demand for supplementary uterotonics, and maternal morbidity and mortality with marginal adverse effects. Healthcare systems must develop and implement interventions that involve the use of tranexamic acid for the treatment of postpartum haemorrhage in resource-limited settings.",
+   "abstract_summary": "INTRODUCTION: Postpartum haemorrhage is a major cause of maternal morbidity and mortality worldwide. Early recognition and appropriate treatment are crucial for managing postpartum haemorrhage. OBJECTIVES: This literature review aimed to evaluate the efficacy of tranexamic acid in the prevention and treatment of postpartum haemorrhage in resource-limited settings. RESULT: In total, 5315 articles were identified. Following the elimination of duplicates, the methodological quality of 15 studies was evaluated independently, with eligibility determined based on the inclusion and exclusion criteria, as well as outcome variables. Finally, eight articles were included in the review. CONCLUSION: This review provides evidence that the administration of tranexamic acid has the potential to decrease the need for blood transfusion, incidence of postpartum haemorrhage, demand for supplementary uterotonics, and maternal morbidity and mortality with marginal adverse effects. Healthcare systems must develop and implement interventions that involve the use of tranexamic acid for the treatment of postpartum haemorrhage in resource-limited settings.",
+   "authors": [
+    "Gedeno Gelebo K",
+    "Mulugeta H",
+    "Mossie A"
+   ],
+   "journal": "Annals of medicine and surgery",
+   "year": 2024,
+   "pubType": [
+    "Journal Article",
+    "Review"
+   ],
+   "assuranceTier": "A",
+   "indexedIn": "MEDLINE"
+  },
+  {
+   "id": "pmid-30379320",
+   "pmid": "30379320",
+   "doi": "10.1097/OGX.0000000000000597",
+   "title": "Tranexamic Acid for Prevention and Treatment of Postpartum Hemorrhage: An Update on Management and Clinical Outcomes.",
+   "abstract": "IMPORTANCE: Postpartum hemorrhage (PPH) remains a major cause of maternal mortality worldwide, occurring in both vaginal and cesarean deliveries. We have witnessed improvements in both prevention and treatment of PPH. Tranexamic acid (TXA) has been investigated as a potential adjunct therapy to uterotonics within this setting. OBJECTIVE: The aim of this article is to summarize existing recommendations on the use of TXA in obstetrics and review current data on clinical outcomes after TXA use. EVIDENCE ACQUISITION: We reviewed guidelines from a number of professional societies and performed an extensive literature search reviewing relevant and current data in this area. RESULTS AND CONCLUSIONS: In the prevention of PPH, TXA use before both vaginal and cesarean deliveries reduces the amount of postpartum blood loss and should be considered in patients at higher risk for hemorrhage. In the treatment of PPH, TXA should be initiated early for maximal survival benefit from hemorrhage, and it provides no additional benefit if administered more than 3 hours from delivery. Overall, current evidence assessing the risks of TXA use in an obstetric population is reassuring.",
+   "abstract_summary": "IMPORTANCE: Postpartum hemorrhage (PPH) remains a major cause of maternal mortality worldwide, occurring in both vaginal and cesarean deliveries. We have witnessed improvements in both prevention and treatment of PPH. Tranexamic acid (TXA) has been investigated as a potential adjunct therapy to uterotonics within this setting. OBJECTIVE: The aim of this article is to summarize existing recommendations on the use of TXA in obstetrics and review current data on clinical outcomes after TXA use. EVIDENCE ACQUISITION: We reviewed guidelines from a number of professional societies and performed an extensive literature search reviewing relevant and current data in this area. RESULTS AND CONCLUSIONS: In the prevention of PPH, TXA use before both vaginal and cesarean deliveries reduces the amount of postpartum blood loss and should be considered in patients at higher risk for hemorrhage. In the treatment of PPH, TXA should be initiated early for maximal survival benefit from hemorrhage, and it provides no additional benefit if administered more than 3 hours from delivery. Overall, current evidence assessing the risks of TXA use in an obstetric population is reassuring.",
+   "authors": [
+    "Ahmadzia HK",
+    "Phillips JM",
+    "Katler QS"
+   ],
+   "journal": "Obstetrical & gynecological survey",
+   "year": 2018,
+   "pubType": [
+    "Journal Article",
+    "Review"
+   ],
+   "assuranceTier": "A",
+   "indexedIn": "MEDLINE"
+  },
+  {
+   "id": "pmid-41705282",
+   "pmid": "41705282",
+   "doi": "10.1093/ced/llag082",
+   "title": "The efficacy of tranexamic acid in prevention and treatment of post-inflammatory hyperpigmentation: a pilot study.",
+   "abstract": "Post-inflammatory hyperpigmentation (PIH) is a common complication following trauma or cutaneous inflammation, particularly affecting individuals with skin of colour. Tranexamic acid (TXA) is a lysine analogue with antifibrinolytic properties and has been used as an off-label agent for melasma and procedural PIH. This pilot study evaluated the efficacy of oral TXA in the prevention and treatment of PIH using a validated in vivo model. A baseline site was treated with 30% trichloroacetic acid to induce PIH (control). Once PIH developed, another site was induced and patients started oral TXA 650 mg for 4 weeks. Both sites were assessed for pigmentation changes at day 56 using standardized photography, Investigator Global Assessment, colorimetry and digital reflectance spectroscopy. While trends toward reduced pigmentation were observed in the TXA-prevention group, none reached statistical significance. Oral TXA may play a role in preventing PIH but did not significantly reduce pigmentation in established PIH lesions.",
+   "abstract_summary": "Post-inflammatory hyperpigmentation (PIH) is a common complication following trauma or cutaneous inflammation, particularly affecting individuals with skin of colour. Tranexamic acid (TXA) is a lysine analogue with antifibrinolytic properties and has been used as an off-label agent for melasma and procedural PIH. This pilot study evaluated the efficacy of oral TXA in the prevention and treatment of PIH using a validated in vivo model. A baseline site was treated with 30% trichloroacetic acid to induce PIH (control). Once PIH developed, another site was induced and patients started oral TXA 650 mg for 4 weeks. Both sites were assessed for pigmentation changes at day 56 using standardized photography, Investigator Global Assessment, colorimetry and digital reflectance spectroscopy. While trends toward reduced pigmentation were observed in the TXA-prevention group, none reached statistical significance. Oral TXA may play a role in preventing PIH but did not significantly reduce pigmentation in established PIH lesions.",
+   "authors": [
+    "Masood M",
+    "Lane B",
+    "Maghfour J"
+   ],
+   "journal": "Clinical and experimental dermatology",
+   "year": 2026,
+   "pubType": [
+    "Journal Article"
+   ],
+   "assuranceTier": "A",
+   "indexedIn": "MEDLINE"
+  },
+  {
+   "id": "pmid-30988876",
+   "pmid": "30988876",
+   "doi": "10.1016/j.jds.2018.10.001",
+   "title": "Efficacy of local tranexamic acid treatment for prevention of bleeding after dental procedures: A systematic review and meta-analysis.",
+   "abstract": "BACKGROUND/PURPOSE: Tranexamic acid (TA) is one of the commonly used local hemostatic agents for dental procedures. The current study aimed to compare the PPB risk in patients who took OAC and received local TA treatment after the dental procedures and individuals who did not take OAC and underwent similar dental procedures. MATERIALS AND METHODS: We systematically searched primary researches from two databases and four eligible cohort studies were identified. RESULTS: The analysis revealed a higher risk of PPB in patients who took OAC and received local TA treatment after the dental procedures than individuals who did not take OAC and underwent similar dental procedures with the pooled OR of 2.4, although the pooled effect estimate had a relatively wide 95% CI with non-statistically difference (0.69-8.12). CONCLUSION: This study results serve as a reminder to dentists that the increased risk of PPB in those who took OAC is not entirely resolved by the local TA treatment.",
+   "abstract_summary": "BACKGROUND/PURPOSE: Tranexamic acid (TA) is one of the commonly used local hemostatic agents for dental procedures. The current study aimed to compare the PPB risk in patients who took OAC and received local TA treatment after the dental procedures and individuals who did not take OAC and underwent similar dental procedures. MATERIALS AND METHODS: We systematically searched primary researches from two databases and four eligible cohort studies were identified. RESULTS: The analysis revealed a higher risk of PPB in patients who took OAC and received local TA treatment after the dental procedures than individuals who did not take OAC and underwent similar dental procedures with the pooled OR of 2.4, although the pooled effect estimate had a relatively wide 95% CI with non-statistically difference (0.69-8.12). CONCLUSION: This study results serve as a reminder to dentists that the increased risk of PPB in those who took OAC is not entirely resolved by the local TA treatment.",
+   "authors": [
+    "Owattanapanich D",
+    "Ungprasert P",
+    "Owattanapanich W"
+   ],
+   "journal": "Journal of dental sciences",
+   "year": 2019,
+   "pubType": [
+    "Journal Article"
+   ],
+   "assuranceTier": "A",
+   "indexedIn": "MEDLINE"
+  }
+ ]
+}

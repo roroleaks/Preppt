@@ -40,7 +40,7 @@ const test9Papers = [
     journal: 'RBMO',
     year: 2023,
     source: 'Semantic Scholar',
-    abstract: 'The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
+    abstract: 'Embryos were selected by an AI-assisted group (AAG) or a manual group. The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
   }
 ];
 

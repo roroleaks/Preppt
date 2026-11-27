@@ -357,7 +357,7 @@ async function runAcceptanceTests() {
       title: 'Interpretable artificial intelligence-assisted embryo selection improved single-blastocyst transfer outcomes: a prospective cohort study',
       journal: 'RBMO',
       year: 2023,
-      abstract: 'The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
+      abstract: 'Embryos were selected by an AI-assisted group (AAG) or a manual group. The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
     }
   ];
 

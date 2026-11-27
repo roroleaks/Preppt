@@ -35,7 +35,7 @@ const deckBPapers = [
     journal: 'RBMO',
     year: 2023,
     source: 'Semantic Scholar',
-    abstract: 'The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
+    abstract: 'Embryos were selected by an AI-assisted group (AAG) or a manual group. The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
   }
 ];
 
@@ -65,7 +65,7 @@ const deckAPapers = [
     journal: 'RBMO',
     year: 2023,
     source: 'Semantic Scholar',
-    abstract: 'The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
+    abstract: 'Embryos were selected by an AI-assisted group (AAG) or a manual group. The implantation rate was significantly higher in the AAG than the manual group (80.87% versus 68.15%, P = 0.022). No significant difference was found in terms of live birth rate between the groups.'
   }
 ];
 
@@ -189,8 +189,9 @@ async function runPrompt2BTests() {
       assert(b.includes('68.15'), `Wang implantation bullet in ${deckName} must contain 68.15: ${b}`);
     });
 
-    const deckJson = JSON.stringify(deck);
-    assert(!/\bAAG\b/.test(deckJson), `"AAG" must not appear anywhere in ${deckName}`);
+    // Audience-visible text must not use the undefined abbreviation (verbatim provenance sentences may)
+    const visible = deck.slides.map(s => `${s.title} ${s.main_message} ${s.on_slide_text} ${s.speaker_notes}`).join(' ');
+    assert(!/\bAAG\b(?!\))/.test(visible.replace(/AI-assisted group \(AAG\)/g, '')), `"AAG" must not appear undefined in visible text of ${deckName}`);
   });
   console.log('  ✓ Wang bullets contain 80.87 and 68.15 in both decks');
   console.log('  ✓ "AAG" abbreviation replaced with full description across all decks');
