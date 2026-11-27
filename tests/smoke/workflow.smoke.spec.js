@@ -339,4 +339,78 @@ test.describe('Preppt Browser Smoke Suite', () => {
     const slideText = await page.locator('.slide-card').first().innerText();
     expect(slideText).toContain(maliciousBullet);
   });
+
+  test('E: inline validation, no silent clamping, accessible toasts (audit D-27, D-28)', async ({ page }) => {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#toast')).toHaveAttribute('role', 'status');
+    await expect(page.locator('#toast')).toHaveAttribute('aria-live', 'polite');
+
+    await page.click('#btn-to-keywords');
+    await expect(page.locator('#topic-input')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#topic-input-error')).toHaveText(/Topic is required/);
+    await expect(page.locator('#step-2-section')).toBeHidden();
+
+    await page.fill('#topic-input', 'Vitamin D supplementation and fracture risk');
+    await page.fill('#short-title-input', 'Vitamin D');
+    await expect(page.locator('#topic-input-error')).toBeHidden();
+    for (const [sel, value] of [['#slide-count-input', '7'], ['#slide-count-input', '10.5'], ['#target-papers-input', '2']]) {
+      await page.fill(sel, value);
+      await page.locator(sel).blur();
+      await expect(page.locator(sel)).toHaveValue(value); // the user's value is never silently changed
+      await page.click('#btn-to-keywords');
+      await expect(page.locator(sel)).toHaveAttribute('aria-invalid', 'true');
+      await expect(page.locator('#step-2-section')).toBeHidden();
+      await page.fill(sel, sel === '#target-papers-input' ? '8' : '10');
+    }
+    await page.click('#btn-to-keywords');
+    await expect(page.locator('#step-2-section')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#step-nav-2')).toHaveAttribute('aria-current', 'step');
+  });
+
+  test('F: undo + backfill, resume after reload, slide editing with re-check (audit D-22 to D-24)', async ({ page }) => {
+    await runSteps1To5(page, baseUrl);
+    const target = await page.evaluate(() => state.targetPapers);
+    const before = await page.evaluate(() => state.selectedPapers.map(p => p.id));
+    const firstId = before[0];
+    await page.locator(`.btn-remove-paper[data-id="${firstId}"]`).click();
+    await expect(page.locator('#undo-bar')).toBeVisible();
+    const afterRemove = await page.evaluate(() => state.selectedPapers.map(p => p.id));
+    expect(afterRemove).not.toContain(firstId);
+    const eligibleLeft = await page.evaluate(() => state.allPapers.filter(p => !p.missingConcepts || p.missingConcepts.length === 0).length);
+    expect(afterRemove.length).toBe(Math.min(target, eligibleLeft));
+    await page.locator('#undo-bar button').click();
+    const afterUndo = await page.evaluate(() => state.selectedPapers.map(p => p.id));
+    expect(afterUndo).toContain(firstId);
+
+    await page.click('#btn-approve-papers');
+    await expect(page.locator('.slide-card').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.slide-card').first()).not.toContainText(/Field \d/);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#session-restore-bar')).toBeVisible();
+    await page.locator('#session-restore-bar button', { hasText: 'Resume' }).click();
+    await expect(page.locator('#step-8-section')).toBeVisible();
+    await expect(page.locator('.slide-card').first()).toBeVisible();
+
+    await page.locator('.btn-edit-slide[data-slide="1"]').click();
+    await page.locator('.slide-editor textarea').first().fill('Edited main message for slide one.');
+    await page.locator('.slide-editor button', { hasText: 'Save and re-check' }).click();
+    await expect(page.locator('#slide-card-1 .slide-main-message')).toHaveText('Edited main message for slide one.');
+    const edited = await page.evaluate(() => state.deck.slides[0].main_message);
+    expect(edited).toBe('Edited main message for slide one.');
+    await expect(page.locator('#validation-summary-line')).not.toHaveText(/Checking|Running/, { timeout: 15000 });
+  });
+
+  test('G: mobile layout keeps the header compact and the page unscrolled sideways (audit D-32)', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+    const page = await ctx.newPage();
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    const headerHeight = await page.locator('.hdr').evaluate(e => e.offsetHeight);
+    expect(headerHeight).toBeLessThan(150);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    const hint = await page.locator('.input-hint').first().evaluate(e => parseFloat(getComputedStyle(e).fontSize));
+    expect(hint).toBeGreaterThanOrEqual(12);
+    await ctx.close();
+  });
 });

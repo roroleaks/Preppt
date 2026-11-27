@@ -131,64 +131,63 @@
   function buildSlideCardHtml(slide, totalSlides) {
     const evidenceText = slide.evidenceSources ||
       (slide.sources && slide.sources.length > 0
-        ? `Evidence sources for this slide: ${slide.sources.map(s => `[${s}]`).join(', ')}`
-        : 'Evidence sources for this slide: None (Methodological overview)');
+        ? `Evidence sources: ${slide.sources.map(s => `[${s}]`).join(', ')}`
+        : 'Evidence sources: none (framing slide)');
+    const n = escapeHtml(slide.slideNumber);
+    const year = new Date().getFullYear();
 
     return `
-      <div class="slide-header">
+      <div class="slide-header" id="slide-${n}">
         <div>
-          <div class="slide-header-num">Field 1 • Slide ${escapeHtml(slide.slideNumber)} of ${escapeHtml(totalSlides)} [16:9 • Arial 12–14 pt]</div>
-          <h3 class="slide-header-title">Field 2 • ${escapeHtml(slide.title)}</h3>
+          <div class="slide-header-num">Slide ${n} of ${escapeHtml(totalSlides)}</div>
+          <h3 class="slide-header-title">${escapeHtml(slide.title)}</h3>
         </div>
-        <span class="slide-category-badge">${escapeHtml(slide.suggestedVisualType)}</span>
+        <div class="slide-header-actions">
+          <span class="slide-category-badge">${escapeHtml(slide.suggestedVisualType)}</span>
+          <button type="button" class="secondary btn-edit-slide" data-slide="${n}" aria-label="Edit slide ${n}">Edit</button>
+        </div>
       </div>
       <div class="slide-body">
         <div class="slide-field-row">
-          <span class="slide-field-label">Field 3 • Slide Objective:</span>
-          <div class="slide-field-val">${escapeHtml(slide.objective)}</div>
+          <span class="slide-field-label">Main message</span>
+          <div class="slide-field-val slide-main-message" data-field="mainMessage">${escapeHtml(slide.mainMessage)}</div>
         </div>
         <div class="slide-field-row">
-          <span class="slide-field-label">Field 4 • Main Message:</span>
-          <div class="slide-field-val" style="font-weight:700; color:var(--primary);">${escapeHtml(slide.mainMessage)}</div>
-        </div>
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 5 • On-Slide Text (${escapeHtml(slide.slideDensity)} Density • Arial 12–14 pt):</span>
+          <span class="slide-field-label">On-slide text</span>
           <div class="slide-onslide-textbox">
-            <div class="slide-onslide-content">${formatMultilineHtml(slide.onSlideText)}</div>
+            <div class="slide-onslide-content" data-field="onSlideText">${formatMultilineHtml(slide.onSlideText)}</div>
           </div>
         </div>
         <div class="slide-field-row">
-          <span class="slide-field-label">Field 6 & 7 • Suggested Visual & Detailed Description:</span>
-          <div class="slide-visual-box">
-            <div><strong>Visual Type:</strong> ${escapeHtml(slide.suggestedVisualType)}</div>
-            <div style="margin-top:4px;"><strong>Detailed Layout Description:</strong> <em>${escapeHtml(slide.detailedVisualDescription)}</em></div>
+          <span class="slide-field-label">Evidence</span>
+          <div class="slide-evidence-line">${escapeHtml(evidenceText)}</div>
+        </div>
+        <details class="slide-details">
+          <summary>Visual, speaker notes, audience question and transition</summary>
+          <div class="slide-field-row">
+            <span class="slide-field-label">Objective</span>
+            <div class="slide-field-val">${escapeHtml(slide.objective)}</div>
           </div>
-        </div>
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 8 • Speaker Notes (Presenter Script • ~1.2–1.5 min):</span>
-          <div class="slide-speaker-box">
-            <div class="slide-speaker-script">${formatMultilineHtml(slide.speakerNotes)}</div>
+          <div class="slide-field-row">
+            <span class="slide-field-label">Suggested visual: ${escapeHtml(slide.suggestedVisualType)}</span>
+            <div class="slide-visual-box">${escapeHtml(slide.detailedVisualDescription)}</div>
           </div>
-        </div>
-        <div class="slide-field-row">
-          <span class="slide-field-label">Evidence Sources (Traceability):</span>
-          <div style="font-size:13px; font-weight:700; color:var(--accent); background:#f0fdfa; border:1px solid #99f6e4; border-radius:6px; padding:6px 12px; margin-top:4px;">
-            ${escapeHtml(evidenceText)}
+          <div class="slide-field-row">
+            <span class="slide-field-label">Speaker notes</span>
+            <div class="slide-speaker-box"><div class="slide-speaker-script">${formatMultilineHtml(slide.speakerNotes)}</div></div>
           </div>
-        </div>
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 9 • Interactive Question for Audience:</span>
-          <div class="slide-question-box">
-            <strong>Discussion Prompt:</strong> ${escapeHtml(slide.audienceQuestion)}
+          <div class="slide-field-row">
+            <span class="slide-field-label">Question for the audience</span>
+            <div class="slide-question-box">${escapeHtml(slide.audienceQuestion)}</div>
           </div>
-        </div>
-        <div class="slide-field-row">
-          <span class="slide-field-label">Field 10 • Logical Transition:</span>
-          <div class="slide-transition-box">${escapeHtml(slide.transition)}</div>
-        </div>
+          <div class="slide-field-row">
+            <span class="slide-field-label">Transition</span>
+            <div class="slide-transition-box">${escapeHtml(slide.transition)}</div>
+          </div>
+        </details>
       </div>
       <div class="slide-footer-copyright-row">
-        <span class="slide-copyright-text">© 2025 Raouf Roshdy. All rights reserved.</span>
+        <span class="slide-copyright-text">© ${year} Raouf Roshdy. All rights reserved.</span>
       </div>
     `;
   }

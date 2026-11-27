@@ -49,8 +49,8 @@
     <main class="solo">
 
       <!-- Pipeline Stepper (Single-Line Layout) -->
-      <div class="pipeline-stepper" id="pipeline">
-        <div class="pipeline-step-item active" id="step-nav-1" title="Step 1: Input and Validation">
+      <nav class="pipeline-stepper" id="pipeline" aria-label="Workflow steps">
+        <div class="pipeline-step-item active" id="step-nav-1" aria-current="step" title="Step 1: Input and Validation">
           <span class="pipeline-step-tag active">Step 1 • Active</span>
           <div class="pipeline-step-title">1. Mandatory Inputs</div>
         </div>
@@ -74,7 +74,7 @@
           <span class="pipeline-step-tag muted">Step 6</span>
           <div class="pipeline-step-title">6. Slides &amp; Word Export</div>
         </div>
-      </div>
+      </nav>
 
       <!-- Non-blocking API Failure Warning Banner (Step 4 / 5 rule) -->
       <div id="api-warning-banner" class="alert-box alert-warn" style="display: none;">
@@ -92,7 +92,7 @@
       <section class="card workflow-step-section" id="step-1-section">
         <span class="pill">📋 Step 1 • Input and Validation</span>
         <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Configure Scientific Presentation</h2>
-        <p class="hint">Collect and validate the 7 required presentation parameters before generating search terms.</p>
+        <p class="hint">Fill in the 8 settings below; Preppt then proposes search concepts for you to check.</p>
 
         <form id="inputs-form" class="workflow-form" action="javascript:void(0)" novalidate>
           <!-- 1. Topic (free-text) -->
@@ -109,8 +109,10 @@
                 placeholder="e.g. SGLT2 inhibitors in Heart Failure with preserved ejection fraction" 
                 required
                 autocomplete="off"
+                aria-describedby="topic-input-error"
               />
             </div>
+            <span class="field-error" id="topic-input-error" role="alert" hidden></span>
           </div>
 
           <!-- Suggested Quick Topics (Pre-configured Clinical Examples) -->
@@ -136,7 +138,8 @@
                 placeholder="e.g. SGLT2i in HFpEF: Clinical Evidence" 
                 required
               />
-              <span class="input-hint">Concise title suitable for title slide and header.</span>
+              <span class="input-hint" id="short-title-input-hint">Concise title suitable for title slide and header.</span>
+              <span class="field-error" id="short-title-input-error" role="alert" hidden></span>
             </div>
 
             <!-- 3. Target number of final papers (numeric) -->
@@ -154,7 +157,8 @@
                 step="1"
                 required
               />
-              <span class="input-hint">Literature review selection target (3–50).</span>
+              <span class="input-hint" id="target-papers-input-hint">Whole number from 3 to 50.</span>
+              <span class="field-error" id="target-papers-input-error" role="alert" hidden></span>
             </div>
 
             <!-- 4. Publication start year (numeric) -->
@@ -172,7 +176,8 @@
                 step="1"
                 required
               />
-              <span class="input-hint">Retrieves papers from that year through current date (1900–2026).</span>
+              <span class="input-hint" id="start-year-input-hint">Papers from this year to today.</span>
+              <span class="field-error" id="start-year-input-error" role="alert" hidden></span>
             </div>
 
             <!-- 5. Audience (exactly 5 English choices) -->
@@ -205,7 +210,8 @@
                 step="1"
                 required
               />
-              <span class="input-hint">Exact slide count (minimum 8 for complete narrative arc, up to 30).</span>
+              <span class="input-hint" id="slide-count-input-hint">Whole number from 8 to 30.</span>
+              <span class="field-error" id="slide-count-input-error" role="alert" hidden></span>
             </div>
 
             <!-- 7. Slide density (exactly 3 choices) -->
@@ -350,7 +356,7 @@
       <!-- STEP 4 & 5: Literature Retrieval & Deduplication        -->
       <!-- ======================================================= -->
       <section class="card workflow-step-section" id="step-4-section" style="display: none;">
-        <span class="pill">⚡ Step 4 &amp; 5 • Retrieval &amp; Ranking</span>
+        <span class="pill">⚡ Step 4 • Retrieve &amp; Rank</span>
         <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Retrieving &amp; Ranking Literature</h2>
         <p class="hint">Searching PMC and Semantic Scholar, deduplicating records by DOI, PMID, and title similarity, and ranking by semantic topic relevance.</p>
 
@@ -406,7 +412,7 @@
       <section class="card workflow-step-section" id="step-6-section" style="display: none;">
         <div class="section-header-split">
           <div>
-            <span class="pill">📚 Step 6 • Paper Review Screen</span>
+            <span class="pill">📚 Step 5 • Review Papers</span>
             <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;">Review &amp; Refine Candidate Papers</h2>
             <p class="hint">Ranked candidate papers displayed with full metadata and relevance scores. Remove or mark studies to tailor your presentation foundation.</p>
           </div>
@@ -438,7 +444,7 @@
           </div>
           <div class="metric-card">
             <div class="metric-val text-blue" id="metric-overlap">0</div>
-            <div class="metric-lbl">Both Sources</div>
+            <div class="metric-lbl">Found by 2+ sources</div>
           </div>
           <div class="metric-card">
             <div class="metric-val" id="metric-citations">0</div>
@@ -453,10 +459,11 @@
               type="text" 
               id="paper-search-filter" 
               class="form-input" 
+              aria-label="Filter papers by title, author or journal"
               placeholder="Filter by title, author, journal..." 
               style="width: 280px;"
             />
-            <select id="paper-sort-select" class="form-select" style="width: 170px;">
+            <select id="paper-sort-select" class="form-select" style="width: 190px;" aria-label="Sort papers">
               <option value="relevance">Sort by Relevance</option>
               <option value="citations">Sort by Citations</option>
               <option value="year">Sort by Year (Newest)</option>
@@ -483,7 +490,7 @@
       <section class="card workflow-step-section" id="step-8-section" style="display: none;">
         <div class="section-header-split">
           <div>
-            <span class="pill pill-good">🎯 Step 7 &amp; 8 • Presentation Synthesis</span>
+            <span class="pill pill-good">🎯 Step 6 • Slides &amp; Word Export</span>
             <h2 class="sec-h" style="font-size:1.30rem; margin-top:4px;" id="deck-topic-title">Scientific Presentation Deck</h2>
             <div class="spec-pills-bar" style="margin-top: 8px;">
               <span class="badge" style="background:#e0f2fe; color:#0369a1;" id="deck-audience-badge">Audience: Postgraduate</span>
@@ -616,7 +623,7 @@
       </div>
     </div>
 
-    <div id="toast" class="toast" style="display: none;"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
 
     <!-- ═══════════════════════════════════════════════════════
          FOOTER — Attribution, Literature Providers & Copyright

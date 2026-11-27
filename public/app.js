@@ -157,6 +157,30 @@ function showToast(msg, duration = 3500) {
   }, duration);
 }
 
+/** Shows (or clears) an inline, screen-reader-announced error under a field (audit D-27 / D-28). */
+function setFieldError(inputId, message) {
+  const input = document.getElementById(inputId);
+  const err = document.getElementById(`${inputId}-error`);
+  if (input) {
+    if (message) input.setAttribute('aria-invalid', 'true');
+    else input.removeAttribute('aria-invalid');
+    const describedBy = new Set((input.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+    if (err) describedBy.add(err.id);
+    input.setAttribute('aria-describedby', [...describedBy].join(' '));
+  }
+  if (err) {
+    err.textContent = message || '';
+    err.hidden = !message;
+  }
+}
+
+function failField(inputId, message) {
+  setFieldError(inputId, message);
+  showToast(`Validation Error: ${message}`);
+  const el = document.getElementById(inputId);
+  if (el) el.focus();
+}
+
 function setStepNav(stepNum) {
   state.currentStep = stepNum;
   const steps = [
@@ -172,8 +196,12 @@ function setStepNav(stepNum) {
     if (!el) return;
     el.classList.remove('active', 'done', 'completed');
     const tag = el.querySelector('.pipeline-step-tag');
+    el.removeAttribute('aria-current');
     if (s.n === stepNum) {
       el.classList.add('active');
+      el.setAttribute('aria-current', 'step');
+      const bar = document.getElementById('pipeline');
+      if (bar && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = Math.max(0, el.offsetLeft - 8);
       if (tag) {
         tag.className = 'pipeline-step-tag active';
         tag.textContent = `${s.label} • Active`;
@@ -214,30 +242,22 @@ async function handleStep1Submit(e) {
   const allowedVisualStyles = ['Photographic', 'Illustrative', 'Scientific pictorial', 'Cinematic 3D'];
   const currentYear = new Date().getFullYear();
 
-  if (!topic) {
-    showToast('Validation Error: Topic is required.');
-    document.getElementById('topic-input').focus();
-    return;
+  ['topic-input', 'short-title-input', 'target-papers-input', 'start-year-input', 'slide-count-input'].forEach(id => setFieldError(id, ''));
+  const rawTarget = document.getElementById('target-papers-input').value.trim();
+  const rawYear = document.getElementById('start-year-input').value.trim();
+  const rawSlides = document.getElementById('slide-count-input').value.trim();
+
+  if (!topic) return failField('topic-input', 'Topic is required.');
+  if (topic.length > 300) return failField('topic-input', 'Topic must not exceed 300 characters.');
+  if (!shortTitle) return failField('short-title-input', 'Short presentation title is required.');
+  if (!/^\d+$/.test(rawTarget) || isNaN(targetPapers) || targetPapers < 3 || targetPapers > 50) {
+    return failField('target-papers-input', 'Target number of papers must be a whole number from 3 to 50.');
   }
-  if (topic.length > 300) {
-    showToast('Validation Error: Topic must not exceed 300 characters.');
-    document.getElementById('topic-input').focus();
-    return;
+  if (!/^\d{4}$/.test(rawYear) || isNaN(startYear) || startYear < 1900 || startYear > currentYear) {
+    return failField('start-year-input', `Publication start year must be a year from 1900 to ${currentYear}.`);
   }
-  if (!shortTitle) {
-    showToast('Validation Error: Short presentation title is required.');
-    document.getElementById('short-title-input').focus();
-    return;
-  }
-  if (!targetPapers || targetPapers < 3 || targetPapers > 50 || isNaN(targetPapers)) {
-    showToast('Validation Error: Target number of final papers must be between 3 and 50.');
-    document.getElementById('target-papers-input').focus();
-    return;
-  }
-  if (!startYear || startYear < 1900 || startYear > currentYear || isNaN(startYear)) {
-    showToast(`Validation Error: Publication start year must be between 1900 and ${currentYear}.`);
-    document.getElementById('start-year-input').focus();
-    return;
+  if (!/^\d+$/.test(rawSlides) || isNaN(slideCount) || slideCount < 8 || slideCount > 30) {
+    return failField('slide-count-input', 'Number of slides must be a whole number from 8 to 30.');
   }
   if (!allowedAudiences.includes(audience)) {
     showToast('Validation Error: Please select an approved audience category.');
@@ -293,13 +313,14 @@ async function handleStep1Submit(e) {
     document.getElementById('step-1-section').style.display = 'none';
     document.getElementById('step-2-section').style.display = 'block';
     setStepNav(2);
+    saveSession();
     document.getElementById('step-2-section').scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
     console.error('Keyword proposal error:', err);
     showToast(`Keyword proposal error: ${err.message}`);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<span>Propose Keywords & Next</span><span class="btn-icon">→</span>';
+    btn.innerHTML = '<span>Propose Search Keywords</span><span class="btn-arrow">→</span>';
   }
 }
 
@@ -360,6 +381,7 @@ async function handleApproveKeywords() {
     document.getElementById('step-2-section').style.display = 'none';
     document.getElementById('step-3-section').style.display = 'block';
     setStepNav(3);
+    saveSession();
     document.getElementById('step-3-section').scrollIntoView({ behavior: 'smooth' });
     showToast('Keywords approved. Please review your dual-engine search strategy.');
   } catch (err) {
@@ -467,7 +489,7 @@ async function executeLiteratureRetrieval() {
       const fbList = [];
       if (hasAlex) fbList.push('OpenAlex');
       if (hasCross) fbList.push('Crossref');
-      unavailableSourceWarning = `Notice: Semantic Scholar was unavailable (rate-limited). Preppt seamlessly retrieved ${s2Result.data.length} candidate studies via ${fbList.join(' & ')} fallback.`;
+      unavailableSourceWarning = `Semantic Scholar was unavailable (rate-limited). Preppt retrieved ${s2Result.data.length} candidate studies via ${fbList.join(' & ')} fallback.`;
     } else if (!epmcResult.success && s2Result.success) {
       unavailableSourceWarning = `Europe PMC was temporarily unavailable after automatic retries (${epmcResult.error?.message || 'Connection timeout'}). The system successfully continued using partial results retrieved from Semantic Scholar.`;
     } else if (epmcResult.success && !s2Result.success) {
@@ -587,6 +609,7 @@ async function executeLiteratureRetrieval() {
       if (step4Box) step4Box.style.display = 'none';
       renderStep6ReviewScreen();
       setStepNav(6);
+      saveSession();
       document.getElementById('step-6-section').scrollIntoView({ behavior: 'smooth' });
     }, 400);
 
@@ -1318,6 +1341,7 @@ function togglePaperSelection(paperId) {
 
   updateReviewMetrics();
   renderPaperCards();
+  saveSession();
 }
 
 function togglePaperStatus(paperId, status) {
@@ -1338,6 +1362,7 @@ function togglePaperStatus(paperId, status) {
 
   updateReviewMetrics();
   renderPaperCards();
+  saveSession();
 }
 
 function toggleInlineNoteEditor(paperId) {
@@ -1419,20 +1444,39 @@ function promptUserNote(paperId) {
 // No removed-paper recovery list required.
 function permanentlyRemovePaper(paperId) {
   const paper = state.allPapers.find(p => p.id === paperId);
-  const titleSnip = paper ? paper.title.substring(0, 30) : '';
+  if (!paper) return;
+  const titleSnip = paper.title.substring(0, 40);
+  const index = state.allPapers.indexOf(paper);
+  const wasSelected = state.selectedPapers.some(p => p.id === paperId);
 
-  if (paper) {
-    paper.user_status = 'removed';
-    paper.userStatus = 'removed';
-    state.projectRun.removed_papers.push(paper);
-  }
-
+  paper.user_status = 'removed';
+  paper.userStatus = 'removed';
+  state.projectRun.removed_papers.push(paper);
   state.allPapers = state.allPapers.filter(p => p.id !== paperId);
   state.selectedPapers = state.selectedPapers.filter(p => p.id !== paperId);
 
-  showToast(`Permanently removed: "${titleSnip}..."`);
+  // Keep the selection at the target with the next on-topic paper (audit D-23)
+  const added = wasSelected ? backfillSelection() : null;
+
   updateReviewMetrics();
   renderPaperCards();
+  saveSession();
+
+  showUndoBar(
+    `Removed "${titleSnip}…"${added ? `; added "${added.title.substring(0, 40)}…" to keep ${state.targetPapers} papers` : ''}.`,
+    () => {
+      state.projectRun.removed_papers = state.projectRun.removed_papers.filter(p => p.id !== paperId);
+      paper.user_status = 'keep';
+      paper.userStatus = 'keep';
+      state.allPapers.splice(Math.min(index, state.allPapers.length), 0, paper);
+      if (added) state.selectedPapers = state.selectedPapers.filter(p => p.id !== added.id);
+      if (wasSelected) state.selectedPapers.push(paper);
+      updateReviewMetrics();
+      renderPaperCards();
+      saveSession();
+      showToast('Removal undone.');
+    }
+  );
 }
 
 // ==========================================
@@ -1483,6 +1527,7 @@ async function handleApproveSelectedPapers() {
     document.getElementById('step-6-section').style.display = 'none';
     renderStep8DeckStudio();
     setStepNav(8);
+    saveSession();
     document.getElementById('step-8-section').scrollIntoView({ behavior: 'smooth' });
     showToast('Evidence-based synthesis plan, research gaps, and presentation deck synthesized successfully!');
   } catch (err) {
@@ -1707,6 +1752,7 @@ function renderStep8DeckStudio() {
 
     slidesContainer.appendChild(card);
   });
+  attachSlideEditors();
 
   // Attach keyboard navigation for slides (ArrowLeft / ArrowRight / 1-9)
   if (!window._slideNavKeydownAttached) {
@@ -1802,17 +1848,20 @@ async function runPreExportValidation() {
       if (hasFailures) {
         exportBtn.disabled = true;
         exportBtn.setAttribute('aria-disabled', 'true');
-        exportBtn.style.opacity = '0.5';
-        exportBtn.innerHTML = '<span>⚠️ Export Blocked: Checks Failed</span>';
+        exportBtn.style.opacity = '1';
+        exportBtn.style.background = '#64748b'; // grey: blocked is not a success state (audit D-31)
+        exportBtn.innerHTML = '<span>⛔ Export blocked: fix the failed checks</span>';
       } else if (hasWarnings && warningsCheckbox && !warningsCheckbox.checked) {
         exportBtn.disabled = true;
         exportBtn.setAttribute('aria-disabled', 'true');
-        exportBtn.style.opacity = '0.6';
-        exportBtn.innerHTML = '<span>⚠️ Review Warnings to Enable Export</span>';
+        exportBtn.style.opacity = '1';
+        exportBtn.style.background = '#b45309';
+        exportBtn.innerHTML = '<span>⚠️ Review warnings to enable export</span>';
       } else {
         exportBtn.disabled = false;
         exportBtn.removeAttribute('aria-disabled');
         exportBtn.style.opacity = '1';
+        exportBtn.style.background = '#15803d';
         exportBtn.innerHTML = '<span class="btn-icon">📄</span><span>Export to Word</span>';
       }
     }
@@ -2009,7 +2058,218 @@ async function exportToWord() {
 // ==========================================
 // EVENT LISTENERS INITIALIZATION
 // ==========================================
+
+// ==========================================
+// SESSION PERSISTENCE, UNDO & SLIDE EDITING (audit D-22, D-23, D-24)
+// ==========================================
+const PREPPT_SESSION_KEY = 'preppt:session:v1';
+
+function saveSession() {
+  try {
+    const snapshot = {
+      savedAt: new Date().toISOString(),
+      step: state.currentStep,
+      inputs: {
+        topic: state.topic, shortTitle: state.shortTitle, targetPapers: state.targetPapers, startYear: state.startYear,
+        audience: state.audience, slideCount: state.slideCount, density: state.density, visualStyle: state.visualStyle
+      },
+      keywordsText: ['kw-primary-input', 'kw-synonyms-input', 'kw-mesh-input'].map(id => document.getElementById(id)?.value || ''),
+      strategyText: ['pmc-query-input', 's2-query-input'].map(id => document.getElementById(id)?.value || ''),
+      approvedKeywords: state.approvedKeywords,
+      approvedStrategy: state.approvedStrategy,
+      allPapers: state.allPapers,
+      selectedIds: (state.selectedPapers || []).map(p => p.id),
+      removedPapers: state.projectRun.removed_papers || [],
+      deck: state.deck
+    };
+    sessionStorage.setItem(PREPPT_SESSION_KEY, JSON.stringify(snapshot));
+  } catch (e) {
+    // storage may be full or blocked; the app keeps working without persistence
+  }
+}
+
+function clearSession() {
+  try { sessionStorage.removeItem(PREPPT_SESSION_KEY); } catch (e) { /* ignore */ }
+}
+
+function showOnlySection(id) {
+  ['step-1-section', 'step-2-section', 'step-3-section', 'step-4-section', 'step-6-section', 'step-8-section'].forEach(sid => {
+    const el = document.getElementById(sid);
+    if (el) el.style.display = sid === id ? 'block' : 'none';
+  });
+}
+
+function restoreSession(snap) {
+  const i = snap.inputs || {};
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined && v !== null) el.value = v; };
+  setVal('topic-input', i.topic); setVal('short-title-input', i.shortTitle); setVal('target-papers-input', i.targetPapers);
+  setVal('start-year-input', i.startYear); setVal('audience-select', i.audience); setVal('slide-count-input', i.slideCount);
+  setVal('density-select', i.density); setVal('visual-style-input', i.visualStyle);
+  Object.assign(state, { topic: i.topic, shortTitle: i.shortTitle, targetPapers: i.targetPapers, startYear: i.startYear,
+    audience: i.audience, slideCount: i.slideCount, density: i.density, visualStyle: i.visualStyle });
+  ['kw-primary-input', 'kw-synonyms-input', 'kw-mesh-input'].forEach((id, k) => setVal(id, (snap.keywordsText || [])[k]));
+  ['pmc-query-input', 's2-query-input'].forEach((id, k) => setVal(id, (snap.strategyText || [])[k]));
+  if (snap.approvedKeywords) state.approvedKeywords = snap.approvedKeywords;
+  if (snap.approvedStrategy) state.approvedStrategy = snap.approvedStrategy;
+  if (Array.isArray(snap.allPapers)) {
+    state.allPapers = snap.allPapers;
+    const ids = new Set(snap.selectedIds || []);
+    state.selectedPapers = snap.allPapers.filter(p => ids.has(p.id));
+    state.projectRun.removed_papers = snap.removedPapers || [];
+  }
+  state.deck = snap.deck || null;
+
+  if (state.deck) {
+    showOnlySection('step-8-section');
+    renderStep8DeckStudio();
+    setStepNav(8);
+  } else if (state.allPapers && state.allPapers.length) {
+    showOnlySection('step-6-section');
+    renderStep6ReviewScreen();
+    setStepNav(6);
+  } else if (snap.step === 3) {
+    showOnlySection('step-3-section');
+    setStepNav(3);
+  } else if (snap.step === 2) {
+    showOnlySection('step-2-section');
+    setStepNav(2);
+  }
+  showToast('Previous session restored.');
+}
+
+function offerSessionRestore() {
+  let snap = null;
+  try { snap = JSON.parse(sessionStorage.getItem(PREPPT_SESSION_KEY) || 'null'); } catch (e) { snap = null; }
+  if (!snap || !snap.inputs || !snap.inputs.topic) return;
+  const bar = document.createElement('div');
+  bar.id = 'session-restore-bar';
+  bar.className = 'alert-box alert-info session-restore-bar';
+  bar.setAttribute('role', 'region');
+  bar.setAttribute('aria-label', 'Resume previous work');
+  const when = new Date(snap.savedAt);
+  const label = document.createElement('span');
+  label.textContent = `Resume your previous work on "${snap.inputs.topic}" (saved ${when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})?`;
+  const resume = document.createElement('button');
+  resume.type = 'button'; resume.className = 'primary'; resume.textContent = 'Resume';
+  const fresh = document.createElement('button');
+  fresh.type = 'button'; fresh.className = 'secondary'; fresh.textContent = 'Start over';
+  resume.addEventListener('click', () => { bar.remove(); restoreSession(snap); });
+  fresh.addEventListener('click', () => { bar.remove(); clearSession(); });
+  bar.append(label, resume, fresh);
+  const main = document.querySelector('main');
+  if (main) main.insertBefore(bar, main.firstChild);
+}
+
+/** After a removal, keep the selection at the target by adding the next on-topic paper (audit D-23). */
+function backfillSelection() {
+  const target = state.targetPapers || 0;
+  const selectedIds = new Set(state.selectedPapers.map(p => p.id));
+  if (state.selectedPapers.length >= target) return null;
+  const next = state.allPapers.find(p => !selectedIds.has(p.id) && (!p.missingConcepts || p.missingConcepts.length === 0) && !p.populationMismatch && p.study_type !== 'Study protocol');
+  if (next) state.selectedPapers.push(next);
+  return next || null;
+}
+
+function showUndoBar(message, onUndo) {
+  let bar = document.getElementById('undo-bar');
+  if (bar) bar.remove();
+  bar = document.createElement('div');
+  bar.id = 'undo-bar';
+  bar.className = 'undo-bar';
+  bar.setAttribute('role', 'status');
+  bar.setAttribute('aria-live', 'polite');
+  const text = document.createElement('span');
+  text.textContent = message;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'secondary';
+  btn.textContent = 'Undo';
+  btn.addEventListener('click', () => { bar.remove(); onUndo(); });
+  bar.append(text, btn);
+  document.body.appendChild(bar);
+  setTimeout(() => { if (bar.isConnected) bar.remove(); }, 12000);
+}
+
+/** Inline editing of a slide's main message and on-slide text, followed by re-validation (audit D-24). */
+function attachSlideEditors() {
+  document.querySelectorAll('.btn-edit-slide').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const num = Number(btn.dataset.slide);
+      const slide = state.deck.slides.find(s => (s.slideNumber || s.slide_number) === num);
+      const card = document.getElementById(`slide-card-${num}`);
+      if (!slide || !card || card.querySelector('.slide-editor')) return;
+      const editor = document.createElement('div');
+      editor.className = 'slide-editor';
+      const mmLabel = document.createElement('label');
+      mmLabel.textContent = 'Main message';
+      const mm = document.createElement('textarea');
+      mm.className = 'form-textarea'; mm.rows = 2; mm.value = slide.main_message || slide.mainMessage || '';
+      mmLabel.appendChild(mm);
+      const txLabel = document.createElement('label');
+      txLabel.textContent = 'On-slide text (one bullet per line)';
+      const tx = document.createElement('textarea');
+      tx.className = 'form-textarea'; tx.rows = 6;
+      tx.value = String(slide.on_slide_text || slide.onSlideText || '').split('\n').map(l => l.replace(/^•\s*/, '')).join('\n');
+      txLabel.appendChild(tx);
+      const save = document.createElement('button');
+      save.type = 'button'; save.className = 'primary'; save.textContent = 'Save and re-check';
+      const cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.className = 'secondary'; cancel.textContent = 'Cancel';
+      const row = document.createElement('div');
+      row.className = 'slide-editor-actions';
+      row.append(save, cancel);
+      editor.append(mmLabel, txLabel, row);
+      card.querySelector('.slide-body').prepend(editor);
+      mm.focus();
+      cancel.addEventListener('click', () => editor.remove());
+      save.addEventListener('click', async () => {
+        const lines = tx.value.split('\n').map(l => l.trim()).filter(Boolean);
+        const oldData = Array.isArray(slide.bulletsData) ? slide.bulletsData : [];
+        const bulletsData = lines.map(l => {
+          const text = `• ${l}`;
+          const same = oldData.find(b => b && String(b.text).replace(/^•\s*/, '') === l);
+          return same ? { ...same, text } : { text, isFinding: false, userEdited: true };
+        });
+        const onSlide = bulletsData.map(b => b.text).join('\n');
+        Object.assign(slide, {
+          main_message: mm.value.trim(), mainMessage: mm.value.trim(),
+          on_slide_text: onSlide, onSlideText: onSlide, bullets: bulletsData.map(b => b.text), bulletsData, userEdited: true
+        });
+        card.innerHTML = window.PrepptRenderHelpers.buildSlideCardHtml(slide, state.deck.slides.length);
+        attachSlideEditors();
+        saveSession();
+        showToast(`Slide ${num} updated. Re-running pre-export checks…`);
+        await runPreExportValidation();
+      });
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  offerSessionRestore();
+
+  // Visual-style radio group: roving tabindex and arrow keys (WAI-ARIA radio group pattern)
+  const vsGroup = document.getElementById('visual-style-group');
+  if (vsGroup) {
+    const radios = () => Array.from(vsGroup.querySelectorAll('[role="radio"]'));
+    const syncTabIndex = () => radios().forEach(r => r.setAttribute('tabindex', r.getAttribute('aria-checked') === 'true' ? '0' : '-1'));
+    syncTabIndex();
+    vsGroup.addEventListener('click', () => setTimeout(syncTabIndex, 0));
+    vsGroup.addEventListener('keydown', e => {
+      const list = radios();
+      const i = list.indexOf(document.activeElement);
+      if (i < 0) return;
+      let next = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = list[(i + 1) % list.length];
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = list[(i - 1 + list.length) % list.length];
+      if (next) {
+        e.preventDefault();
+        next.click();
+        next.focus();
+        syncTabIndex();
+      }
+    });
+  }
   // Step 1 Form
   const inputsForm = document.getElementById('inputs-form');
   inputsForm.addEventListener('submit', handleStep1Submit);
@@ -2035,34 +2295,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Numeric Inputs Real-Time Clamping & Validation
-  const targetInput = document.getElementById('target-papers-input');
-  if (targetInput) {
-    targetInput.addEventListener('change', () => {
-      let val = parseInt(targetInput.value, 10);
-      if (isNaN(val) || val < 3) targetInput.value = 3;
-      else if (val > 50) targetInput.value = 50;
-    });
-  }
-
-  const slideInput = document.getElementById('slide-count-input');
-  if (slideInput) {
-    slideInput.addEventListener('change', () => {
-      let val = parseInt(slideInput.value, 10);
-      if (isNaN(val) || val < 8) slideInput.value = 8;
-      else if (val > 30) slideInput.value = 30;
-    });
-  }
-
-  const yearInput = document.getElementById('start-year-input');
-  if (yearInput) {
-    yearInput.addEventListener('change', () => {
-      const cy = new Date().getFullYear();
-      let val = parseInt(yearInput.value, 10);
-      if (isNaN(val) || val < 1900) yearInput.value = 1900;
-      else if (val > cy) yearInput.value = cy;
-    });
-  }
+  // Numeric inputs: validate on change and explain the rule inline; never silently change the user's value
+  const cy = new Date().getFullYear();
+  const yearEl = document.getElementById('start-year-input');
+  if (yearEl) yearEl.setAttribute('max', String(cy));
+  [
+    ['target-papers-input', v => /^\d+$/.test(v) && +v >= 3 && +v <= 50, 'Enter a whole number from 3 to 50.'],
+    ['start-year-input', v => /^\d{4}$/.test(v) && +v >= 1900 && +v <= cy, `Enter a year from 1900 to ${cy}.`],
+    ['slide-count-input', v => /^\d+$/.test(v) && +v >= 8 && +v <= 30, 'Enter a whole number from 8 to 30.']
+  ].forEach(([id, ok, msg]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => setFieldError(id, ok(el.value.trim()) ? '' : msg));
+    el.addEventListener('input', () => { if (ok(el.value.trim())) setFieldError(id, ''); });
+  });
+  ['topic-input', 'short-title-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => { if (el.value.trim()) setFieldError(id, ''); });
+  });
 
   // Quick Chips
   document.querySelectorAll('.quick-chip').forEach(chip => {
