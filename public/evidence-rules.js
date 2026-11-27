@@ -319,7 +319,10 @@
    * Returns the cleaned abstract or '' when it is not trustworthy.
    */
   function sanitizeAbstract(text) {
-    const t = String(text || '').replace(/\s+/g, ' ').trim();
+    const t = String(text || '').replace(/\s+/g, ' ').trim()
+      // repair section headers glued to the text by upstream APIs ("uncertain.MethodsIn this trial")
+      .replace(/(^|[.!?)\]]\s*|\s)(Background|Introduction|Objectives?|Aims?|Purpose|Methods?|Design|Results?|Findings|Conclusions?|Interpretation|Importance|Significance)(?=[A-Z0-9])/g, (m, pre, label) => `${pre.trim() ? pre.trim() + ' ' : pre}${label.toUpperCase()}: `)
+      .replace(/([a-z0-9%)\]])\.([A-Z][a-z])/g, '$1. $2');
     if (!t) return '';
     const refSignals = (t.match(/google scholar|crossref|pubmed\b|\bdoi:|\bet al\.,? \(?\d{4}|\(in press\)|view article|\[\d+\]\s*[A-Z]/gi) || []).length;
     if (refSignals >= 3) return '';
