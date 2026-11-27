@@ -2,6 +2,29 @@
 
 All notable changes to the Preppt project are documented in this file.
 
+## [1.3.0] - 2026-11-27
+
+Remediation of the independent product audit of commit `2b89ef1` (plan: `docs/audit/ACTION_PLAN.md`).
+
+### Fixed
+- **Conclusions (D-01, D-10):** the evidence verdict is now weighted by study design and driven by primary-endpoint sentences of the included trials and reviews; subgroup, secondary and off-population nulls no longer reverse the conclusion. Removed hard-coded IVF/AI vocabulary.
+- **Validator false assurance (D-02, D-03):** `direction_fidelity` uses the verdict and is negation-aware; trailing author-year citations, headers or sample descriptions used as findings, unexplained acronyms, empty labels and dangling endings now fail. Added `finding_content`, `unexplained_acronyms`, `text_defects` and `audience_fit` (25 checks in total).
+- **Keyword engine (D-04):** phrase-level concepts, whole-word vocabulary matching, no invented synonyms or generic MeSH; ANDed `TITLE_ABS` concept groups and a separate RCT/SR/MA arm.
+- **Relevance ranking (D-05, D-07):** real 0–100 scale with concept coverage, design priority, a population-mismatch penalty and a cap when a topic concept is missing.
+- **Study design (D-06):** classification from publication-type metadata, then title, then abstract; SR/MA before RCT; protocols, guidelines and retrospective designs recognised.
+- **Findings quality (D-09, D-11–D-16):** results and conclusion sentences only; section headers and author-year citations stripped; leading author labels; plain-language wording for the public audience; data-bound visual specifications.
+- **Metadata (D-17, D-18):** no invented years; correct journal and PMCID; junk abstracts discarded; glued "Background…Methods…Results" headers split.
+- **Security (D-19, D-20):** origin allow-list, per-IP rate limits, 3 MB body cap and 405/413/429 responses on every `/api/*` handler; client-supplied API keys are no longer forwarded.
+- **UX and accessibility (D-22–D-28, D-31, D-32):** live-region toasts, labels, inline field errors, no silent clamping, integer validation, consistent step numbering, undo and backfill on paper removal, session restore, in-place slide editing.
+- **Word export (D-29, D-30):** one slide per page, author lists truncated to six plus "et al", current copyright year.
+- **Performance:** Europe PMC venue lookups have a hard per-request timeout and an 8 s overall budget, so synthesis stays well inside the 60 s serverless limit.
+
+### Documentation (D-08)
+- README states that slide content is rule-based and that the output is a Word specification, not PowerPoint; documents the 25 checks, API protection and the OpenAlex key rotation.
+
+### Tests
+- New suites: study-design classification, keyword strategy, relevance ranking, metadata integrity, evidence verdict, findings quality, validator audit decks, HTTP guard, Word layout, live-data regressions; smoke tests E–G. Regression fixtures for SGLT2i/HFpEF, TXA/PPH and PARPi/ovarian cancer.
+
 ## [1.2.1] - 2026-11-23
 
 ### Fixed

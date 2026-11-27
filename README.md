@@ -17,7 +17,9 @@
 
 </div>
 
-**Preppt** is an evidence-based clinical and scientific presentation generator. It systematically harvests biomedical literature from **Europe PMC / PubMed Central** and **Semantic Scholar** (with automated **OpenAlex** and **Crossref** fallbacks), applies multi-key deduplication and semantic relevance ranking, guides the clinician through rigorous interactive approval gates, and produces a publication-grade, 11-part Microsoft Word (`.docx`) presentation specification.
+**Preppt** is an evidence-based clinical and scientific presentation generator. It systematically harvests biomedical literature from **Europe PMC / PubMed Central** and **Semantic Scholar** (with automated **OpenAlex** and **Crossref** fallbacks), applies multi-key deduplication and transparent rule-based relevance ranking, guides the clinician through interactive approval gates, and produces an 11-part Microsoft Word (`.docx`) presentation **specification** (slide text, speaker notes and visual descriptions for each slide).
+
+> **What Preppt does and does not do.** Keywords, ranking, findings and conclusions are extracted from the selected abstracts by deterministic rules — no language model writes the slide content. The output is a Word document that specifies each slide; Preppt does **not** produce PowerPoint (`.pptx`) files or rendered slides. Findings come from abstracts only, so always check them against the full papers.
 
 🔗 **Live Production Application**: [https://preppt-ai.vercel.app](https://preppt-ai.vercel.app)  
 📦 **GitHub Repository**: [https://github.com/roroleaks/Preppt](https://github.com/roroleaks/Preppt)
@@ -34,7 +36,11 @@
 - **Audience & Density Adaptation**: Calibrates medical terminology depth across 5 audience tiers (*Public audience, Undergraduate, Postgraduate, Consultants, Mixed audience*) and visible slide text across 3 density tiers (*Detailed, Balanced [30–40% occupancy], Short bullet points [8-word target for non-finding bullets; up to 18 words for finding bullets so labelled numbers and confidence intervals stay intact]*).
 - **10 Mandatory Slide Fields**: Every synthesized slide contains all 10 essential specification fields, including slide objective, main message, visual type suggestion, detailed visual description, verbatim speaker notes narration script, interactive audience question, and logical transition.
 - **Strict Citation Isolation**: Zero in-text citations or references on slide cards. All bibliographic citations are strictly consolidated in a dedicated, Vancouver-style final References section.
-- **Pre-Export Integrity Gate (Prompt 13)**: Automatically audits 9 compliance criteria before allowing Word document export.
+- **Rule-Based Keyword Engine**: Concept phrases are taken from the topic and matched against a curated vocabulary on whole words; no invented synonyms or generic MeSH headings. Each concept becomes an ANDed `TITLE_ABS` group in the Europe PMC query, with a separate arm for randomised trials, systematic reviews and meta-analyses.
+- **Study-Design Classification**: Uses publication-type metadata first, then title, then abstract (systematic review / meta-analysis before RCT; protocols, guidelines and retrospective studies recognised). Shared by browser and server (`public/evidence-rules.js`).
+- **Evidence Verdict**: The overall direction (benefit / mixed / no benefit / harm / insufficient) is weighted by study design and driven by primary-endpoint sentences; subgroup, secondary and off-population results cannot flip the conclusion.
+- **Pre-Export Integrity Gate**: Automatically runs 25 checks before allowing Word document export (see below).
+- **API Protection**: `/api/*` proxies accept browser requests only from the app's own origins, are rate-limited per IP, cap request bodies at 3 MB, and never forward client-supplied API keys.
 - **Single Active Run Model**: Focused workflow with zero database overhead, session pollution, or cloud dependency.
 
 ---
@@ -87,7 +93,7 @@ flowchart TD
   end
 
   subgraph Step910 ["Step 9 & 10: Validation & Word Export"]
-    U --> V{"Gate 4: Pre-Export Integrity Audit (9 Checks)"}
+    U --> V{"Gate 4: Pre-Export Integrity Audit (25 Checks)"}
     V -- Fails --> W["Display Validation Issues & Block Export"]
     V -- Passes --> X["Compile 11-Part Document via docx Library"]
     X --> Y[["Download Word Document (.docx)"]]
@@ -161,14 +167,14 @@ flowchart TD
     D5 -- Overlap <= 0.65 --> Unique["Add to Unique Pool"]
   end
 
-  subgraph Ranking ["Relevance & Study-Type Scoring"]
-    Unique --> SC1["Title Keyword Match (+20 pts)"]
-    Unique --> SC2["Abstract Keyword Overlap (+6 pts)"]
-    Unique --> SC3["Approved Keywords & MeSH Overlap (+16 pts)"]
-    Unique --> SC4["Prioritize Best Study Types (RCT / Meta-Analysis: +18 pts)"]
-    Unique --> SC5["Dual-Source Convergence Bonus (+8 pts)"]
-    SC1 & SC2 & SC3 & SC4 & SC5 --> NormScore["Normalize to 65%–99% Relevance Scale"]
-    NormScore --> Sort["Sort Descending & Pre-Select Target Count"]
+  subgraph Ranking ["Relevance & Study-Type Scoring (0–100)"]
+    Unique --> SC1["Concept coverage in title/abstract (up to 60 pts)"]
+    Unique --> SC2["Study design: SR/MA and RCT highest (up to 20 pts)"]
+    Unique --> SC3["Citations (up to 10 pts)"]
+    Unique --> SC4["Abstract available (5 pts)"]
+    Unique --> SC5["Found by more than one source (5 pts)"]
+    SC1 & SC2 & SC3 & SC4 & SC5 --> Adjust["Population mismatch −30; capped at 35 if a topic concept is missing"]
+    Adjust --> Sort["Sort Descending & Pre-Select Target Count"]
   end
 ```
 
@@ -215,19 +221,18 @@ Every synthesized slide card is rendered in a clean, high-contrast visual table 
 
 ---
 
-## 🛡️ Pre-Export Integrity Audit (Prompt 13)
+## 🛡️ Pre-Export Integrity Audit
 
-Before enabling the `Export to Word` button, the system verifies all 9 criteria:
+Before enabling the `Export to Word` button, the validator (`lib/validator.js`) runs 25 checks. A failed check blocks export; a warning is shown but does not block.
 
-1. **English-Only**: Complete text, titles, notes, and visual descriptions are in English.
-2. **Slide Count Match**: Synthesized count matches user request exactly ($N = N_{\text{requested}}$).
-3. **10 Fields Present**: All 10 mandatory fields are non-empty across every slide.
-4. **References Isolated**: References appear exclusively in Section 11; zero citations below individual slides.
-5. **No In-Text Citations**: Zero bracketed numbers `[1]` or author-year tags in on-slide text or notes.
-6. **Removed Papers Excluded**: Studies removed during review are permanently excluded from active selection.
-7. **No Copied Content**: Zero legacy project text or unrelated topic contamination.
-8. **Project Name Intact**: Verified identity: `Preppt – Scientific Literature to Presentation`.
-9. **Secrets Guarded**: Zero API tokens, private keys, or bearer credentials exposed in payloads or document text.
+| Area | Checks |
+|---|---|
+| Source fidelity | `source_coverage`, `source_support`, `direction_fidelity`, `unsupported_numbers`, `finding_role`, `finding_content`, `quantitative_finding_omitted`, `conclusion_grounding`, `generic_conclusion` |
+| Text quality | `truncation`, `sentence_integrity`, `finding_readability`, `text_defects`, `duplicate_source_sentence`, `unexplained_acronyms`, `vocabulary_drift`, `english_only`, `audience_fit` |
+| Citations & sources | `no_intext_citations`, `framing_sources`, `abstract_only_notice`, `removed_papers_absent`, `low_assurance_source_used` |
+| Structure & safety | `slide_count`, `no_api_secrets` |
+
+The validator is a safety net, not a substitute for reading the papers: it checks the deck against the selected abstracts and cannot detect errors in the abstracts themselves.
 
 ---
 
@@ -257,14 +262,14 @@ http://localhost:3080
 
 ### Running Automated Test Suites
 ```bash
-# Run comprehensive end-to-end regression tests (12 suites)
-node test-e2e.js
+# Syntax check + offline unit / regression suite (no network needed)
+npm test
 
-# Run literature retrieval engines audit (Europe PMC, Semantic Scholar & OpenAlex)
+# Browser smoke suite (Playwright)
+npm run test:smoke
+
+# Live literature-retrieval check (needs network access)
 node test-retrieval-isolation.js
-
-# Run live scenario integration test with deep Word document XML inspection
-node scratch/run-random-topic-e2e.js
 ```
 
 ---
@@ -281,7 +286,8 @@ node scratch/run-random-topic-e2e.js
   # Run full CI gate (syntax check + offline unit/E2E suite + Playwright browser smoke suite)
   npm run ci
   ```
-- **Environment Variables**: Configure API keys (`OPENALEX_API_KEY`, `S2_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) and `CONTACT_EMAIL` in Vercel Project Settings (see `.env.example`). Never commit secrets to the repository.
+- **Environment Variables**: Configure API keys (`OPENALEX_API_KEY`, `S2_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) and `CONTACT_EMAIL` in Vercel Project Settings (see `.env.example`). Never commit secrets to the repository. Optional: `PREPPT_ALLOWED_ORIGINS` (comma-separated extra origins allowed to call `/api/*`) and `PREPPT_MAX_BODY_BYTES` (request body cap, default 3 MB).
+- **Key Rotation**: An OpenAlex API key was committed in early history (before commit `6db00f9`). It must be rotated in the OpenAlex account and the new value set only in Vercel Project Settings; removing it from current files does not remove it from git history.
 
 ---
 

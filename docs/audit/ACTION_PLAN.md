@@ -16,6 +16,6 @@ Branch: `fix/audit-remediation`. Each step ends with tests run and a commit.
 | 9 | UX & accessibility: live-region toasts, labels, inline field errors, no silent clamping, integer validation, consistent step numbering, plain labels, export-button colour, undo remove + backfill, session persistence, notice copy | D-22, D-23, D-25, D-27, D-28, D-31, D-32 | ✅ |
 | 10 | Word export: slide tables kept on one page, author truncation (et al.), consistent copyright year | D-29, D-30 | ✅ |
 | 11 | Regression tests on varied topics (SGLT2i-HFpEF, TXA-PPH, PARPi-ovarian) + full test suite + live-API end-to-end re-run | all | ✅ |
-| 12 | Docs (README claims, CHANGELOG) and push branch | D-08 | ☐ |
+| 12 | Docs (README claims, CHANGELOG) and push branch | D-08 | ✅ |
 
 Out of reach of code changes (owner action): rotate the OpenAlex API key that is in git history before commit `6db00f9`.

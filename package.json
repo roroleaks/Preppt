@@ -1,6 +1,6 @@
 {
   "name": "preppt",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Preppt \u2014 Scientific Literature to Presentation Content Generator with PMC and Semantic Scholar dual retrieval, multi-factor ranking, and Word (.docx) export.",
   "main": "server.js",
   "scripts": {
