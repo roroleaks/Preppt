@@ -151,7 +151,138 @@
       DESIGNS.SURVEY, DESIGNS.CASE_REPORT, DESIGNS.UNCONTROLLED, DESIGNS.DIAGNOSTIC].map(lower).includes(d);
   }
 
-  const api = { DESIGNS, classifyStudyDesign, isRandomisedTrialDesign, isEvidenceSynthesisDesign, isPrimaryStudyDesign, collectPubTypes };
+
+  // ---------------------------------------------------------------------------
+  // Relevance scoring (audit D-05 / D-07)
+  // ---------------------------------------------------------------------------
+  const DESIGN_POINTS = {};
+  DESIGN_POINTS[DESIGNS.RCT] = 20;
+  DESIGN_POINTS[DESIGNS.SR] = 18;
+  DESIGN_POINTS[DESIGNS.GUIDELINE] = 12;
+  DESIGN_POINTS[DESIGNS.COHORT] = 10;
+  DESIGN_POINTS[DESIGNS.CASE_CONTROL] = 9;
+  DESIGN_POINTS[DESIGNS.RETRO] = 8;
+  DESIGN_POINTS[DESIGNS.DIAGNOSTIC] = 8;
+  DESIGN_POINTS[DESIGNS.UNCONTROLLED] = 7;
+  DESIGN_POINTS[DESIGNS.CROSS_SECTIONAL] = 6;
+  DESIGN_POINTS[DESIGNS.REVIEW] = 6;
+  DESIGN_POINTS[DESIGNS.SURVEY] = 4;
+  DESIGN_POINTS[DESIGNS.CASE_REPORT] = 3;
+  DESIGN_POINTS[DESIGNS.CONFERENCE] = 2;
+  DESIGN_POINTS[DESIGNS.EDITORIAL] = 1;
+  DESIGN_POINTS[DESIGNS.PROTOCOL] = 0;
+  DESIGN_POINTS[DESIGNS.THESIS] = 1;
+  DESIGN_POINTS[DESIGNS.UNKNOWN] = 4;
+
+  // Qualifier pairs: if the topic names one side and the paper only the other, it is a population mismatch.
+  const OPPOSING_QUALIFIERS = [
+    [/preserved ejection fraction|\bhfpef\b/, /reduced ejection fraction|\bhfref\b/],
+    [/reduced ejection fraction|\bhfref\b/, /preserved ejection fraction|\bhfpef\b/],
+    [/type 2 diabetes|\bt2dm?\b/, /type 1 diabetes|\bt1dm?\b/],
+    [/type 1 diabetes|\bt1dm?\b/, /type 2 diabetes|\bt2dm?\b/],
+    [/\b(?:children|paediatric|pediatric|infants?|neonat\w*|adolescents?)\b/, /\badults?\b(?! and (?:children|adolescents))/],
+    [/\badults?\b/, /\b(?:children|paediatric|pediatric|infants?|neonat\w*)\b/]
+  ];
+
+  function escapeRe(s) {
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function normaliseText(s) {
+    return lower(s).replace(/haemorrh/g, 'hemorrh').replace(/oesophag/g, 'esophag').replace(/[‐-―]/g, '-')
+      .replace(/\s+/g, ' ');
+  }
+
+  function stemTokens(term) {
+    return normaliseText(term).split(/[^a-z0-9-]+/)
+      .filter(t => t.length > 2 && !/^(?:and|the|with|for|of|in|on|to)$/.test(t))
+      .map(t => t.replace(/(?:ies|es|s)$/, ''));
+  }
+
+  /** 1 = exact phrase, 0.8 = all significant words present, 0 = absent */
+  function termMatch(text, term) {
+    const t = normaliseText(text);
+    const n = normaliseText(term).trim();
+    if (!n) return 0;
+    const re = new RegExp(`(?:^|[^a-z0-9])${escapeRe(n)}(?:s|es)?(?:[^a-z0-9]|$)`);
+    if (re.test(t)) return 1;
+    const tokens = stemTokens(n);
+    if (tokens.length >= 2 && tokens.every(tok => t.includes(tok))) return 0.8;
+    return 0;
+  }
+
+  /**
+   * Scores one paper 0–100 against the approved concepts.
+   * @param {object} paper
+   * @param {Array<{concept:string, terms:string[]}>} conceptGroups
+   * @param {string} topic
+   * @returns {{score:number, missingConcepts:string[], reasons:string[], design:string}}
+   */
+  function scorePaperRelevance(paper, conceptGroups, topic) {
+    const p = paper || {};
+    const title = p.title || '';
+    const abs = p.abstract || p.abstract_summary || '';
+    const groups = (conceptGroups || []).filter(g => g && Array.isArray(g.terms) && g.terms.length);
+    const reasons = [];
+    const missing = [];
+    let coverage = 0;
+
+    groups.forEach(g => {
+      let best = 0;
+      let where = '';
+      g.terms.forEach(term => {
+        const inTitle = termMatch(title, term);
+        const inAbs = termMatch(abs, term) * 0.6;
+        const v = Math.max(inTitle, inAbs);
+        if (v > best) { best = v; where = inTitle >= inAbs ? 'title' : 'abstract'; }
+      });
+      coverage += best;
+      if (best === 0) missing.push(g.concept);
+      else reasons.push(`${g.concept} (${where})`);
+    });
+    const conceptScore = groups.length ? (coverage / groups.length) * 60 : 30;
+
+    const design = p.studyType || p.study_type || classifyStudyDesign(p);
+    const designScore = DESIGN_POINTS[design] !== undefined ? DESIGN_POINTS[design] : 4;
+    reasons.push(design);
+
+    const cites = Number(p.citationCount || p.citation_count || 0);
+    const citeScore = Math.min(10, Math.log10(cites + 1) * 3.3);
+    const abstractScore = abs.length > 150 ? 5 : 0;
+    const multiSource = (Array.isArray(p.sources) && p.sources.length > 1) ? 5 : 0;
+
+    let score = conceptScore + designScore + citeScore + abstractScore + multiSource;
+
+    const topicText = normaliseText(topic);
+    const paperText = normaliseText(`${title} ${abs.slice(0, 600)}`);
+    let mismatch = false;
+    OPPOSING_QUALIFIERS.forEach(([wanted, other]) => {
+      if (wanted.test(topicText) && !other.test(topicText) && other.test(normaliseText(title)) && !wanted.test(paperText)) mismatch = true;
+    });
+    if (mismatch) {
+      score -= 30;
+      reasons.push('population differs from topic');
+    }
+    if (missing.length > 0) {
+      score = Math.min(score, 35 - 10 * (missing.length - 1));
+      reasons.push(`missing: ${missing.join(', ')}`);
+    }
+    return { score: Math.max(0, Math.min(100, Math.round(score))), missingConcepts: missing, reasons, design, populationMismatch: mismatch };
+  }
+
+  /** Builds concept groups when only flat approved keywords are available. */
+  function conceptGroupsFromKeywords(approvedKeywords) {
+    const k = approvedKeywords || {};
+    const primary = (k.primaryKeywords || []).filter(Boolean);
+    const extra = [...(k.synonyms || []), ...(k.meshConcepts || [])].filter(Boolean);
+    return primary.map(p => {
+      const pTokens = stemTokens(p);
+      const terms = [p, ...extra.filter(e => stemTokens(e).some(t => pTokens.includes(t)))];
+      return { concept: p, terms };
+    });
+  }
+
+  const api = { DESIGNS, classifyStudyDesign, isRandomisedTrialDesign, isEvidenceSynthesisDesign, isPrimaryStudyDesign, collectPubTypes, scorePaperRelevance, conceptGroupsFromKeywords, termMatch };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   } else {

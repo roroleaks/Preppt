@@ -79,7 +79,9 @@
       <div class="paper-card-top-row">
         <div class="paper-badges-group">
           ${srcBadge}
-          <span class="badge badge-relevance">${escapeHtml(paper.relevancePercentage ?? 0)}% Relevance</span>
+          <span class="badge badge-relevance ${Number(paper.relevancePercentage) >= 70 ? 'rel-high' : Number(paper.relevancePercentage) >= 50 ? 'rel-mid' : 'rel-low'}" title="${escapeHtml((paper.relevanceReasons || []).join(' • ') || 'Relevance score')}">Relevance ${escapeHtml(paper.relevancePercentage ?? 0)}/100</span>
+          ${Array.isArray(paper.missingConcepts) && paper.missingConcepts.length ? `<span class="badge badge-offtopic">Missing: ${escapeHtml(paper.missingConcepts.join(', '))}</span>` : ''}
+          ${paper.populationMismatch ? '<span class="badge badge-offtopic">Different population</span>' : ''}
           <span class="badge badge-design" title="Study design (from publication-type metadata and title)">${escapeHtml(paper.studyType || paper.study_type || 'Design not stated')}</span>
           ${pubType && !/^(?:journal\s*article|article|journal-article|research support.*)$/i.test(String(pubType)) ? `<span class="badge" style="background:#e2e8f0; color:#334155;">${escapeHtml(pubType)}</span>` : ''}
           ${isConference ? '<span class="badge badge-conference" style="background:#fed7aa; color:#9a3412; font-weight:700;">Conference abstract</span>' : ''}

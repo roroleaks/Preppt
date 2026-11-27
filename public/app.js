@@ -549,19 +549,23 @@ async function executeLiteratureRetrieval() {
 
     state.allPapers = ranked;
 
+    // Only on-topic papers (every approved concept present, population matches) are eligible for pre-selection.
+    // Protocols carry no results and are never pre-selected.
+    const eligible = ranked.filter(p => p.missingConcepts.length === 0 && !p.populationMismatch && p.study_type !== 'Study protocol');
+
     // Check for shortfall
     const shortfallAlert = document.getElementById('shortfall-alert');
     if (shortfallAlert) {
-      if (ranked.length < state.targetPapers) {
+      if (eligible.length < state.targetPapers) {
         shortfallAlert.style.display = 'block';
-        shortfallAlert.innerHTML = `<strong>Literature Shortfall Notice:</strong> You requested a target of ${escapeHtml(state.targetPapers)} final papers, but only ${escapeHtml(ranked.length)} eligible studies were identified between ${escapeHtml(state.startYear)} and ${escapeHtml(new Date().getFullYear())}. All ${escapeHtml(ranked.length)} available papers are presented below.`;
+        shortfallAlert.innerHTML = `<strong>Literature shortfall:</strong> You asked for ${escapeHtml(state.targetPapers)} papers, but only ${escapeHtml(eligible.length)} of ${escapeHtml(ranked.length)} retrieved records mention every core concept (${escapeHtml(state.startYear)}–${escapeHtml(new Date().getFullYear())}). Those ${escapeHtml(eligible.length)} are pre-selected; lower-scoring records are listed below if you want to add any manually.`;
       } else {
         shortfallAlert.style.display = 'none';
       }
     }
 
-    // Pre-select the top targetPapers
-    const targetSlice = ranked.slice(0, state.targetPapers);
+    // Pre-select the top on-topic papers
+    const targetSlice = eligible.slice(0, state.targetPapers);
     state.selectedPapers = [...targetSlice];
 
     // Restore any existing notes and update literature statistics
@@ -1103,61 +1107,28 @@ function calculateTokenOverlap(a, b) {
 }
 
 /**
- * Computes relevance percentage (0-100%) estimated from:
- * - Title keyword match (high weight)
- * - Abstract match
- * - Approved keywords overlap
- * - Semantic topic overlap
- * - Best paper types prioritization (RCTs, Meta-analyses, Cohorts)
+ * Relevance score 0–100 (audit D-05 / D-07), see public/evidence-rules.js:
+ *  - up to 60 pts: coverage of every approved concept (title > abstract); a missing concept caps the score at 35
+ *  - up to 20 pts: evidence design (RCT > SR/MA > guideline > cohort > ... > protocol)
+ *  - up to 10 pts: citations (log scale); 5 pts abstract present; 5 pts found by more than one source
+ *  - minus 30 pts when the paper's population contradicts the topic (e.g. HFrEF for an HFpEF topic)
  */
 function computeRelevanceRanking(papers, topic, approvedKeywords) {
-  const topicWords = cleanQueryKeywords(topic).toLowerCase().split(/\s+/).filter(w => w.length > 2);
-  const kwWords = [
-    ...(approvedKeywords.primaryKeywords || []),
-    ...(approvedKeywords.synonyms || []),
-    ...(approvedKeywords.meshConcepts || [])
-  ].map(s => s.toLowerCase()).filter(Boolean);
+  const rules = window.PrepptEvidenceRules;
+  const groups = (state.approvedStrategy && Array.isArray(state.approvedStrategy.conceptGroups) && state.approvedStrategy.conceptGroups.length)
+    ? state.approvedStrategy.conceptGroups
+    : rules.conceptGroupsFromKeywords(approvedKeywords);
 
   return papers.map(paper => {
-    let rawScore = 0;
-    const titleLower = (paper.title || '').toLowerCase();
-    const abstractLower = (paper.abstract_summary || paper.abstract || '').toLowerCase();
-
-    // 1. Title match (highest weight)
-    topicWords.forEach(w => {
-      if (titleLower.includes(w)) rawScore += 20;
-      if (abstractLower.includes(w)) rawScore += 6;
-    });
-
-    // 2. Approved keywords & MeSH overlap
-    kwWords.forEach(kw => {
-      if (titleLower.includes(kw)) rawScore += 16;
-      else if (abstractLower.includes(kw)) rawScore += 6;
-    });
-
-    // 3. Select best paper types according to relevance (RCT, Meta-Analysis, Cohorts prioritized)
-    const st = (paper.study_type || paper.studyType || '').toLowerCase();
-    if (st.includes('randomized') || st.includes('meta-analysis') || st.includes('systematic review')) {
-      rawScore += 18;
-    } else if (st.includes('trial') || st.includes('cohort') || st.includes('prospective')) {
-      rawScore += 12;
-    } else {
-      rawScore += 6;
-    }
-
-    // 4. Citation and semantic richness
-    if (paper.abstract && paper.abstract.length > 150) rawScore += 8;
-    if (paper.source === 'both') rawScore += 8;
-
-    // Normalize to 65% - 99% percentage scale for presentation ranking
-    const pct = Math.min(99, Math.max(65, Math.round(55 + (rawScore * 0.40))));
-
-    paper.relevancePercentage = pct;
-    paper.relevance_percentage = pct;
-    paper.rankingScore = rawScore;
-
+    const r = rules.scorePaperRelevance(paper, groups, topic);
+    paper.relevancePercentage = r.score;
+    paper.relevance_percentage = r.score;
+    paper.rankingScore = r.score;
+    paper.relevanceReasons = r.reasons;
+    paper.missingConcepts = r.missingConcepts;
+    paper.populationMismatch = r.populationMismatch;
     return paper;
-  }).sort((a, b) => b.rankingScore - a.rankingScore);
+  }).sort((a, b) => b.rankingScore - a.rankingScore || (b.citationCount || 0) - (a.citationCount || 0));
 }
 
 // ==========================================
