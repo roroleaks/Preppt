@@ -35,7 +35,13 @@ function build(fixture) {
   const concl = deck.slides[deck.slides.length - 1];
   assert.ok(/favours SGLT2 inhibitors/i.test(concl.main_message), `conclusion must favour SGLT2i: ${concl.main_message}`);
   assert.ok(!/no statistically significant difference|cannot be recommended|non-inferiority/i.test(concl.main_message + concl.on_slide_text));
-  assert.ok(!deck.slides.some(s => /Null Trial|Without a Significant/i.test(s.title)), 'no "null trials" slide when no trial/MA was neutral on its main outcome');
+  assert.ok(!deck.slides.some(s => /Null Trial|Trials Without a Significant Benefit/i.test(s.title)), 'no "null trials" slide: no trial/MA was neutral on the main efficacy outcome');
+  const outcomeSlide = deck.slides.find(s => /Outcomes Without a Significant Difference/.test(s.title));
+  assert.ok(outcomeSlide && /arrhythmias/i.test(outcomeSlide.main_message), 'the arrhythmia NMA is reported as a neutral result on a DIFFERENT outcome');
+  assert.ok(/favours SGLT2 inhibitors on primary outcome/i.test(concl.main_message) && /no significant difference on arrhythmias/i.test(concl.main_message), `outcome-specific conclusion: ${concl.main_message}`);
+  const slide4 = deck.slides.find(s => /What the Studies Found/.test(s.title));
+  assert.ok(/16\.4% dapagliflozin vs 19\.5% placebo; HR 0\.82 \(95% CI 0\.73–0\.92\)/.test(slide4.on_slide_text), 'DELIVER primary result rendered in structured form');
+  assert.ok(!/\(Solomon 2022\)|We included|A total of/.test(slide4.on_slide_text), 'no trailing citations or sample descriptions on the findings slide');
   const zannadRef = fx.papers.findIndex(p => /reduced ejection fraction: a meta-analysis/.test(p.title)) + 1;
   assert.ok(!new RegExp(`\\b${zannadRef}\\b`).test(concl.main_message.match(/\[([^\]]+)\]/)[1]), 'HFrEF paper must not support the HFpEF conclusion');
   console.log('   ✓ SGLT2i/HFpEF: conclusion favours SGLT2i (DELIVER, EMPEROR-Preserved); HFrEF paper excluded; no false null slide.');

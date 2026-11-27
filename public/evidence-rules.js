@@ -270,6 +270,13 @@
     return { score: Math.max(0, Math.min(100, Math.round(score))), missingConcepts: missing, reasons, design, populationMismatch: mismatch };
   }
 
+  /** True when a sentence is about a population that contradicts the topic's (e.g. HFrEF for an HFpEF topic). */
+  function populationContradictsTopic(text, topic) {
+    const t = normaliseText(text);
+    const tp = normaliseText(topic);
+    return OPPOSING_QUALIFIERS.some(([wanted, other]) => wanted.test(tp) && !other.test(tp) && other.test(t) && !wanted.test(t));
+  }
+
   /** Builds concept groups when only flat approved keywords are available. */
   function conceptGroupsFromKeywords(approvedKeywords) {
     const k = approvedKeywords || {};
@@ -321,7 +328,7 @@
     return t.replace(/^abstract[:.\s]+/i, '');
   }
 
-  const api = { DESIGNS, classifyStudyDesign, isRandomisedTrialDesign, isEvidenceSynthesisDesign, isPrimaryStudyDesign, collectPubTypes, scorePaperRelevance, conceptGroupsFromKeywords, termMatch, normaliseYear, normaliseJournal, normalisePmcid, sanitizeAbstract };
+  const api = { DESIGNS, classifyStudyDesign, isRandomisedTrialDesign, isEvidenceSynthesisDesign, isPrimaryStudyDesign, collectPubTypes, scorePaperRelevance, conceptGroupsFromKeywords, termMatch, populationContradictsTopic, normaliseYear, normaliseJournal, normalisePmcid, sanitizeAbstract };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   } else {

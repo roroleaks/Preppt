@@ -231,7 +231,7 @@ async function runStepByStepValidation() {
     topic
   });
 
-  assert.strictEqual(auditResult.isValid, true, 'Pre-export audit must pass without blocking failures');
+  assert.strictEqual(auditResult.isValid, true, 'Pre-export audit must pass without blocking failures: ' + JSON.stringify(auditResult.checks.filter(c => c.status === 'fail')));
   const EXPECTED_CHECK_IDS = [
     'source_coverage',
     'source_support',
