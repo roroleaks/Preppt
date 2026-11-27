@@ -639,7 +639,7 @@ async function fetchEuropePMC(query, pageSize) {
       authors: authorList,
       journal: cleanHtmlText(item.journalInfo?.journal?.title || item.journalTitle || 'Scholarly Journal'),
       publication_date: item.pubYear ? String(item.pubYear) : (item.journalInfo?.yearOfPublication ? String(item.journalInfo.yearOfPublication) : String(currentYear)),
-      study_type: classifyStudyType(item.title, item.abstractText),
+      study_type: classifyStudyType(item.title, item.abstractText, item.pubTypeList?.pubType || []),
       publication_type: (Array.isArray(item.pubTypeList?.pubType) ? item.pubTypeList.pubType[0] : item.pubTypeList?.pubType) || 'Journal Article',
       relevance_percentage: 0,
       abstract_summary: cleanHtmlText(item.abstractText || ''),
@@ -664,7 +664,7 @@ async function fetchEuropePMC(query, pageSize) {
       citationCount: Number(item.citedByCount || 0),
       isOpenAccess: item.isOpenAccess === 'Y',
       pubType: Array.isArray(item.pubTypeList?.pubType) ? item.pubTypeList.pubType : [item.pubTypeList?.pubType || 'Journal Article'],
-      studyType: classifyStudyType(item.title, item.abstractText),
+      studyType: classifyStudyType(item.title, item.abstractText, item.pubTypeList?.pubType || []),
       userStatus: 'keep',
       userNote: ''
     };
@@ -752,8 +752,9 @@ async function fetchOpenAlex(query, pageSize, startYear) {
             pmid: pmid,
             pmcid: pmcid,
             semantic_scholar_id: '',
-            study_type: classifyStudyType(p.title, abstract),
-            studyType: classifyStudyType(p.title, abstract),
+            study_type: classifyStudyType(p.title, abstract, [p.type]),
+            studyType: classifyStudyType(p.title, abstract, [p.type]),
+            openAlexType: p.type || '',
             publication_type: (p.type ? p.type.replace(/-/g, ' ') : 'Journal Article'),
             pubType: [p.type || 'Journal Article'],
             source: 'openalex',
@@ -774,7 +775,8 @@ async function fetchOpenAlex(query, pageSize, startYear) {
   return results.map(item => ({
     ...item,
     authors: Array.isArray(item.authors) ? item.authors : [item.authors || 'Unknown Authors'],
-    study_type: item.study_type || classifyStudyType(item.title, item.abstract_summary),
+    study_type: classifyStudyType(item.title, item.abstract_summary || item.abstract, [item.openAlexType, item.crossrefType, ...(item.pubType || [])]),
+    studyType: classifyStudyType(item.title, item.abstract_summary || item.abstract, [item.openAlexType, item.crossrefType, ...(item.pubType || [])]),
     user_status: 'keep',
     user_note: ''
   }));
@@ -866,8 +868,9 @@ async function fetchCrossref(query, pageSize, startYear) {
             pmid: '',
             pmcid: '',
             semantic_scholar_id: '',
-            study_type: classifyStudyType(cleanTitle, abstract),
-            studyType: classifyStudyType(cleanTitle, abstract),
+            study_type: classifyStudyType(cleanTitle, abstract, [item.type]),
+            studyType: classifyStudyType(cleanTitle, abstract, [item.type]),
+            crossrefType: item.type || '',
             publication_type: item.type ? item.type.replace(/-/g, ' ') : 'Journal Article',
             pubType: [item.type || 'Journal Article'],
             source: 'crossref',
@@ -888,7 +891,8 @@ async function fetchCrossref(query, pageSize, startYear) {
   return results.map(item => ({
     ...item,
     authors: Array.isArray(item.authors) ? item.authors : [item.authors || 'Unknown Authors'],
-    study_type: item.study_type || classifyStudyType(item.title, item.abstract_summary),
+    study_type: classifyStudyType(item.title, item.abstract_summary || item.abstract, [item.openAlexType, item.crossrefType, ...(item.pubType || [])]),
+    studyType: classifyStudyType(item.title, item.abstract_summary || item.abstract, [item.openAlexType, item.crossrefType, ...(item.pubType || [])]),
     user_status: 'keep',
     user_note: ''
   }));
@@ -952,7 +956,7 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
       authors: authorList,
       journal: cleanHtmlText(item.venue || item.publicationVenue?.name || item.journal?.name || 'Academic Journal'),
       publication_date: item.year ? String(item.year) : String(currentYear),
-      study_type: classifyStudyType(item.title, item.abstract),
+      study_type: classifyStudyType(item.title, item.abstract, item.publicationTypes || []),
       publication_type: (Array.isArray(item.publicationTypes) && item.publicationTypes[0]) ? item.publicationTypes[0] : 'Journal Article',
       relevance_percentage: 0,
       abstract_summary: cleanHtmlText(item.abstract || ''),
@@ -979,22 +983,16 @@ async function fetchSemanticScholar(query, pageSize, yearFilter) {
       isOpenAccess: Boolean(item.openAccessPdf?.url),
       openAccessPdfUrl: item.openAccessPdf?.url || '',
       pubType: Array.isArray(item.publicationTypes) && item.publicationTypes.length > 0 ? item.publicationTypes : ['Journal Article'],
-      studyType: classifyStudyType(item.title, item.abstract),
+      studyType: classifyStudyType(item.title, item.abstract, item.publicationTypes || []),
       userStatus: 'keep',
       userNote: ''
     };
   });
 }
 
-function classifyStudyType(title = '', abstract = '') {
-  const t = `${title} ${abstract}`.toLowerCase();
-  if (/randomized controlled trial|randomised controlled trial|\brct\b/i.test(t)) return 'Randomized Controlled Trial';
-  if (/systematic review|meta-analysis|meta analysis/i.test(t)) return 'Systematic Review / Meta-Analysis';
-  if (/cohort study|prospective cohort|longitudinal/i.test(t)) return 'Prospective Cohort Study';
-  if (/case-control|case control/i.test(t)) return 'Case-Control Study';
-  if (/cross-sectional|cross sectional/i.test(t)) return 'Cross-Sectional Study';
-  if (/phase [123iIvV]{1,3} trial|clinical trial/i.test(t)) return 'Clinical Trial';
-  return 'Primary Empirical Study';
+function classifyStudyType(title = '', abstract = '', pubTypes = []) {
+  // Audit D-06: shared classifier (public/evidence-rules.js); metadata first, reviews never labelled as trials.
+  return window.PrepptEvidenceRules.classifyStudyDesign({ title, abstract, pubType: pubTypes });
 }
 
 function deduplicatePapers(rawPapers) {

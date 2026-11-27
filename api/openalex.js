@@ -74,6 +74,7 @@ function queryOpenAlex(query, pageSize = 30, startYear = 2021, endYear = new Dat
               doi: doi,
               pmid: pmid,
               pmcid: pmcid,
+              openAlexType: p.type || '',
               source: 'openalex',
               sources: ['OpenAlex'],
               source_url: p.id || (doi ? `https://doi.org/${doi}` : ''),

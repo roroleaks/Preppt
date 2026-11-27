@@ -1659,3 +1659,6 @@ footer a {
   box-shadow: 0 0 0 2px rgba(15, 107, 107, 0.15);
 }
 
+
+/* Study design badge (audit D-06) */
+.badge-design { background: #f1f5f9; color: #334155; font-weight: 600; }
