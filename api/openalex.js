@@ -1,3 +1,4 @@
+const { guard, parseJsonBody, BodyTooLargeError } = require('../lib/http-guard.js');
 const https = require('https');
 const { normaliseYear, normaliseJournal, normalisePmcid, sanitizeAbstract } = require('../public/evidence-rules.js');
 
@@ -108,14 +109,7 @@ function queryOpenAlex(query, pageSize = 30, startYear = 2021, endYear = new Dat
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    return res.end();
-  }
+  if (!guard(req, res, { methods: ['GET'], kind: 'proxy' })) return;
 
   try {
     const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);

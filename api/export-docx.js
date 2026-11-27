@@ -1,34 +1,12 @@
+const { guard, parseJsonBody, BodyTooLargeError } = require('../lib/http-guard.js');
 const { validatePresentationOutput } = require('../lib/validator.js');
 const { generatePresentationDocx } = require('../lib/docx-generator.js');
 
-async function parseBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  if (typeof req.body === 'string') {
-    try { return JSON.parse(req.body); } catch (e) { return {}; }
-  }
-  return new Promise((resolve) => {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try { resolve(body ? JSON.parse(body) : {}); }
-      catch (e) { resolve({}); }
-    });
-    req.on('error', () => resolve({}));
-  });
-}
-
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    return res.end();
-  }
+  if (!guard(req, res, { methods: ['POST'], kind: 'heavy' })) return;
 
   try {
-    const data = await parseBody(req);
+    const data = await parseJsonBody(req);
     const { topic, deck, papers, meta, removedPapers } = data;
     if (!deck || !papers) {
       res.statusCode = 400;
@@ -71,6 +49,11 @@ module.exports = async (req, res) => {
     res.setHeader('Content-Length', docxBuffer.length);
     return res.end(docxBuffer);
   } catch (err) {
+    if (err instanceof BodyTooLargeError) {
+      res.statusCode = 413;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.end(JSON.stringify({ error: 'Request body too large.' }));
+    }
     console.error('DOCX export error:', err);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');

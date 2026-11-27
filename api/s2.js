@@ -1,3 +1,4 @@
+const { guard, parseJsonBody, BodyTooLargeError } = require('../lib/http-guard.js');
 const https = require('https');
 
 // Semantic Scholar API Key read exclusively from server-side environment variables
@@ -71,14 +72,7 @@ function queryS2(targetPath, apiKey, attempt = 0) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    return res.end();
-  }
+  if (!guard(req, res, { methods: ['GET'], kind: 'proxy' })) return;
 
   try {
     const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -87,7 +81,7 @@ module.exports = async (req, res) => {
     const fields = urlObj.searchParams.get('fields') || 'paperId,title,authors,year,abstract,venue,publicationVenue,journal,externalIds,openAccessPdf,citationCount,publicationTypes,fieldsOfStudy';
     const year = urlObj.searchParams.get('year') || '';
     const paperId = urlObj.searchParams.get('paperId') || '';
-    const apiKey = S2_SERVER_KEY || req.headers['x-api-key'] || '';
+    const apiKey = S2_SERVER_KEY; // client-supplied keys are not forwarded (audit D-20)
 
     let targetPath = '';
     if (paperId) {
