@@ -669,7 +669,11 @@ async function runTests() {
     'generic_conclusion',
     'quantitative_finding_omitted',
     'low_assurance_source_used',
-    'conclusion_grounding'
+    'conclusion_grounding',
+    'finding_content',
+    'unexplained_acronyms',
+    'text_defects',
+    'audience_fit'
   ];
   const actualIds = validReport.checks.map(c => c.id);
   for (const id of EXPECTED_CHECK_IDS) {

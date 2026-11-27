@@ -253,7 +253,11 @@ async function runStepByStepValidation() {
     'generic_conclusion',
     'quantitative_finding_omitted',
     'low_assurance_source_used',
-    'conclusion_grounding'
+    'conclusion_grounding',
+    'finding_content',
+    'unexplained_acronyms',
+    'text_defects',
+    'audience_fit'
   ];
   const actualCheckIds = auditResult.checks.map(c => c.id);
   EXPECTED_CHECK_IDS.forEach(id => {
